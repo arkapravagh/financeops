@@ -1,0 +1,138 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* ---------- Design tokens (light) ---------- */
+:root {
+  color-scheme: light;
+  /* "Ledger" palette — see .claude/skills/design-system */
+  --page: #f4f5f8;
+  --surface: #ffffff;
+  --surface-2: #f0f1f5;
+  --ink: #171a26;
+  --ink-2: #4c5162;
+  --muted: #6b7183;
+  --line: #e3e5ec;
+  --grid: #eceef3;
+  --axis: #c9ccd6;
+  --accent: #5b4fe0;
+  --accent-ink: #ffffff;
+  --accent-soft: #eeedfc;
+  /* Elevation is only for things that float (popovers, tooltips, drawers) */
+  --shadow-float: 0 1px 2px rgb(23 26 38 / 0.06), 0 8px 24px -6px rgb(23 26 38 / 0.18);
+
+  /* Data-viz categorical slots — fixed order, never cycled.
+     Validated (dataviz validate_palette.js, --pairs all) on #ffffff: all checks PASS, all ≥ 3:1.
+     Max 3 series per chart; fold extras into "Other" or use small multiples. */
+  --series-1: #5b4fe0; /* indigo */
+  --series-2: #d9692a; /* burnt orange */
+  --series-3: #13a08e; /* teal */
+  --series-1-soft: #ecebfc; /* light step of slot 1 — bullet-chart budget band */
+
+  /* Status — reserved for state, never a series */
+  --good: #0ca30c;
+  --good-ink: #006300;
+  --warning: #fab219;
+  --serious: #ec835a;
+  --critical: #d03b3b;
+}
+
+/* ---------- Design tokens (dark) — stepped for the dark surface, not inverted ---------- */
+[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #0d0e13;
+  --surface: #15171f;
+  --surface-2: #1c1f29;
+  --ink: #eceef4;
+  --ink-2: #b4b8c6;
+  --muted: #828799;
+  --line: #262935;
+  --grid: #222531;
+  --axis: #343849;
+  /* Light indigo fill with dark ink: AA contrast for button text in dark mode */
+  --accent: #8b80f4;
+  --accent-ink: #120f2e;
+  --accent-soft: #221f3d;
+  --shadow-float: 0 1px 2px rgb(0 0 0 / 0.4), 0 12px 32px -8px rgb(0 0 0 / 0.6);
+
+  /* Validated on #15171f (--pairs all): all checks PASS, all ≥ 3:1 */
+  --series-1: #8478f2;
+  --series-2: #d26a2c;
+  --series-3: #15a08c;
+  --series-1-soft: #2a2747;
+
+  --good-ink: #0ca30c;
+}
+
+@theme inline {
+  --color-page: var(--page);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-soft: var(--accent-soft);
+  --color-good: var(--good);
+  --color-good-ink: var(--good-ink);
+  --color-warning: var(--warning);
+  --color-serious: var(--serious);
+  --color-critical: var(--critical);
+  --font-sans: "Geist Variable", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  @apply bg-page text-ink font-sans antialiased;
+  font-optical-sizing: auto;
+}
+
+/* Tighter tracking on large display text reads more refined in Geist */
+h1,
+.text-5xl {
+  letter-spacing: -0.025em;
+}
+
+/* Blinking caret at the end of a streaming AI reply */
+@keyframes ai-blink {
+  50% {
+    opacity: 0;
+  }
+}
+.ai-caret > div > :last-child:is(p, h4)::after,
+.ai-caret > div > :last-child li:last-child::after,
+.ai-caret > div > :last-child > :is(ul, ol) > li:last-child::after {
+  content: "";
+  display: inline-block;
+  width: 0.5em;
+  height: 1em;
+  margin-left: 2px;
+  vertical-align: -0.15em;
+  border-radius: 2px;
+  background: var(--series-1);
+  animation: ai-blink 1s steps(1) infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ai-caret *::after {
+    animation: none !important;
+  }
+}
+
+/* Thin, token-coloured scrollbar for scroll areas inside floating surfaces (drawer, dropdown lists) */
+.scroll-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--axis) transparent;
+  overscroll-behavior: contain;
+}
+
+/* Range input styled with tokens */
+input[type="range"] {
+  accent-color: var(--accent);
+}
