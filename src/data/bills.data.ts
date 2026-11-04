@@ -1,0 +1,10 @@
+import type { Bill } from "../types/finance.types";
+
+export const upcomingBills = [
+  { id: "bill_101", vendor: "Fulton Works (office)", category: "Rent", dueDate: "2026-11-03", amountCents: 8_500_00, autopay: false },
+  { id: "bill_102", vendor: "Nimbus Cloud", category: "Software & cloud", dueDate: "2026-11-05", amountCents: 9_240_00, autopay: true },
+  { id: "bill_103", vendor: "Gridline CRM", category: "Software & cloud", dueDate: "2026-11-08", amountCents: 1_450_00, autopay: true },
+  { id: "bill_104", vendor: "Ledger & Lane CPAs", category: "Legal & accounting", dueDate: "2026-11-10", amountCents: 2_300_00, autopay: false },
+  { id: "bill_105", vendor: "Atlas Mutual Insurance", category: "Office & misc", dueDate: "2026-11-12", amountCents: 1_980_00, autopay: false },
+  { id: "bill_106", vendor: "Payroll run (semi-monthly)", category: "Payroll", dueDate: "2026-11-14", amountCents: 66_000_00, autopay: true },
+] satisfies Bill[];

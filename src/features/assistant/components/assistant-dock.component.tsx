@@ -1,0 +1,36 @@
+import { useAssistantControls } from "../assistant.provider";
+import { AssistantPanel } from "./assistant-panel.component";
+
+/**
+ * Right-hand AI panel.
+ * ≥ lg: docked beside the content; width animates 0 ↔ 400px and the page reflows (charts resize).
+ * < lg: slides over the page from the right with a dimmed backdrop.
+ * Always mounted so it animates both ways; `inert` when closed keeps it out of tab order.
+ */
+export function AssistantDock() {
+  const { open, setOpen } = useAssistantControls();
+  return (
+    <>
+      <div
+        aria-hidden
+        onClick={() => setOpen(false)}
+        className={`fixed inset-0 z-40 bg-black/40 transition-opacity duration-300 motion-reduce:transition-none lg:hidden ${
+          open ? "opacity-100" : "pointer-events-none opacity-0"
+        }`}
+      />
+      <aside
+        aria-label="FinanceOps AI assistant"
+        aria-hidden={!open}
+        inert={!open}
+        className={`fixed inset-y-0 right-0 z-50 w-full max-w-[420px] shadow-[var(--shadow-float)] transition-transform duration-300 ease-in-out motion-reduce:transition-none lg:sticky lg:top-0 lg:z-auto lg:h-screen lg:max-w-none lg:shrink-0 lg:translate-x-0 lg:overflow-hidden lg:shadow-none lg:transition-[width] ${
+          open ? "translate-x-0 lg:w-[400px]" : "translate-x-full lg:w-0"
+        }`}
+      >
+        {/* Fixed inner width so content doesn't squash while the dock animates */}
+        <div className="h-full w-full lg:w-[400px]">
+          <AssistantPanel onClose={() => setOpen(false)} />
+        </div>
+      </aside>
+    </>
+  );
+}
