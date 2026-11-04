@@ -130,7 +130,7 @@ export function DataTable<T>({
 }: DataTableProps<T>) {
   const t = useDataTable({ data, columns, getRowId, initialSort, initialPageSize });
   const [density, setDensity] = useState<TableDensity>(TableDensity.Comfortable);
-  const cellPad = density === "compact" ? "py-1.5" : "py-3";
+  const cellPad = density === TableDensity.Compact ? "py-1.5" : "py-3";
   const facetCols = columns.filter((c) => c.facet);
   const hasFooter = t.visibleColumns.some((c) => c.footer);
   const from = t.total === 0 ? 0 : t.page * t.pageSize + 1;

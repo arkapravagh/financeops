@@ -9,7 +9,8 @@ paths:
 
 ## Shape
 - Domain types live in `src/types/finance.types.ts`. Mock files (`*.data.ts`) must satisfy them (`satisfies Transaction[]`).
-- Mirror what a real API would return: ids are strings (`txn_001`), dates ISO, money in cents, enums as string unions.
+- Mirror what a real API would return: ids are strings (`txn_001`), dates ISO, money in cents. Closed sets of values
+  are TypeScript enums from `src/enums/` and mock data uses their members (`category: Category.Payroll`).
 - Mock data must be **deterministic** — no `Math.random()`, no `new Date()`; anchor everything to `AS_OF`.
 - Keep mock data realistic for a ~12-person seed-stage SaaS startup: payroll is the biggest cost,
   then cloud/software, rent, contractors. Revenue from Stripe subscriptions + a few invoiced customers.

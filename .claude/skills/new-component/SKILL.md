@@ -16,6 +16,8 @@ description: Create a reusable UI component in src/shared/ui following FinanceOp
 4. **Variants** via a small `Record<Variant, string>` map, not nested ternaries.
 5. **A11y**: semantic element, `aria-label` on icon-only controls, `focus-visible:ring-2 ring-accent` on interactive parts,
    status shown with icon/text + color, never color only.
-6. **Money/percent props** take raw numbers (cents, ratios) and format internally via `src/shared/utils/money.util.ts`,
+6. **No hard-coded English.** Default labels, `aria-label`s and titles come from `src/language/en/` (shared
+   components use `common.lang.ts` or their own `<area>.lang.ts`). Hooks the component needs go in `src/hooks/`.
+7. **Money/percent props** take raw numbers (cents, ratios) and format internally via `src/shared/utils/money.util.ts`,
    so callers can't pass pre-formatted strings inconsistently.
-7. Use it in at least one place, then run the `verify` skill (check light **and** dark theme).
+8. Use it in at least one place, then run the `verify` skill (check light **and** dark theme).

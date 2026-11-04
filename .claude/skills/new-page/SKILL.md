@@ -18,6 +18,7 @@ description: Add a new page/route to the FinanceOps app and wire it into the sid
     * Route: `/payroll`. Sections: KPI row, payroll by month, cost by department.
     */
 
+   import { payrollLabels as L } from "../../language/en/payroll.lang";
    import { Card } from "../../shared/ui/card.component";
    import { PageHeader } from "../../shared/ui/page-header.component";
 
@@ -26,19 +27,33 @@ description: Add a new page/route to the FinanceOps app and wire it into the sid
      // const data = getSomething();   // from src/services, never src/data
      return (
        <>
-         <PageHeader title="Payroll" subtitle="One plain-language sentence on what this page answers." />
+         <PageHeader title={L.title} subtitle={L.subtitle} />
          <div className="grid gap-6">
-           <Card title="...">...</Card>
+           <Card title={L.byMonth.title}>...</Card>
          </div>
        </>
      );
    }
    ```
 
+   Put every visible string in `src/language/en/<feature>.lang.ts` (header comment + `/** */` on the export):
+
+   ```ts
+   /** Text on the Payroll page. */
+   export const payrollLabels = {
+     title: "Payroll",
+     subtitle: "What does the team cost each month?",
+     byMonth: { title: "Payroll by month", summary: (total: string) => `${total} this month` },
+   } as const;
+   ```
+   Closed sets of values (statuses, view toggles) are enums in `src/enums/` with labels in `enums.lang.ts`.
+   Any new hook goes in `src/hooks/`.
+
 4. **Route**: add `<Route path="/payroll" element={<PayrollPage />} />` in `src/app/app.routes.tsx`.
-5. **Nav**: add an entry to `src/shared/config/navigation.config.ts` with a `lucide-react` icon. Keep the sidebar ≤ 8 items;
+5. **Nav**: add an entry to `src/shared/config/navigation.config.ts` with a `lucide-react` icon; its label goes in
+   `language/en/navigation.lang.ts`. Keep the sidebar ≤ 8 items;
    group secondary items under "Settings" instead of growing the list.
 6. **Layout conventions**: KPI row first (one `KpiRow` panel, not separate tiles), then the main chart,
    then detail tables. Each page answers one founder question — put that question in the subtitle.
    Nav entries go into the right group in `navGroups` (Money / Plan).
-7. Follow `layout-patterns` for structure, then run `verify` and `ui-review`.
+7. Follow `layout-patterns` for structure, then run `verify`, `ui-review` and `react-review`.

@@ -7,6 +7,6 @@ dist
 .snaps
 
 # Local-only: research and dev tooling (kept on disk, not in the repo)
-reports/
-research_notes/
-scripts/
+/reports/
+/research_notes/
+/scripts/

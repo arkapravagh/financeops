@@ -6,7 +6,9 @@ description: Add or extend mock datasets and the matching service functions for 
 # Add mock data + service
 
 1. **Type** — add/extend the type in `src/types/finance.types.ts` (with a JSDoc comment). Money fields end in
-   `Cents` (integers), dates are ISO strings, ids are prefixed strings (`ven_001`), enums are string unions.
+   `Cents` (integers), dates are ISO strings, ids are prefixed strings (`ven_001`). Closed sets of values are
+   TypeScript enums in `src/enums/<name>.enum.ts` (stable lowercase ids) with English labels added to
+   `src/language/en/enums.lang.ts`.
 2. **Data** — create `src/data/<entity>.data.ts` (kebab-case, header comment; see `.claude/rules/structure.md`):
    ```ts
    /**
@@ -15,11 +17,12 @@ description: Add or extend mock datasets and the matching service functions for 
     * Static and deterministic, anchored to `AS_OF`. Read only through `services/vendors.service.ts`.
     */
 
+   import { Category } from "../enums/category.enum";
    import type { Vendor } from "../types/finance.types";
 
    /** Recurring vendors with their monthly cost. */
    export const vendors = [
-     { id: "ven_001", name: "Nimbus Cloud", category: "Software", monthlyCents: 412_00 },
+     { id: "ven_001", name: "Nimbus Cloud", category: Category.SoftwareCloud, monthlyCents: 412_00 },
    ] satisfies Vendor[];
    ```
    - Deterministic: no `Math.random()`, no `new Date()`. Anchor dates relative to `AS_OF` (2026-11-02) by hand.
@@ -29,7 +32,7 @@ description: Add or extend mock datasets and the matching service functions for 
 3. **Service** — add to `src/services/<entity>.service.ts` (or the closest existing service):
    ```ts
    /** Vendors, optionally filtered by category, most expensive first. */
-   export function getVendors(filter: { category?: string } = {}): Vendor[] { ... }
+   export function getVendors(filter: { category?: Category } = {}): Vendor[] { ... }
    ```
    Filter/sort here; never format. Re-export nothing from `src/data` directly to features.
 4. Consume it from the page via the service, then run `npm run build`.

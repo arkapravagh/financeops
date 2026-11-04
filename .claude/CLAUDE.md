@@ -38,21 +38,25 @@ src/
     layout/                app-shell, sidebar, topbar
   features/                one folder per route: <feature>.page.tsx + components/ only it uses
     overview/ transactions/ invoices/ budgets/ ai-spend/ settings/ not-found/
-    forecast/              + scenario.model.ts, scenario-library.config.ts, use-scenario-storage.hook.ts
+    forecast/              + scenario.model.ts, scenario-library.config.ts (ids + maths only)
     assistant/             FinanceOps AI panel: assistant.provider.tsx + chat components
   shared/
     ui/                    card, stat-tile, badge, meter, page-header, popover, drawer, slider, ...
     charts/                hand-rolled SVG charts (column-chart, line-chart, bullet-bar, sparkline)
-    data-table/            data-table + use-data-table hook (sort, facets, search, selection, CSV, pagination)
+    data-table/            data-table component (sort, facets, search, selection, CSV, pagination)
     finance/               amount
-    hooks/ utils/ config/  use-theme; money/dates/metrics utils; navigation config
+    utils/ config/         money/dates/metrics utils; navigation config
+  hooks/                   EVERY custom hook: use-theme, use-data-table, use-element-width, use-assistant, use-scenario-storage
   services/                *.service.ts: the ONLY way features get data (mock today, API later)
-  data/                    *.data.ts: mock data (static, deterministic, no Math.random)
-  types/                   *.types.ts: domain types (Transaction, Invoice, Budget, ...)
+  data/                    *.data.ts: mock data (static, deterministic, no Math.random), uses enum members
+  enums/                   *.enum.ts: TypeScript enums (Category, InvoiceStatus, AiFeature, TeamRole, BudgetScale, ...)
+  language/en/             *.lang.ts: every user-visible English string, incl. enum labels (enums.lang.ts)
+  types/                   *.types.ts: domain types (finance, forecast, assistant, data-table)
   styles/index.css         Tailwind + design tokens (light/dark CSS variables)
 ```
-Imports point down: `app` → `features` → `shared` → `services` → `data`. Every file has a header comment and
-every export has a JSDoc comment.
+Imports point down: `app` → `features` → `shared` → `hooks` → `services` → `data`; `enums`, `language` and `types`
+are importable anywhere. No raw enum strings (`=== "paid"`), no rendered enum ids, no hard-coded English in UI.
+Every file has a header comment and every export has a JSDoc comment.
 
 ## Rules
 
@@ -63,7 +67,7 @@ Detailed rules live in `.claude/rules/` and are loaded automatically:
 - `data-and-mocks.md` — how mock data and the service layer must be shaped.
 - `charts.md` — chart forms, palette, marks, tooltips.
 - `security-and-privacy.md` — financial data handling, even in the prototype.
-- `structure.md` — folder layers, `<name>.<type>.ts` file naming, import order, code documentation.
+- `structure.md` — folder layers, `<name>.<type>.ts` naming, enums, language files, hooks, imports, code documentation.
 
 ## Skills
 
@@ -75,6 +79,7 @@ Project skills live in `.claude/skills/` — use them instead of improvising:
 - `finance-metrics` — add or change a financial calculation (burn, runway, MRR, ...).
 - `add-chart` — add a chart using the house SVG chart components.
 - `verify` — the done-checklist (build, visual check, a11y).
+- `react-review` — code-quality review: structure checks + a React review by the `react-quality-reviewer` agent.
 - `connect-api` — the plan for replacing mocks with a real backend (future phase).
 - `ai-assistant` — the AI chat panel: add demo intents, or connect real Claude via a backend.
 

@@ -18,6 +18,8 @@ No UI kit, no chart library, no state library — keep the prototype light.
 - Reuse `shared/ui/*` before writing new markup. If a pattern appears twice, extract it.
 - Pages (`src/features/<feature>/<feature>.page.tsx`) compose components and call services; they hold no formatting or metric logic.
 - Keep components presentational; derived numbers come from `shared/utils/metrics.util.ts`.
+- No hard-coded English: every visible string (incl. `aria-label`, `title`, placeholders) comes from
+  `src/language/en/<area>.lang.ts`; enum values render through `enums.lang.ts`. All hooks live in `src/hooks/`.
 
 ## Styling
 - Tailwind utility classes only; no inline `style` except for computed geometry (chart widths, meter fill).

@@ -16,5 +16,5 @@ description: Done-checklist for any FinanceOps change — type-check/build, run 
      (models growth) — they are intentionally different and must be labelled as such.
    - Projections are labelled.
 5. A11y: tab through the page — every control reachable with a visible focus ring; status badges have text.
-6. Rules: no `src/data` imports outside `src/services`, file names follow `structure.md`, every file has a header and every export a JSDoc comment, no hex colors in components, no new deps without reason.
+6. Rules: run `node .claude/skills/react-review/scripts/check-structure.mjs` (must report 0 errors): no `src/data` imports outside `src/services`, file names follow `structure.md`, every file has a header and every export a JSDoc comment, no hex colors in components, no new deps without reason.
 7. Report what you checked and anything you couldn't check (e.g. "no browser available, verified build only").
