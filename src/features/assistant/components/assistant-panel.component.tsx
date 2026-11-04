@@ -1,11 +1,17 @@
+/**
+ * Assistant panel: header with conversation history, the message list, starter prompts and the composer.
+ *
+ * Follows the page the user is on (context chip) and auto-scrolls while a reply streams unless the user scrolls up.
+ */
+
 import { ArrowDown, History, MessageSquare, PanelRightClose, SquarePen, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { pageSuggestions } from "../../../services/assistant.service";
 import { getCompany } from "../../../services/company.service";
 import { navItems, secondaryNavItems } from "../../../shared/config/navigation.config";
 import { Popover } from "../../../shared/ui/popover.component";
-import { AiMark } from "./ai-mark.component";
 import { useAssistant } from "../assistant.provider";
+import { AiMark } from "./ai-mark.component";
 import { ChatMessageView } from "./chat-message-view.component";
 import { Composer, type ComposerHandle } from "./composer.component";
 
@@ -26,6 +32,7 @@ function timeAgo(ts: number) {
   return h < 24 ? `${h}h ago` : `${Math.round(h / 24)}d ago`;
 }
 
+/** The FinanceOps AI chat UI (Ctrl+J). Rendered by the dock. */
 export function AssistantPanel({ onClose }: { onClose: () => void }) {
   const a = useAssistant();
   const scrollRef = useRef<HTMLDivElement>(null);

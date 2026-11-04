@@ -1,7 +1,12 @@
+/**
+ * Runway strip: the Overview's hero, showing cash, runway and the zero-cash and start-raising dates on one line.
+ */
+
 import { addMonths, formatMonthYear, toMonthKey } from "../../../shared/utils/dates.util";
 import { formatCompact, formatMoney } from "../../../shared/utils/money.util";
 import type { BankAccount } from "../../../types/finance.types";
 
+/** Cash, runway (null = default alive), average burn, accounts and `asOf` ("today"). */
 export type RunwayStripProps = {
   runwayMonths: number | null;
   cashCents: number;

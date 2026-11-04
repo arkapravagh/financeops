@@ -1,7 +1,11 @@
+/** Types for the house DataTable: column definitions and table state. */
+
 import type { ReactNode } from "react";
 
+/** Raw value a column exposes for sorting, filtering and CSV (never a formatted string). */
 export type CellValue = string | number | null | undefined;
 
+/** How one column reads, displays, sorts, filters, totals and exports its data. */
 export type ColumnDef<T> = {
   id: string;
   header: string;
@@ -31,11 +35,15 @@ export type ColumnDef<T> = {
   headerClassName?: string;
 };
 
+/** Active sort: column id and direction. */
 export type SortState = { id: string; desc: boolean };
+/** Row height setting. */
 export type Density = "comfortable" | "compact";
+/** Selected facet values per column id. */
 export type Filters = Record<string, string[]>;
 
 /** A named preset of facet filters, rendered as tabs above the table. */
 export type QuickView = { id: string; label: string; filters: Filters };
 
+/** One choice in a facet filter, with how many rows have it. */
 export type FacetOption = { value: string; label: string; count: number };

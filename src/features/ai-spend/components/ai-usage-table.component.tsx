@@ -1,9 +1,13 @@
+/** AI usage table: the month's token and GPU spend grouped by feature or by model. */
+
+import { Table, Td, Th } from "../../../shared/ui/table.component";
 import { costPerMillionTokensCents, costPerThousandRequestsCents, type AiUsageGroup } from "../../../shared/utils/metrics.util";
 import { formatCount, formatMoney, formatPercent } from "../../../shared/utils/money.util";
-import { Table, Td, Th } from "../../../shared/ui/table.component";
 
+/** How rows are grouped. */
 export type AiUsageView = "feature" | "model";
 
+/** Grouped rows, the view, and lookups for row detail and whether a feature is customer-facing. */
 export type AiUsageTableProps = {
   view: AiUsageView;
   rows: AiUsageGroup[];

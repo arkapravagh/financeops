@@ -1,7 +1,10 @@
+/** Scenario picker: searchable dropdown of custom and predefined scenarios, grouped by category. */
+
 import { Check, ChevronDown, Plus, Search } from "lucide-react";
 import { useEffect, useId, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import type { LibraryScenario } from "../scenario.model";
 
+/** Options in display order, the selected id, and select/create callbacks. */
 export type ScenarioPickerProps = {
   /** All options in display order; consecutive options with the same category form a group. */
   options: LibraryScenario[];

@@ -1,3 +1,5 @@
+/** CSV export for data tables. Values come from each column's `csv` (or `accessor`), never from formatted cells. */
+
 import type { ColumnDef } from "./data-table.types";
 
 /** Escape a CSV field. Strings starting with = + - @ are prefixed to block formula injection in Excel/Sheets. */
@@ -8,6 +10,7 @@ function field(v: unknown): string {
   return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 }
 
+/** Serialize rows to CSV using the columns' export values. Header row uses column headers. */
 export function toCsv<T>(rows: T[], columns: ColumnDef<T>[]): string {
   const cols = columns.filter((c) => c.csv !== false);
   const lines = [cols.map((c) => field(c.header)).join(",")];
@@ -17,6 +20,7 @@ export function toCsv<T>(rows: T[], columns: ColumnDef<T>[]): string {
   return lines.join("\r\n");
 }
 
+/** Trigger a browser download of `csv` as `fileName` (UTF-8 with BOM so Excel reads it correctly). */
 export function downloadCsv(fileName: string, csv: string) {
   const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8" }); // BOM so Excel reads UTF-8
   const url = URL.createObjectURL(blob);

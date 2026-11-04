@@ -1,10 +1,13 @@
+/** AI seats table: per-seat AI tools, seats used vs. bought, and the cost of unused seats. */
+
 import { CircleCheck, CircleAlert } from "lucide-react";
+import { Badge } from "../../../shared/ui/badge.component";
+import { Table, Td, Th } from "../../../shared/ui/table.component";
 import { idleSeatCostCents } from "../../../shared/utils/metrics.util";
 import { formatMoney } from "../../../shared/utils/money.util";
 import type { AiSeatCharge } from "../../../types/finance.types";
-import { Badge } from "../../../shared/ui/badge.component";
-import { Table, Td, Th } from "../../../shared/ui/table.component";
 
+/** Seat charges for the selected month. */
 export type AiSeatsTableProps = { seats: AiSeatCharge[] };
 
 /** Per-seat AI tools with how many seats were actually used. Status is icon + text, never colour alone. */

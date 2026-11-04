@@ -1,3 +1,10 @@
+/**
+ * Slider: labelled range input that shows its formatted value and an optional hint.
+ *
+ * Part of the shared UI kit: design tokens only, works in light and dark themes (design-system skill).
+ */
+
+/** Controlled numeric value and range. `display` is the formatted value shown beside the label. */
 export type SliderProps = {
   label: string;
   value: number;
@@ -10,6 +17,7 @@ export type SliderProps = {
   onChange: (v: number) => void;
 };
 
+/** Used for scenario levers. The label wraps the input so clicking it focuses the slider. */
 export function Slider({ label, value, min, max, step, display, note, onChange }: SliderProps) {
   return (
     <label className="block">

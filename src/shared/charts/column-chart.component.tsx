@@ -1,10 +1,18 @@
+/**
+ * Column chart: monthly amounts compared (e.g. cash in vs. cash out).
+ *
+ * Hand-rolled SVG at true pixel size. Max 3 series; colours from `--series-1..3` (chart rules).
+ */
+
 import { useState } from "react";
 import { formatCompact, formatMoney } from "../utils/money.util";
 import { ChartTooltip, Legend, type TooltipRow } from "./chart-parts.component";
 import { columnPath, labelStep, niceTicks, useElementWidth } from "./chart.util";
 
+/** One series: name, colour token and one value (cents) per label. */
 export type ColumnSeries = { name: string; color: string; values: number[] };
 
+/** Labels, series, accessible summary and optional extra tooltip rows (e.g. net). */
 export type ColumnChartProps = {
   labels: string[];
   tooltipLabels?: string[];
@@ -19,6 +27,7 @@ const M = { top: 12, right: 8, bottom: 28, left: 56 };
 const GAP = 2;
 const MAX_BAR = 24;
 
+/** Grouped columns with hover tooltips and a legend for 2+ series. */
 export function ColumnChart({ labels, tooltipLabels, series, ariaLabel, height = 240, extraRows }: ColumnChartProps) {
   const [ref, width] = useElementWidth<HTMLDivElement>();
   const [hover, setHover] = useState<number | null>(null);

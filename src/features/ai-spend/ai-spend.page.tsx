@@ -1,10 +1,16 @@
+/**
+ * AI spend: what AI costs the company, where the tokens go, and whether it grows faster than revenue.
+ *
+ * Route: `/ai-spend`. Sections: KPIs, AI spend by month vs budget, share of revenue, where the tokens go, team AI tools.
+ * Pages compose components and read data only through `services/`; derived numbers come from `shared/utils/metrics.util.ts`.
+ */
+
 import { useMemo, useState } from "react";
-import { useAssistantControls } from "../assistant/assistant.provider";
+import { getAiBudget, getAiFeatures, getAiMonths, getAiSeatCharges, getAiUsage } from "../../services/ai-spend.service";
+import { getMrrHistory } from "../../services/revenue.service";
 import { BulletBar } from "../../shared/charts/bullet-bar.component";
 import { ColumnChart } from "../../shared/charts/column-chart.component";
 import { LineChart } from "../../shared/charts/line-chart.component";
-import { AiSeatsTable } from "./components/ai-seats-table.component";
-import { AiUsageTable, type AiUsageView } from "./components/ai-usage-table.component";
 import { Button } from "../../shared/ui/button.component";
 import { Card } from "../../shared/ui/card.component";
 import { Insight } from "../../shared/ui/insight.component";
@@ -23,8 +29,9 @@ import {
   sumCents,
 } from "../../shared/utils/metrics.util";
 import { formatCount, formatMoney, formatPercent } from "../../shared/utils/money.util";
-import { getAiBudget, getAiFeatures, getAiMonths, getAiSeatCharges, getAiUsage } from "../../services/ai-spend.service";
-import { getMrrHistory } from "../../services/revenue.service";
+import { useAssistantControls } from "../assistant/assistant.provider";
+import { AiSeatsTable } from "./components/ai-seats-table.component";
+import { AiUsageTable, type AiUsageView } from "./components/ai-usage-table.component";
 
 const MONTHS = getAiMonths();
 const SUMMARY = aiMonthlySummary(getAiUsage(), getAiSeatCharges());
@@ -41,6 +48,7 @@ function costDelta(current: number, previous: number | undefined, upIsGood = fal
   return { text: formatPercent(Math.abs(g), 1), direction, good: direction === "flat" || (g > 0) === upIsGood };
 }
 
+/** AI spend page. Month picker defaults to the latest month with usage. */
 export function AiSpendPage() {
   const { ask } = useAssistantControls();
   const [month, setMonth] = useState(MONTHS[MONTHS.length - 1]);

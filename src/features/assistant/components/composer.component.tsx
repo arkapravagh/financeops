@@ -1,8 +1,12 @@
+/** Composer: the message input at the bottom of the AI panel. */
+
 import { ArrowUp, AtSign, Paperclip, Square } from "lucide-react";
 import { forwardRef, useImperativeHandle, useLayoutEffect, useRef, useState } from "react";
 
+/** Imperative handle so the panel can focus the input (e.g. after opening). */
 export type ComposerHandle = { focus: () => void };
 
+/** Busy state (shows Stop), the current page label and send/stop callbacks. */
 export type ComposerProps = {
   busy: boolean;
   contextLabel: string;

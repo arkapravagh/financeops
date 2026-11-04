@@ -1,5 +1,13 @@
+/**
+ * Segmented control: pick one of a few options (e.g. forecast horizon 12 / 24 / 36 months).
+ *
+ * Part of the shared UI kit: design tokens only, works in light and dark themes (design-system skill).
+ */
+
+/** One option: value and visible label. */
 export type SegmentedOption<T extends string> = { value: T; label: string };
 
+/** Controlled value, options and an accessible group `label`. */
 export type SegmentedProps<T extends string> = {
   label: string;
   value: T;

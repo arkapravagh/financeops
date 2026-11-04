@@ -1,7 +1,11 @@
+/** Shared chart pieces: legend and hover tooltip, used by LineChart and ColumnChart. */
+
 import type { ReactNode } from "react";
 
+/** Legend entry: name, colour token and whether the line is dashed (projected). */
 export type SeriesKey = { name: string; color: string; dashed?: boolean };
 
+/** Series legend. Shown whenever a chart has two or more series (chart rules). */
 export function Legend({ items }: { items: SeriesKey[] }) {
   return (
     <ul className="mb-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-ink-2">
@@ -26,8 +30,10 @@ export function Legend({ items }: { items: SeriesKey[] }) {
   );
 }
 
+/** One line in a tooltip: label, formatted value, optional colour swatch. */
 export type TooltipRow = { label: string; value: string; color?: string };
 
+/** Floating tooltip positioned next to the hovered point, kept inside the chart bounds. */
 export function ChartTooltip({
   x,
   containerWidth,

@@ -1,6 +1,13 @@
+/**
+ * Stat tile: one headline number with label, change indicator and hint.
+ *
+ * Part of the shared UI kit: design tokens only, works in light and dark themes (design-system skill).
+ */
+
 import { ArrowDownRight, ArrowUpRight, Minus } from "lucide-react";
 import type { ReactNode } from "react";
 
+/** Change vs. a previous period. `good` says whether this direction is good news (sets the tone). */
 export type Delta = {
   text: string;
   direction: "up" | "down" | "flat";
@@ -8,6 +15,7 @@ export type Delta = {
   good: boolean;
 };
 
+/** Tile content. `value` is pre-formatted text; numbers go through `money.util` first. */
 export type StatTileProps = {
   label: string;
   value: ReactNode;
@@ -18,6 +26,7 @@ export type StatTileProps = {
 
 const arrows = { up: ArrowUpRight, down: ArrowDownRight, flat: Minus };
 
+/** A single headline number. For several numbers side by side use KpiRow instead. */
 export function StatTile({ label, value, delta, hint, icon }: StatTileProps) {
   const Arrow = delta ? arrows[delta.direction] : null;
   return (

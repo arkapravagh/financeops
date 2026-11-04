@@ -1,5 +1,13 @@
+/**
+ * Mock data: bank transactions. Positive cents = money in, negative = money out.
+ *
+ * Static and deterministic (no clock, no randomness), anchored to `AS_OF` in company.service.ts.
+ * Never import this file from a page or component; read it through `services/` (data-and-mocks rules).
+ */
+
 import type { Transaction } from "../types/finance.types";
 
+/** Every bank transaction in the prototype, newest first, each tagged with an account and category. */
 export const transactions = [
   { id: "txn_032", date: "2026-11-02", description: "Stripe payout", counterparty: "Stripe", category: "Revenue", accountId: "acc_op", amountCents: 4_812_40, status: "pending" },
   { id: "txn_031", date: "2026-11-01", description: "Office rent — November", counterparty: "Fulton Works", category: "Rent", accountId: "acc_op", amountCents: -8_500_00, status: "pending" },

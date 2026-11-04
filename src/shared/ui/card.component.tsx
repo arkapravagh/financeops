@@ -1,5 +1,12 @@
+/**
+ * Card: the standard panel with an optional title row, subtitle and action.
+ *
+ * Part of the shared UI kit: design tokens only, works in light and dark themes (design-system skill).
+ */
+
 import type { ReactNode } from "react";
 
+/** Title row content and layout options. Use `flush` for edge-to-edge tables and lists. */
 export type CardProps = {
   title?: ReactNode;
   /** One line of plain-language context under the title. */

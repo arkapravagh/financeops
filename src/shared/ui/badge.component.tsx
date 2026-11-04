@@ -1,7 +1,15 @@
+/**
+ * Badge: a small status pill (Paid, Overdue, Pending). Used for state only, never for categories.
+ *
+ * Part of the shared UI kit: design tokens only, works in light and dark themes (design-system skill).
+ */
+
 import type { ReactNode } from "react";
 
+/** Status tone. Shown as a coloured dot or icon; the text label always carries the meaning too. */
 export type BadgeTone = "neutral" | "accent" | "good" | "warning" | "serious" | "critical";
 
+/** Badge content and tone. Pass an `icon` to replace the default dot, or `null` for a plain label. */
 export type BadgeProps = {
   tone?: BadgeTone;
   /** Custom icon; `null` hides the mark entirely (plain label). Defaults to a dot. */
@@ -9,7 +17,7 @@ export type BadgeProps = {
   children: ReactNode;
 };
 
-/** Tinted pill. Text stays in ink; the colored dot/icon carries the tone — never color alone. */
+/** Pill background and mark colour per tone (design tokens only). */
 const tones: Record<BadgeTone, { bg: string; mark: string }> = {
   neutral: { bg: "bg-surface-2", mark: "text-muted" },
   accent: { bg: "bg-accent/12", mark: "text-accent" },
@@ -19,6 +27,7 @@ const tones: Record<BadgeTone, { bg: string; mark: string }> = {
   critical: { bg: "bg-critical/12", mark: "text-critical" },
 };
 
+/** Tinted pill. Text stays in ink; the coloured dot/icon carries the tone, never colour alone. */
 export function Badge({ tone = "neutral", icon, children }: BadgeProps) {
   const t = tones[tone];
   return (

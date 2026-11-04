@@ -1,3 +1,10 @@
+/**
+ * Mock data: the company's bank accounts and their balances.
+ *
+ * Static and deterministic (no clock, no randomness), anchored to `AS_OF` in company.service.ts.
+ * Never import this file from a page or component; read it through `services/` (data-and-mocks rules).
+ */
+
 import type { BankAccount } from "../types/finance.types";
 
 /** Balances as of AS_OF (end of October; November activity is still pending). */

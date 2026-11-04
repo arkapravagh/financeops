@@ -9,7 +9,7 @@ Read `.claude/rules/charts.md` first.
 
 1. **Is it a chart at all?** A single number → `StatTile`. Progress vs a target → `Meter`. Only change-over-time or
    comparisons get a chart.
-2. **Pick the component** in `src/components/charts/`:
+2. **Pick the component** in `src/shared/charts/`:
    - `LineChart` — series over time; supports `projectedFrom` index (dashed + "Projected" label) and area wash.
    - `ColumnChart` — grouped monthly columns (e.g. cash in vs cash out).
    If neither fits, extend one with a prop before writing a new chart file.

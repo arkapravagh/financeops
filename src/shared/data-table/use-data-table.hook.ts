@@ -1,8 +1,15 @@
+/**
+ * Headless state for DataTable: search, facet filters, sorting, selection, density and pagination.
+ *
+ * Pure client-side today. A server mode would keep this API and lift state into the query (frontend rules).
+ */
+
 import { useCallback, useDeferredValue, useMemo, useState } from "react";
 import type { CellValue, ColumnDef, FacetOption, Filters, SortState } from "./data-table.types";
 
 const collator = new Intl.Collator("en-US", { numeric: true, sensitivity: "base" });
 
+/** The string a row is grouped under for a facet column (its raw accessor value). */
 export const facetKey = <T,>(col: ColumnDef<T>, row: T) => String(col.accessor(row) ?? "");
 
 const isEmpty = (v: CellValue) => v === null || v === undefined || v === "";
@@ -12,6 +19,9 @@ function compareValues(a: CellValue, b: CellValue): number {
   return collator.compare(String(a), String(b));
 }
 
+/**
+ * Rows, columns and initial state for {@link useDataTable}. Keep `columns`/`getRowId` stable (module scope or useMemo).
+ */
 export type UseDataTableOptions<T> = {
   data: T[];
   /** Must be referentially stable (define at module scope or memoize). */

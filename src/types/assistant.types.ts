@@ -1,7 +1,12 @@
+/** Types for the FinanceOps AI panel: messages, conversations and the streaming reply protocol. */
+
+/** A link back to the screen a number came from, shown under an answer. */
 export type AssistantSource = { label: string; to: string };
 
+/** Who wrote a message. */
 export type ChatRole = "user" | "assistant";
 
+/** One chat message. Assistant messages also carry stream status, sources, follow-ups and feedback. */
 export type ChatMessage = {
   id: string;
   role: ChatRole;
@@ -14,6 +19,7 @@ export type ChatMessage = {
   feedback?: "up" | "down";
 };
 
+/** A chat thread, kept in memory for the session. */
 export type Conversation = {
   id: string;
   title: string;
@@ -31,6 +37,7 @@ export type ReplyEvent =
   | { type: "followups"; items: string[] }
   | { type: "done" };
 
+/** What the UI sends to `streamReply`: the conversation so far plus the page the user is on. */
 export type AssistantRequest = {
   messages: { role: ChatRole; content: string }[];
   /** Current route, so answers can be page-aware ("explain this page"). */

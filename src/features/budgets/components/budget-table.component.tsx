@@ -1,17 +1,21 @@
+/** Budget table: one row per expense category with a bullet bar, figures, 3-month trend and expandable detail. */
+
 import { AlertTriangle, ArrowRight, ChevronDown, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { BulletBar } from "../../../shared/charts/bullet-bar.component";
+import { niceTicks } from "../../../shared/charts/chart.util";
+import { Amount } from "../../../shared/finance/amount.component";
+import { Badge } from "../../../shared/ui/badge.component";
 import { formatDayMonth, formatMonthLong, formatMonthShort } from "../../../shared/utils/dates.util";
 import { budgetUsed, budgetVarianceCents } from "../../../shared/utils/metrics.util";
 import { formatCompact, formatMoney, formatPercent } from "../../../shared/utils/money.util";
 import type { Budget, ExpenseCategory, Transaction } from "../../../types/finance.types";
-import { BulletBar } from "../../../shared/charts/bullet-bar.component";
-import { niceTicks } from "../../../shared/charts/chart.util";
-import { Badge } from "../../../shared/ui/badge.component";
-import { Amount } from "../../../shared/finance/amount.component";
 
+/** Bullet bar scale: % of each budget, or dollars on a shared axis. */
 export type BudgetScale = "percent" | "amount";
 
+/** Budget rows, scale, per-category history, a transaction lookup for details, and an Ask AI hook. */
 export type BudgetTableProps = {
   budgets: Budget[];
   scale: BudgetScale;
@@ -49,6 +53,7 @@ function Trend({ rows }: { rows: Budget[] }) {
   );
 }
 
+/** Category breakdown. Lays out as a table when wide and as stacked rows when narrow (container query). */
 export function BudgetTable({ budgets, scale, history, transactionsFor, onAsk }: BudgetTableProps) {
   const [open, setOpen] = useState<string | null>(null);
 

@@ -1,3 +1,8 @@
+/**
+ * Scenario library: 70+ predefined scenarios (Baseline, Hiring, Cost control, Revenue, Risks and shocks,
+ * Fundraising, Strategic plays) for the Forecast picker. To add one, append a recipe to its category.
+ */
+
 import type { ForecastInput, PlannedHire } from "../../shared/utils/metrics.util";
 import { fromBase, LIMITS, type LibraryScenario, type Scenario } from "./scenario.model";
 

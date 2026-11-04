@@ -1,8 +1,15 @@
+/**
+ * KPI row: several headline numbers in one divided panel.
+ *
+ * Part of the shared UI kit: design tokens only, works in light and dark themes (design-system skill).
+ */
+
 import { ArrowDownRight, ArrowUpRight, Minus } from "lucide-react";
 import type { ReactNode } from "react";
 import { Sparkline } from "../charts/sparkline.component";
 import type { Delta } from "./stat-tile.component";
 
+/** One KPI cell: label, value, optional change vs. last period, context line and sparkline. */
 export type Kpi = {
   label: string;
   value: ReactNode;

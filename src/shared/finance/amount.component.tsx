@@ -1,5 +1,8 @@
+/** Amount: renders a signed money amount consistently across tables and lists. */
+
 import { formatMoney } from "../utils/money.util";
 
+/** Integer cents (positive = in, negative = out). `exact` shows cents (default true). */
 export type AmountProps = {
   cents: number;
   /** Show cents (ledger view). */

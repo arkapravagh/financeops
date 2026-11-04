@@ -1,5 +1,13 @@
+/**
+ * Mock data: company profile (name, stage, headcount, currency, last raise).
+ *
+ * Static and deterministic (no clock, no randomness), anchored to `AS_OF` in company.service.ts.
+ * Never import this file from a page or component; read it through `services/` (data-and-mocks rules).
+ */
+
 import type { Company } from "../types/finance.types";
 
+/** The fictional company the prototype models. Single currency: USD. */
 export const company = {
   name: "Brightloop Labs",
   stage: "Seed",

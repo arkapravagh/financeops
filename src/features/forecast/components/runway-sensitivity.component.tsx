@@ -1,5 +1,7 @@
-import { projectCash, projectedRunway, type ForecastInput } from "../../../shared/utils/metrics.util";
+/** Runway sensitivity: how many months each single change (cut 10%, hire one more, grow faster) adds or removes. */
+
 import { DEFAULT_HIRE_COST_CENTS, FORECAST_MONTHS } from "../../../services/forecast.service";
+import { projectCash, projectedRunway, type ForecastInput } from "../../../shared/utils/metrics.util";
 import { toInput, type Scenario } from "../scenario.model";
 
 type Lever = { label: string; apply: (s: Scenario) => Scenario };

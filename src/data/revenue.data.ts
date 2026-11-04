@@ -1,5 +1,13 @@
+/**
+ * Mock data: monthly recurring revenue history.
+ *
+ * Static and deterministic (no clock, no randomness), anchored to `AS_OF` in company.service.ts.
+ * Never import this file from a page or component; read it through `services/` (data-and-mocks rules).
+ */
+
 import type { MrrPoint } from "../types/finance.types";
 
+/** Month-end MRR and paying customers, oldest first. */
 export const mrrHistory = [
   { month: "2025-11", mrrCents: 34_100_00, customers: 78 },
   { month: "2025-12", mrrCents: 36_020_00, customers: 83 },

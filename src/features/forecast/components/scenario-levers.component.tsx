@@ -1,12 +1,19 @@
+/**
+ * Scenario levers: growth, one-off changes, hiring plan and fundraise controls.
+ *
+ * Shared by the scenario panel and the custom scenario drawer, so both edit scenarios the same way.
+ */
+
 import { Plus, X } from "lucide-react";
+import { DEFAULT_HIRE_COST_CENTS } from "../../../services/forecast.service";
+import { Slider } from "../../../shared/ui/slider.component";
 import { addMonths, formatMonthYear } from "../../../shared/utils/dates.util";
 import { sumCents } from "../../../shared/utils/metrics.util";
 import { formatCompact, formatMoney, formatPercent } from "../../../shared/utils/money.util";
-import { DEFAULT_HIRE_COST_CENTS } from "../../../services/forecast.service";
-import { Slider } from "../../../shared/ui/slider.component";
 import { LIMITS, type Scenario } from "../scenario.model";
 import { ScenarioSection } from "./scenario-section.component";
 
+/** The scenario to edit, the current trajectory (for reference notes), the origin and a patch callback. */
 export type ScenarioLeversProps = {
   scenario: Scenario;
   /** The current trajectory, shown as the reference under each growth slider. */

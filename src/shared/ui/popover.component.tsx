@@ -1,5 +1,12 @@
+/**
+ * Popover: click-to-open floating panel for menus and filters.
+ *
+ * Part of the shared UI kit: design tokens only, works in light and dark themes (design-system skill).
+ */
+
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 
+/** Trigger content and panel content. Pass a function as children to get a `close()` callback. */
 export type PopoverProps = {
   /** Trigger content. */
   label: ReactNode;

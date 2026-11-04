@@ -1,3 +1,10 @@
+/**
+ * Mock data: AI usage by model and feature, per-seat AI tools, AI features and the AI budget.
+ *
+ * Static and deterministic (no clock, no randomness), anchored to `AS_OF` in company.service.ts.
+ * Never import this file from a page or component; read it through `services/` (data-and-mocks rules).
+ */
+
 import type { AiBudget, AiFeatureInfo, AiSeatCharge, AiUsage } from "../types/finance.types";
 
 /**
@@ -13,6 +20,7 @@ export const aiFeatures = [
   { feature: "Internal tools", description: "Scripts and agents the team runs", customerFacing: false },
 ] satisfies AiFeatureInfo[];
 
+/** Per-model, per-feature monthly usage and cost (API tokens or GPU hours), as billed. */
 export const aiUsage = [
   { id: "aiu_001", month: "2026-05", vendor: "Lumen Labs", model: "Lumen Pro", kind: "api", feature: "In-app assistant", requests: 22_220, inputTokens: 101_080_000, outputTokens: 14_440_000, costCents: 519_84 },
   { id: "aiu_002", month: "2026-06", vendor: "Lumen Labs", model: "Lumen Pro", kind: "api", feature: "In-app assistant", requests: 24_780, inputTokens: 112_770_000, outputTokens: 16_110_000, costCents: 579_96 },
@@ -46,6 +54,7 @@ export const aiUsage = [
   { id: "aiu_030", month: "2026-10", vendor: "Nimbus Cloud", model: "Hosted open model (GPU)", kind: "compute", feature: "Document parsing", requests: 36_670, inputTokens: 234_670_000, outputTokens: 58_670_000, costCents: 2_640_00 },
 ] satisfies AiUsage[];
 
+/** Monthly per-seat AI tool charges, with seats bought vs. seats actually used. */
 export const aiSeatCharges = [
   { id: "ais_001", month: "2026-05", vendor: "Quill", product: "Quill Copilot (coding)", seats: 7, activeSeats: 7, costCents: 273_00 },
   { id: "ais_002", month: "2026-06", vendor: "Quill", product: "Quill Copilot (coding)", seats: 8, activeSeats: 8, costCents: 312_00 },

@@ -1,5 +1,8 @@
+/** 404 page for unknown routes, with a link back to the Overview. */
+
 import { Link } from "react-router-dom";
 
+/** Shown for any path not in `app/app.routes.tsx`. */
 export function NotFoundPage() {
   return (
     <div className="grid place-items-center py-24 text-center">

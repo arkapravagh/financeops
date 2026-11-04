@@ -1,3 +1,8 @@
+/**
+ * DataTable: the house table for any list that needs search, facet filters, sorting, selection,
+ * CSV export or pagination (Transactions, Invoices). State lives in `use-data-table.hook.ts`.
+ */
+
 import {
   ArrowDown,
   ArrowUp,
@@ -17,10 +22,11 @@ import { memo, useState, type ReactNode } from "react";
 import { Checkbox } from "../ui/checkbox.component";
 import { Popover } from "../ui/popover.component";
 import { downloadCsv, toCsv } from "./csv.util";
-import { FacetFilter } from "./facet-filter.component";
 import type { ColumnDef, Density, Filters, QuickView, SortState } from "./data-table.types";
+import { FacetFilter } from "./facet-filter.component";
 import { facetKey, useDataTable } from "./use-data-table.hook";
 
+/** Rows, column definitions and optional features (quick views, selection, export file name). */
 export type DataTableProps<T> = {
   data: T[];
   /** Must be referentially stable — define at module scope or useMemo. */
@@ -102,6 +108,7 @@ const Row = memo(RowImpl) as typeof RowImpl;
 
 // ---------- Table ----------
 
+/** Full-featured client-side table. Define `columns` and `getRowId` at module scope so memoization holds. */
 export function DataTable<T>({
   data,
   columns,

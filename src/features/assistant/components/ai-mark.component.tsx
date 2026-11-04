@@ -1,3 +1,5 @@
+/** AI mark: the assistant's avatar, used in the panel header and next to its messages. */
+
 import { Sparkles } from "lucide-react";
 
 /** The assistant's avatar: a solid indigo tile with a sparkle (the app's single accent). */

@@ -1,9 +1,12 @@
+/** Projection table and CSV export for the month-by-month forecast. */
+
+import { downloadCsv, toCsv } from "../../../shared/data-table/csv.util";
+import type { ColumnDef } from "../../../shared/data-table/data-table.types";
 import { addMonths, formatMonthYear } from "../../../shared/utils/dates.util";
 import type { ForecastPoint } from "../../../shared/utils/metrics.util";
 import { formatCompact, formatMoney } from "../../../shared/utils/money.util";
-import { downloadCsv, toCsv } from "../../../shared/data-table/csv.util";
-import type { ColumnDef } from "../../../shared/data-table/data-table.types";
 
+/** Projected months to show, the origin (for month labels) and the scenario name. */
 export type ProjectionTableProps = {
   points: ForecastPoint[];
   origin: Date;

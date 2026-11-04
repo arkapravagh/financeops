@@ -1,3 +1,5 @@
+/** Scenario panel: pick a scenario, adjust its levers, pin it for comparison or reset. */
+
 import { Bookmark, CopyPlus, Pencil, RotateCcw } from "lucide-react";
 import { useState } from "react";
 import { Button } from "../../../shared/ui/button.component";
@@ -6,6 +8,7 @@ import { ScenarioLevers } from "./scenario-levers.component";
 import { ScenarioPicker } from "./scenario-picker.component";
 import { ScenarioSection } from "./scenario-section.component";
 
+/** The scenario in the panel, picker options, and callbacks for change, compare, create and edit. */
 export type ScenarioBuilderProps = {
   scenario: Scenario;
   current: Scenario;
@@ -23,6 +26,7 @@ export type ScenarioBuilderProps = {
 const field =
   "h-9 rounded-md border border-line bg-surface px-2 text-sm text-ink outline-none focus-visible:ring-2 focus-visible:ring-accent";
 
+/** The Forecast page's right-hand panel. Any lever edit turns the scenario into an unsaved "Your scenario". */
 export function ScenarioBuilder({ scenario: s, current, options, origin, canSave, onChange, onSave, onCreateCustom, onEditCustom }: ScenarioBuilderProps) {
   const [name, setName] = useState("");
   // Any manual edit turns the panel into an unsaved "working" scenario.

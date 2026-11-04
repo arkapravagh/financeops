@@ -1,10 +1,21 @@
+/**
+ * Overview: the founder's weekly check-in. How much cash, how long it lasts, and what needs attention.
+ *
+ * Route: `/`. Sections: runway strip (hero), KPI row, cash balance, cash in and out, needs your attention, recent transactions, upcoming bills, who owes you.
+ * Pages compose components and read data only through `services/`; derived numbers come from `shared/utils/metrics.util.ts`.
+ */
+
 import { ArrowRight, Download, Plus, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useAssistantControls } from "../assistant/assistant.provider";
+import { getBudgets } from "../../services/budgets.service";
+import { getAccounts, getCashHistory, getMonthlyFlows, getUpcomingBills } from "../../services/cash.service";
+import { AS_OF, getCompany } from "../../services/company.service";
+import { getInvoices } from "../../services/invoices.service";
+import { getMrrHistory } from "../../services/revenue.service";
+import { getRecentTransactions } from "../../services/transactions.service";
 import { ColumnChart } from "../../shared/charts/column-chart.component";
 import { LineChart } from "../../shared/charts/line-chart.component";
 import { Amount } from "../../shared/finance/amount.component";
-import { RunwayStrip } from "./components/runway-strip.component";
 import { Button } from "../../shared/ui/button.component";
 import { Card } from "../../shared/ui/card.component";
 import { Insight } from "../../shared/ui/insight.component";
@@ -25,12 +36,8 @@ import {
   sumCents,
 } from "../../shared/utils/metrics.util";
 import { formatCompact, formatMoney, formatPercent } from "../../shared/utils/money.util";
-import { getBudgets } from "../../services/budgets.service";
-import { getAccounts, getCashHistory, getMonthlyFlows, getUpcomingBills } from "../../services/cash.service";
-import { AS_OF, getCompany } from "../../services/company.service";
-import { getInvoices } from "../../services/invoices.service";
-import { getMrrHistory } from "../../services/revenue.service";
-import { getRecentTransactions } from "../../services/transactions.service";
+import { useAssistantControls } from "../assistant/assistant.provider";
+import { RunwayStrip } from "./components/runway-strip.component";
 
 const PROJECTION_MONTHS = 6;
 const dayNum = new Intl.DateTimeFormat("en-US", { day: "numeric" });
@@ -39,7 +46,8 @@ const monShort = new Intl.DateTimeFormat("en-US", { month: "short" });
 const linkCls =
   "inline-flex items-center gap-1 rounded text-[13px] font-medium text-accent outline-none hover:underline focus-visible:ring-2 focus-visible:ring-accent";
 
-export function DashboardPage() {
+/** Overview page. Shows *simple* runway (cash ÷ 3-month average net burn), labelled as such. */
+export function OverviewPage() {
   const { ask } = useAssistantControls();
   const company = getCompany();
   const accounts = getAccounts();

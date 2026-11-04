@@ -1,8 +1,16 @@
+/**
+ * Insight: a plain-language callout (what's happening and what to do), e.g. "Runway under 12 months".
+ *
+ * Part of the shared UI kit: design tokens only, works in light and dark themes (design-system skill).
+ */
+
 import { AlertTriangle, CheckCircle2, Info, OctagonAlert } from "lucide-react";
 import type { ReactNode } from "react";
 
+/** Severity, shown as a small icon next to the title. */
 export type InsightTone = "info" | "good" | "warning" | "critical";
 
+/** Callout content. `framed` adds a border for standalone use; inside lists leave it off. */
 export type InsightProps = {
   tone?: InsightTone;
   title: string;

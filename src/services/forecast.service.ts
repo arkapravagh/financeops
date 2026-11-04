@@ -1,9 +1,17 @@
-import { completeMonths, compoundGrowth, sumCents, type ForecastInput, type PlannedHire } from "../shared/utils/metrics.util";
+/**
+ * Forecast service: the forecast's starting point, derived from actuals.
+ *
+ * Single source for the Forecast page **and** the AI assistant so both always agree (finance-domain rules).
+ */
+
 import { parseIso } from "../shared/utils/dates.util";
+import { completeMonths, compoundGrowth, sumCents, type ForecastInput, type PlannedHire } from "../shared/utils/metrics.util";
 import { getAccounts, getMonthlyFlows } from "./cash.service";
 import { AS_OF } from "./company.service";
 
+/** Model horizon in months. Runways beyond it show as "36+". */
 export const FORECAST_MONTHS = 36;
+/** Default fully loaded monthly cost of a new hire ($15K: salary, taxes, benefits, equipment). */
 export const DEFAULT_HIRE_COST_CENTS = 15_000_00;
 
 /**

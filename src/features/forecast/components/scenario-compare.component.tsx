@@ -1,11 +1,17 @@
+/**
+ * Scenario comparison table: runway, zero cash, break-even, cash in 12 months and verdict per scenario on the chart.
+ */
+
 import { AlertTriangle, CheckCircle2, Trash2 } from "lucide-react";
+import { FORECAST_MONTHS } from "../../../services/forecast.service";
 import { addMonths, formatMonthYear } from "../../../shared/utils/dates.util";
 import { formatCompact } from "../../../shared/utils/money.util";
-import { FORECAST_MONTHS } from "../../../services/forecast.service";
 import type { ScenarioResult } from "../scenario.model";
 
+/** One row: the evaluated scenario and how its line is drawn on the chart (colour, dashed). */
 export type CompareRow = { result: ScenarioResult; color: string; dashed?: boolean; removable?: boolean; label?: string };
 
+/** Rows to compare, the projection origin and a remove callback for saved scenarios. */
 export type ScenarioCompareProps = {
   rows: CompareRow[];
   origin: Date;

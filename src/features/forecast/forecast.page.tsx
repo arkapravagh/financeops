@@ -1,32 +1,30 @@
+/**
+ * Runway & forecast: model hiring, growth and fundraising to see how long the money lasts.
+ *
+ * Route: `/forecast`. Sections: verdict (hero), projected cash chart, compare scenarios, runway sensitivity, scenario panel, month-by-month table, custom scenario drawer.
+ * Pages compose components and read data only through `services/`; derived numbers come from `shared/utils/metrics.util.ts`.
+ */
+
 import { Download } from "lucide-react";
 import { useMemo, useState } from "react";
+import { getCashHistory } from "../../services/cash.service";
+import { getForecastBase, getForecastOrigin } from "../../services/forecast.service";
 import { LineChart, type ChartMarker, type LineSeries } from "../../shared/charts/line-chart.component";
-import { ForecastVerdict } from "./components/forecast-verdict.component";
-import { exportProjectionCsv, ProjectionTable } from "./components/projection-table.component";
 import { Button } from "../../shared/ui/button.component";
-import { RunwaySensitivity } from "./components/runway-sensitivity.component";
-import { CustomScenarioDrawer, type CustomScenarioDraft } from "./components/custom-scenario-drawer.component";
-import { ScenarioBuilder } from "./components/scenario-builder.component";
-import { scenarioLibrary } from "./scenario-library.config";
-import { ScenarioCompare, type CompareRow } from "./components/scenario-compare.component";
-import {
-  evaluateScenario,
-  fromBase,
-  MAX_SAVED,
-  type LibraryScenario,
-  RAISE_LEAD_MONTHS,
-  sameAssumptions,
-  useCustomScenarios,
-  useSavedScenarios,
-  type Scenario,
-} from "./scenario.model";
 import { Card } from "../../shared/ui/card.component";
 import { PageHeader } from "../../shared/ui/page-header.component";
 import { Segmented } from "../../shared/ui/segmented.component";
 import { formatMonthLong, formatMonthShort, monthKeyAdd } from "../../shared/utils/dates.util";
 import { formatCompact } from "../../shared/utils/money.util";
-import { getCashHistory } from "../../services/cash.service";
-import { getForecastBase, getForecastOrigin } from "../../services/forecast.service";
+import { CustomScenarioDrawer, type CustomScenarioDraft } from "./components/custom-scenario-drawer.component";
+import { ForecastVerdict } from "./components/forecast-verdict.component";
+import { exportProjectionCsv, ProjectionTable } from "./components/projection-table.component";
+import { RunwaySensitivity } from "./components/runway-sensitivity.component";
+import { ScenarioBuilder } from "./components/scenario-builder.component";
+import { ScenarioCompare, type CompareRow } from "./components/scenario-compare.component";
+import { scenarioLibrary } from "./scenario-library.config";
+import { evaluateScenario, fromBase, RAISE_LEAD_MONTHS, sameAssumptions, type LibraryScenario, type Scenario } from "./scenario.model";
+import { MAX_SAVED, useCustomScenarios, useSavedScenarios } from "./use-scenario-storage.hook";
 
 type Horizon = "12" | "24" | "36";
 
@@ -38,6 +36,7 @@ const CURRENT = fromBase(BASE);
 const LIBRARY = scenarioLibrary(BASE);
 const SAVED_COLORS = ["var(--series-2)", "var(--series-3)"];
 
+/** Forecast page. Everything here is labelled as a projection; the base comes from `getForecastBase()`. */
 export function ForecastPage() {
   const [scenario, setScenario] = useState<Scenario>(CURRENT);
   const [horizon, setHorizon] = useState<Horizon>("24");

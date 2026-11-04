@@ -1,3 +1,10 @@
+/**
+ * Bullet bar: actual vs. target on one row (budgets, AI budget).
+ *
+ * House SVG chart; follows .claude/rules/charts.md.
+ */
+
+/** Actual and target in the same unit, plus the shared scale `max` so rows line up. */
 export type BulletBarProps = {
   /** Actual value, in the same unit as `target` and `max`. */
   actual: number;

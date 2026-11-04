@@ -2,9 +2,11 @@
  * Pure finance metrics. Definitions: .claude/rules/finance-domain.md
  * All money is integer cents. "Today" is always passed in as `asOf`.
  */
+
 import type { AiSeatCharge, AiUsage, Budget, Invoice, InvoiceStatus, MonthKey, MonthlyFlow } from "../../types/finance.types";
 import { addMonths, daysBetween, parseIso, toMonthKey } from "./dates.util";
 
+/** Sum a list of cent amounts. */
 export const sumCents = (values: number[]) => values.reduce((a, b) => a + b, 0);
 
 /** Net burn for one month: out − in. Positive = losing money. */
@@ -29,6 +31,7 @@ export function runwayMonths(cashCents: number, avgNetBurnCents: number): number
   return cashCents / avgNetBurnCents;
 }
 
+/** Zero-cash date: today + runway months; null when default alive (no runway). */
 export function zeroCashDate(asOf: Date, runway: number | null): Date | null {
   return runway === null ? null : addMonths(asOf, runway);
 }
@@ -49,11 +52,13 @@ export function growthRate(current: number, previous: number): number | null {
 
 // ---------- Invoices / receivables ----------
 
+/** Display status: a sent invoice past its due date is "overdue"; otherwise the stored status. */
 export function invoiceStatus(inv: Invoice, asOf: Date): InvoiceStatus {
   if (inv.status === "sent" && parseIso(inv.dueDate) < asOf) return "overdue";
   return inv.status;
 }
 
+/** Days past the due date (0 if not yet due). */
 export function daysOverdue(inv: Invoice, asOf: Date): number {
   return Math.max(0, daysBetween(parseIso(inv.dueDate), asOf));
 }
@@ -63,8 +68,10 @@ export function receivablesCents(invoices: Invoice[]): number {
   return sumCents(invoices.filter((i) => i.status === "sent").map((i) => i.amountCents));
 }
 
+/** One receivables ageing bucket: total unpaid and invoice count. */
 export type AgingBucket = { label: string; amountCents: number; count: number };
 
+/** Unpaid sent invoices bucketed by days late: not yet due, 1–30, 31–60, 60+. */
 export function receivablesAging(invoices: Invoice[], asOf: Date): AgingBucket[] {
   const buckets: AgingBucket[] = [
     { label: "Not yet due", amountCents: 0, count: 0 },
@@ -91,6 +98,7 @@ export const budgetVarianceCents = (b: Budget) => b.actualCents - b.budgetCents;
 
 // ---------- Forecast ----------
 
+/** Everything the cash projection needs: starting point from actuals plus scenario levers. */
 export type ForecastInput = {
   startCashCents: number;
   /** Monthly cash in for the first projected month's base. */
@@ -111,9 +119,12 @@ export type ForecastInput = {
   months: number;
 };
 
+/** One planned hire: role, start month (1 = current month) and fully loaded monthly cost. */
 export type PlannedHire = { id: string; role: string; startMonth: number; monthlyCostCents: number };
+/** A raise landing in a projection month. */
 export type PlannedRaise = { month: number; amountCents: number };
 
+/** One projected month. */
 export type ForecastPoint = {
   index: number;
   cashCents: number;
@@ -126,6 +137,10 @@ export type ForecastPoint = {
   raiseCents: number;
 };
 
+/**
+ * Project cash month by month: revenue and spending compound from their (adjusted) bases, plus hires and a raise.
+ * Forecast month n = cash(n−1) + revenue(n) − (spending(n) + hires active in n) + raise(n).
+ */
 export function projectCash(input: ForecastInput): ForecastPoint[] {
   const points: ForecastPoint[] = [];
   let cash = input.startCashCents;
@@ -204,6 +219,7 @@ export function compoundGrowth(first: number, last: number, periods: number): nu
 
 // ---------- AI spend ----------
 
+/** AI spend for one month, split by billing kind. */
 export type AiMonthSummary = {
   month: MonthKey;
   /** Per-token model APIs. */
@@ -237,6 +253,7 @@ export function aiMonthlySummary(usage: AiUsage[], seats: AiSeatCharge[]): AiMon
   });
 }
 
+/** Usage summed for one group (feature, model or vendor). */
 export type AiUsageGroup = {
   key: string;
   costCents: number;

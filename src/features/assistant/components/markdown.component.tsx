@@ -1,3 +1,5 @@
+/** Safe Markdown renderer for assistant replies (no HTML injection; see security rules). */
+
 import { memo, type ReactNode } from "react";
 
 /**
@@ -91,4 +93,5 @@ function MarkdownImpl({ text }: { text: string }) {
   );
 }
 
+/** Renders `text` as a small, safe subset of Markdown. Memoized on the text. */
 export const Markdown = memo(MarkdownImpl);

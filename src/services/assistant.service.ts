@@ -6,6 +6,7 @@
  * When the backend lands, replace the body of `streamReply` with an SSE/fetch reader against
  * `/api/assistant` (Claude on the server, with finance tools) — see .claude/skills/ai-assistant.
  */
+
 import { addMonths, daysBetween, formatDayMonth, formatMonthLong, formatMonthYear, parseIso } from "../shared/utils/dates.util";
 import {
   aiMonthlySummary,
@@ -490,6 +491,7 @@ function route(q: string, page: string): Answer {
   return helpAnswer(page);
 }
 
+/** Starter prompts for the AI panel, tailored to the page the user is on (falls back to general ones). */
 export function pageSuggestions(page: string): string[] {
   if (page.startsWith("/budgets")) return ["Which categories are over budget?", "Why did burn go up?", "How can we extend runway by 6 months?", "Explain this page"];
   if (page.startsWith("/invoices")) return ["Which invoices should I chase?", "Draft a polite reminder email", "How long do customers take to pay?", "Explain this page"];

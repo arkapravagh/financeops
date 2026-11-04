@@ -1,3 +1,5 @@
+/** Shared helpers for the house SVG charts: sizing, tick generation, column paths and label thinning. */
+
 import { useLayoutEffect, useRef, useState } from "react";
 
 /** Measure an element's width so SVG text renders at true pixel size (no viewBox scaling). */

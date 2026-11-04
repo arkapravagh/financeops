@@ -1,11 +1,19 @@
+/**
+ * Page header: page title, one-line purpose and page-level actions.
+ *
+ * Part of the shared UI kit: design tokens only, works in light and dark themes (design-system skill).
+ */
+
 import type { ReactNode } from "react";
 
+/** Title (sentence case), optional subtitle and right-aligned actions. */
 export type PageHeaderProps = {
   title: string;
   subtitle?: string;
   actions?: ReactNode;
 };
 
+/** The top of every page. The only `<h1>` on the page. */
 export function PageHeader({ title, subtitle, actions }: PageHeaderProps) {
   return (
     <div className="mb-7 flex flex-wrap items-end justify-between gap-4">

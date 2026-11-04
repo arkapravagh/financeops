@@ -1,13 +1,21 @@
+/**
+ * Settings: company profile, bank accounts, integrations and team.
+ *
+ * Route: `/settings`. Sections: company profile, bank accounts, integrations (placeholders), team & permissions.
+ * Pages compose components and read data only through `services/`; derived numbers come from `shared/utils/metrics.util.ts`.
+ */
+
 import { Building2, CheckCircle2, Landmark, Plug, Users } from "lucide-react";
+import { getAccounts } from "../../services/cash.service";
+import { getCompany, getIntegrations, getTeam } from "../../services/company.service";
 import { Badge } from "../../shared/ui/badge.component";
 import { Button } from "../../shared/ui/button.component";
 import { Card } from "../../shared/ui/card.component";
 import { PageHeader } from "../../shared/ui/page-header.component";
 import { formatDate } from "../../shared/utils/dates.util";
 import { formatCompact, formatMoney } from "../../shared/utils/money.util";
-import { getAccounts } from "../../services/cash.service";
-import { getCompany, getIntegrations, getTeam } from "../../services/company.service";
 
+/** Settings page. Integrations are visual placeholders; no credentials in the browser (security rules). */
 export function SettingsPage() {
   const company = getCompany();
   const accounts = getAccounts();

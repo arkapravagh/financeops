@@ -1,3 +1,10 @@
+/**
+ * Meter: one progress value against a limit (e.g. budget used). Turns warning at 90% and critical over 100%.
+ *
+ * Part of the shared UI kit: design tokens only, works in light and dark themes (design-system skill).
+ */
+
+/** Ratio used (may exceed 1) and the accessible label. */
 export type MeterProps = {
   /** Ratio used, may exceed 1. */
   value: number;

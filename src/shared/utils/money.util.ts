@@ -1,3 +1,9 @@
+/**
+ * Money and number formatting. The only place amounts become strings (finance-domain rules).
+ *
+ * Inputs are integer cents; never build `"$" + n` by hand.
+ */
+
 const CURRENCY = "USD";
 const LOCALE = "en-US";
 
@@ -10,6 +16,7 @@ const compact = new Intl.NumberFormat(LOCALE, {
   maximumFractionDigits: 1,
 });
 
+/** Display options for {@link formatMoney}. */
 export type FormatMoneyOptions = {
   /** Show cents (default false). Use true in ledgers/tables of transactions. */
   cents?: boolean;

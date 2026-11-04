@@ -1,3 +1,5 @@
+/** Assistant dock: positions the AI panel beside (desktop) or over (mobile) the page. */
+
 import { useAssistantControls } from "../assistant.provider";
 import { AssistantPanel } from "./assistant-panel.component";
 

@@ -1,3 +1,11 @@
+/**
+ * AI assistant state: conversations, streaming, panel open/close.
+ *
+ * Split into two contexts so streaming tokens only re-render the panel: pages and the top bar use
+ * `useAssistantControls()` (stable), the panel uses `useAssistant()` (changes every frame).
+ * Replies come from `services/assistant.service.ts`; no LLM calls from the browser, ever.
+ */
+
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useLocation } from "react-router-dom";
 import { streamReply } from "../../services/assistant.service";
@@ -68,6 +76,7 @@ function loadHistory(): Conversation[] {
   }
 }
 
+/** Provides assistant state to the app. Mounted once in `app/app.component.tsx`. */
 export function AssistantProvider({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
   const [open, setOpenState] = useState(() => {

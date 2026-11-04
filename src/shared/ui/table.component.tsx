@@ -1,5 +1,13 @@
+/**
+ * Table primitives for small static lists (e.g. "Recent transactions").
+ * Anything that needs search, filters, sorting or > ~10 rows uses DataTable instead.
+ *
+ * Part of the shared UI kit: design tokens only, works in light and dark themes (design-system skill).
+ */
+
 import type { ReactNode, ThHTMLAttributes, TdHTMLAttributes } from "react";
 
+/** Scrollable table wrapper with an optional screen-reader caption. */
 export function Table({ children, caption }: { children: ReactNode; caption?: string }) {
   return (
     <div className="overflow-x-auto">
@@ -14,6 +22,7 @@ export function Table({ children, caption }: { children: ReactNode; caption?: st
 type Align = { align?: "left" | "right" | "center" };
 const alignClass = { left: "text-left", right: "text-right", center: "text-center" } as const;
 
+/** Header cell. Use `align="right"` for numeric columns. */
 export function Th({ align = "left", className = "", children, ...rest }: ThHTMLAttributes<HTMLTableCellElement> & Align) {
   return (
     <th
@@ -26,6 +35,7 @@ export function Th({ align = "left", className = "", children, ...rest }: ThHTML
   );
 }
 
+/** Body cell. Use `align="right"` for numeric columns (they also get tabular figures). */
 export function Td({ align = "left", className = "", children, ...rest }: TdHTMLAttributes<HTMLTableCellElement> & Align) {
   return (
     <td

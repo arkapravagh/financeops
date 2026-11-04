@@ -1,3 +1,5 @@
+/** Chat message: one user or assistant message with status, sources, follow-ups, copy and feedback. */
+
 import { Check, Copy, CornerDownRight, FileText, RefreshCw, ThumbsDown, ThumbsUp } from "lucide-react";
 import { memo, useState } from "react";
 import { Link } from "react-router-dom";
@@ -5,6 +7,7 @@ import type { ChatMessage } from "../../../types/assistant.types";
 import { AiMark } from "./ai-mark.component";
 import { Markdown } from "./markdown.component";
 
+/** The message plus callbacks for follow-up questions, retry and feedback. */
 export type ChatMessageViewProps = {
   message: ChatMessage;
   isLast: boolean;
@@ -128,4 +131,5 @@ function ChatMessageViewImpl({ message, isLast, busy, onRegenerate, onFeedback, 
   );
 }
 
+/** Memoized so only the streaming message re-renders while tokens arrive. */
 export const ChatMessageView = memo(ChatMessageViewImpl);

@@ -1,17 +1,24 @@
+/**
+ * Invoices: who owes the company money, and who needs a nudge.
+ *
+ * Route: `/invoices`. Sections: receivables KPIs (outstanding, overdue, collected), status quick views, DataTable of invoices.
+ * Pages compose components and read data only through `services/`; derived numbers come from `shared/utils/metrics.util.ts`.
+ */
+
 import { BellRing, Plus } from "lucide-react";
+import { AS_OF } from "../../services/company.service";
+import { getInvoices } from "../../services/invoices.service";
 import { DataTable } from "../../shared/data-table/data-table.component";
 import type { ColumnDef, QuickView } from "../../shared/data-table/data-table.types";
-import { InvoiceStatusBadge } from "./components/invoice-status-badge.component";
 import { Button } from "../../shared/ui/button.component";
 import { Card } from "../../shared/ui/card.component";
-import { PageHeader } from "../../shared/ui/page-header.component";
 import { KpiRow } from "../../shared/ui/kpi-row.component";
+import { PageHeader } from "../../shared/ui/page-header.component";
 import { daysBetween, formatDate, parseIso } from "../../shared/utils/dates.util";
 import { averageDaysToPay, daysOverdue, invoiceStatus, receivablesCents, sumCents } from "../../shared/utils/metrics.util";
 import { formatCompact, formatMoney } from "../../shared/utils/money.util";
-import { AS_OF } from "../../services/company.service";
-import { getInvoices } from "../../services/invoices.service";
 import type { Invoice, InvoiceStatus } from "../../types/finance.types";
+import { InvoiceStatusBadge } from "./components/invoice-status-badge.component";
 
 type InvoiceRow = Invoice & { derived: InvoiceStatus };
 
@@ -98,6 +105,7 @@ const getRowId = (i: InvoiceRow) => i.id;
 const invoices = getInvoices();
 const rows: InvoiceRow[] = invoices.map((inv) => ({ ...inv, derived: invoiceStatus(inv, AS_OF) }));
 
+/** Invoices page. "Overdue" is derived at render time from due date vs. `AS_OF`. */
 export function InvoicesPage() {
   const ar = receivablesCents(invoices);
   const overdue = rows.filter((i) => i.derived === "overdue");

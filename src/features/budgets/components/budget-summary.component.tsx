@@ -1,9 +1,12 @@
+/** Budget summary: the Budgets page hero (total spend vs. budget for the month and the facts that matter). */
+
+import { BulletBar } from "../../../shared/charts/bullet-bar.component";
 import { formatMonthLong, formatMonthShort } from "../../../shared/utils/dates.util";
 import { budgetUsed, budgetVarianceCents, growthRate, sumCents } from "../../../shared/utils/metrics.util";
 import { formatMoney, formatPercent } from "../../../shared/utils/money.util";
 import type { Budget } from "../../../types/finance.types";
-import { BulletBar } from "../../../shared/charts/bullet-bar.component";
 
+/** The month, its budget rows, and the previous month's rows for comparison. */
 export type BudgetSummaryProps = {
   month: string;
   budgets: Budget[];

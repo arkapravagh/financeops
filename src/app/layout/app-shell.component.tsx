@@ -1,14 +1,22 @@
+/**
+ * App shell: sidebar, top bar, page outlet and the AI panel dock (layout-patterns skill).
+ *
+ * Desktop: the sidebar can collapse to icons (remembered in `fo-sidebar-collapsed`) and folds automatically
+ * below 1600px while the AI panel is open. Mobile: the sidebar becomes a slide-in drawer.
+ */
+
 import { X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
-import { AssistantDock } from "../../features/assistant/components/assistant-dock.component";
 import { useAssistantControls } from "../../features/assistant/assistant.provider";
+import { AssistantDock } from "../../features/assistant/components/assistant-dock.component";
 import { Sidebar } from "./sidebar.component";
 import { Topbar } from "./topbar.component";
 
 const STORAGE_KEY = "fo-sidebar-collapsed";
 const AUTO_COLLAPSE_BELOW = 1600;
 
+/** Layout route element: every page renders in its `<Outlet />`. */
 export function AppShell() {
   // Mobile drawer (slides in over content)
   const [drawerOpen, setDrawerOpen] = useState(false);

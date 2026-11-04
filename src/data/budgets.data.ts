@@ -1,8 +1,15 @@
+/**
+ * Mock data: monthly budget vs. actual per expense category (Aug–Oct 2026).
+ *
+ * Static and deterministic (no clock, no randomness), anchored to `AS_OF` in company.service.ts.
+ * Never import this file from a page or component; read it through `services/` (data-and-mocks rules).
+ */
+
 import type { Budget } from "../types/finance.types";
 
 /**
  * Monthly budgets, Aug–Oct 2026 (budgeting started in August).
- * Each month's actuals sum to that month's cash out in data/flows.ts:
+ * Each month's actuals sum to that month's cash out in flows.data.ts:
  *   Aug $186,350 · Sep $190,180 · Oct $194,000
  */
 export const budgets = [

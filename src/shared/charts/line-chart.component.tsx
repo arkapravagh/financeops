@@ -1,8 +1,15 @@
+/**
+ * Line chart: change over time (cash balance, MRR, projections).
+ *
+ * Hand-rolled SVG with crosshair tooltip, dashed projections and event markers (chart rules).
+ */
+
 import { useId, useState } from "react";
 import { formatCompact, formatMoney } from "../utils/money.util";
 import { ChartTooltip, Legend } from "./chart-parts.component";
 import { labelStep, niceTicks, useElementWidth } from "./chart.util";
 
+/** One line: values (null = gap), colour token, and whether it is dashed (projected/reference). */
 export type LineSeries = {
   name: string;
   /** CSS color, e.g. "var(--series-1)" */
@@ -14,6 +21,9 @@ export type LineSeries = {
   area?: boolean;
 };
 
+/**
+ * Labels, series, accessible summary and options: `projectedFrom` shades the projection, `markers` label events.
+ */
 export type LineChartProps = {
   labels: string[];
   /** Optional longer labels for tooltips. */
@@ -29,10 +39,12 @@ export type LineChartProps = {
   markers?: ChartMarker[];
 };
 
+/** An event on the time axis (raise, start raising, zero cash): a dotted hairline with a short label. */
 export type ChartMarker = { index: number; label: string; tone?: "neutral" | "critical" };
 
 const M = { top: 12, right: 16, bottom: 28, left: 56 };
 
+/** Line chart with hover crosshair and tooltip. Values are cents and format as compact money. */
 export function LineChart({
   labels,
   tooltipLabels,

@@ -1,3 +1,9 @@
+/**
+ * Date helpers. Dates are local calendar dates (no timezone drift); months are `YYYY-MM` keys.
+ *
+ * Pure functions: "today" is always passed in, never read from the clock.
+ */
+
 import type { IsoDate, MonthKey } from "../../types/finance.types";
 
 /** Parse `YYYY-MM-DD` as a local calendar date (no timezone drift). */
@@ -6,10 +12,12 @@ export function parseIso(iso: IsoDate): Date {
   return new Date(y, m - 1, d ?? 1);
 }
 
+/** Date → `YYYY-MM`. */
 export function toMonthKey(date: Date): MonthKey {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
 }
 
+/** Add whole or fractional months (fractions as ~30.4 days each), e.g. a 14.5-month runway. */
 export function addMonths(date: Date, months: number): Date {
   const whole = Math.floor(months);
   const d = new Date(date.getFullYear(), date.getMonth() + whole, date.getDate());
@@ -18,10 +26,12 @@ export function addMonths(date: Date, months: number): Date {
   return d;
 }
 
+/** Shift a `YYYY-MM` key by `months`, e.g. ("2026-11", 2) → "2027-01". */
 export function monthKeyAdd(key: MonthKey, months: number): MonthKey {
   return toMonthKey(addMonths(parseIso(`${key}-01`), months));
 }
 
+/** Whole days from `from` to `to` (negative if `to` is earlier). */
 export function daysBetween(from: Date, to: Date): number {
   return Math.round((to.getTime() - from.getTime()) / 86_400_000);
 }

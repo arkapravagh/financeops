@@ -1,7 +1,14 @@
+/**
+ * Drawer: right-hand slide-in panel rendered in a portal (used for the custom scenario editor).
+ *
+ * Part of the shared UI kit: design tokens only, works in light and dark themes (design-system skill).
+ */
+
 import { X } from "lucide-react";
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 
+/** Drawer content and state. Keep it mounted and toggle `open` so it can animate out. */
 export type DrawerProps = {
   open: boolean;
   title: string;

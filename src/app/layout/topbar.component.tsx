@@ -1,9 +1,12 @@
+/** Top bar: menu / collapse toggle, global search, data freshness, Ask AI, notifications and theme toggle. */
+
 import { Bell, Menu, Moon, PanelLeftClose, PanelLeftOpen, Search, Sparkles, Sun } from "lucide-react";
 import { useAssistantControls } from "../../features/assistant/assistant.provider";
+import { AS_OF } from "../../services/company.service";
 import { useTheme } from "../../shared/hooks/use-theme.hook";
 import { formatDate } from "../../shared/utils/dates.util";
-import { AS_OF } from "../../services/company.service";
 
+/** Callbacks for the mobile menu and the desktop sidebar collapse toggle. */
 export type TopbarProps = {
   /** Opens the mobile drawer. */
   onMenu: () => void;
@@ -12,6 +15,7 @@ export type TopbarProps = {
   onToggleCollapsed: () => void;
 };
 
+/** Sticky header above every page. */
 export function Topbar({ onMenu, collapsed, onToggleCollapsed }: TopbarProps) {
   const { theme, toggle } = useTheme();
   const assistant = useAssistantControls();

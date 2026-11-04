@@ -1,7 +1,10 @@
+/** Sidebar: company switcher, grouped navigation, Settings and the profile footer. */
+
 import { NavLink } from "react-router-dom";
 import { getCompany, getTeam } from "../../services/company.service";
 import { navGroups, secondaryNavItems, type NavItem } from "../../shared/config/navigation.config";
 
+/** `collapsed` shows icons only; `onNavigate` lets the mobile drawer close after a click. */
 export type SidebarProps = {
   /** Icon-only rail (desktop collapsed state). */
   collapsed?: boolean;
@@ -46,6 +49,7 @@ function Item({ item, collapsed, onNavigate }: { item: NavItem; collapsed: boole
   );
 }
 
+/** Navigation built from `shared/config/navigation.config.ts`. The active page is marked with `aria-current`. */
 export function Sidebar({ collapsed = false, onNavigate }: SidebarProps) {
   const company = getCompany();
   const me = getTeam()[0];

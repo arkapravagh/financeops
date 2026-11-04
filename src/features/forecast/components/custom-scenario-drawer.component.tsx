@@ -1,16 +1,20 @@
+/** Custom scenario drawer: create, edit or delete a user-made scenario, with a live projected-runway readout. */
+
 import { AlertTriangle, CheckCircle2, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
-import { formatMonthYear } from "../../../shared/utils/dates.util";
-import type { ForecastInput } from "../../../shared/utils/metrics.util";
 import { FORECAST_MONTHS } from "../../../services/forecast.service";
 import { Button } from "../../../shared/ui/button.component";
 import { Drawer } from "../../../shared/ui/drawer.component";
+import { formatMonthYear } from "../../../shared/utils/dates.util";
+import type { ForecastInput } from "../../../shared/utils/metrics.util";
 import { evaluateScenario, type LibraryScenario, type Scenario } from "../scenario.model";
 import { ScenarioLevers } from "./scenario-levers.component";
 import { ScenarioSection } from "./scenario-section.component";
 
+/** The scenario being edited. No `id` = creating a new one. */
 export type CustomScenarioDraft = Omit<LibraryScenario, "category" | "custom" | "id"> & { id?: string };
 
+/** Open state, starting values, forecast context and save/delete/close callbacks. */
 export type CustomScenarioDrawerProps = {
   open: boolean;
   /** Starting values. Pass an `id` to edit an existing custom scenario. */

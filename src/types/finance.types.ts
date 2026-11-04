@@ -1,8 +1,16 @@
+/**
+ * Domain types shared by data, services, utils and UI.
+ *
+ * Conventions: money is integer cents (`*Cents`), dates are ISO strings, months are `YYYY-MM`.
+ * Mock files must `satisfies` these types (data-and-mocks rules).
+ */
+
 /** ISO date, `YYYY-MM-DD` */
 export type IsoDate = string;
 /** Month key, `YYYY-MM` */
 export type MonthKey = string;
 
+/** Categories money goes out under. Budgets exist per expense category. */
 export type ExpenseCategory =
   | "Payroll"
   | "Software & cloud"
@@ -13,8 +21,10 @@ export type ExpenseCategory =
   | "Office & misc"
   | "Legal & accounting";
 
+/** Every transaction category: expenses plus money in (Revenue) and moves between accounts (Transfer). */
 export type Category = ExpenseCategory | "Revenue" | "Transfer";
 
+/** Company profile. */
 export type Company = {
   name: string;
   stage: string;
@@ -24,6 +34,7 @@ export type Company = {
   lastRaise: { round: string; amountCents: number; date: IsoDate };
 };
 
+/** A bank account and its balance at `AS_OF`. */
 export type BankAccount = {
   id: string;
   name: string;
@@ -40,6 +51,7 @@ export type MonthlyFlow = {
   outCents: number;
 };
 
+/** A bank transaction. `amountCents` is positive for money in, negative for money out. */
 export type Transaction = {
   id: string;
   date: IsoDate;
@@ -52,10 +64,12 @@ export type Transaction = {
   status: "cleared" | "pending";
 };
 
-/** Stored status. "overdue" is derived from dueDate vs. today — see lib/metrics. */
+/** Stored status. "overdue" is derived from dueDate vs. today: see `invoiceStatus()` in shared/utils/metrics.util.ts. */
 export type InvoiceStoredStatus = "draft" | "sent" | "paid";
+/** Status shown in the UI: the stored status, or "overdue" when sent and past its due date. */
 export type InvoiceStatus = InvoiceStoredStatus | "overdue";
 
+/** A customer invoice. */
 export type Invoice = {
   id: string;
   number: string;
@@ -67,6 +81,7 @@ export type Invoice = {
   paidDate?: IsoDate;
 };
 
+/** One category's budget and actual spend for one month. */
 export type Budget = {
   category: ExpenseCategory;
   month: MonthKey;
@@ -74,12 +89,14 @@ export type Budget = {
   actualCents: number;
 };
 
+/** Month-end MRR and paying customers. */
 export type MrrPoint = {
   month: MonthKey;
   mrrCents: number;
   customers: number;
 };
 
+/** A scheduled bill (future cash out). */
 export type Bill = {
   id: string;
   vendor: string;
@@ -89,6 +106,7 @@ export type Bill = {
   autopay: boolean;
 };
 
+/** A workspace member. */
 export type TeamMember = {
   id: string;
   name: string;
@@ -96,6 +114,7 @@ export type TeamMember = {
   role: "Owner" | "Finance" | "Viewer";
 };
 
+/** A bank, billing or accounting connection (placeholder in the prototype). */
 export type Integration = {
   id: string;
   name: string;
@@ -137,6 +156,7 @@ export type AiSeatCharge = {
   costCents: number;
 };
 
+/** An AI feature and whether customers use it (drives "AI cost per customer"). */
 export type AiFeatureInfo = {
   feature: AiFeature;
   description: string;
@@ -144,4 +164,5 @@ export type AiFeatureInfo = {
   customerFacing: boolean;
 };
 
+/** The monthly AI spend budget. */
 export type AiBudget = { month: MonthKey; budgetCents: number };

@@ -1,3 +1,9 @@
+/**
+ * Budgets service: monthly budget vs. actual rows per expense category.
+ *
+ * Mock-backed today; when the API lands only this file changes.
+ */
+
 import { budgets } from "../data/budgets.data";
 import type { Budget, ExpenseCategory, MonthKey } from "../types/finance.types";
 
@@ -7,6 +13,7 @@ export const getBudgetMonths = (): MonthKey[] => [...new Set(budgets.map((b) => 
 /** The latest month with budgets (the default view). */
 export const getLatestBudgetMonth = (): MonthKey => getBudgetMonths().slice(-1)[0];
 
+/** All category budgets for one month (defaults to the latest month with budgets). */
 export const getBudgets = (month: MonthKey = getLatestBudgetMonth()): Budget[] =>
   budgets.filter((b) => b.month === month).sort((a, b) => b.budgetCents - a.budgetCents);
 

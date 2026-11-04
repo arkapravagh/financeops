@@ -1,5 +1,13 @@
+/**
+ * Mock data: upcoming bills (scheduled cash out) shown on the Overview.
+ *
+ * Static and deterministic (no clock, no randomness), anchored to `AS_OF` in company.service.ts.
+ * Never import this file from a page or component; read it through `services/` (data-and-mocks rules).
+ */
+
 import type { Bill } from "../types/finance.types";
 
+/** Bills due after `AS_OF`, unsorted. `getUpcomingBills()` sorts them by due date. */
 export const upcomingBills = [
   { id: "bill_101", vendor: "Fulton Works (office)", category: "Rent", dueDate: "2026-11-03", amountCents: 8_500_00, autopay: false },
   { id: "bill_102", vendor: "Nimbus Cloud", category: "Software & cloud", dueDate: "2026-11-05", amountCents: 9_240_00, autopay: true },

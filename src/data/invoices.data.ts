@@ -1,5 +1,13 @@
+/**
+ * Mock data: customer invoices (accounts receivable).
+ *
+ * Static and deterministic (no clock, no randomness), anchored to `AS_OF` in company.service.ts.
+ * Never import this file from a page or component; read it through `services/` (data-and-mocks rules).
+ */
+
 import type { Invoice } from "../types/finance.types";
 
+/** Invoices with their stored status. "overdue" is never stored; it is derived from `dueDate` vs. today. */
 export const invoices = [
   { id: "inv_1038", number: "INV-1038", customer: "Kestrel Foods", issueDate: "2026-08-10", dueDate: "2026-09-09", amountCents: 7_300_00, status: "paid", paidDate: "2026-09-08" },
   { id: "inv_1039", number: "INV-1039", customer: "Ostrander & Vale", issueDate: "2026-08-25", dueDate: "2026-09-24", amountCents: 9_100_00, status: "sent" },

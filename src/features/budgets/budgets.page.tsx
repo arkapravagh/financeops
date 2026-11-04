@@ -1,9 +1,15 @@
+/**
+ * Budgets: where the money goes, and whether each category is on budget.
+ *
+ * Route: `/budgets`. Sections: budget summary (hero), spent vs budget by month, by-category table.
+ * Pages compose components and read data only through `services/`; derived numbers come from `shared/utils/metrics.util.ts`.
+ */
+
 import { PencilLine } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
-import { useAssistantControls } from "../assistant/assistant.provider";
+import { getBudgetHistory, getBudgetMonths, getBudgets, getLatestBudgetMonth } from "../../services/budgets.service";
+import { getTransactions } from "../../services/transactions.service";
 import { ColumnChart } from "../../shared/charts/column-chart.component";
-import { BudgetSummary } from "./components/budget-summary.component";
-import { BudgetTable, type BudgetScale } from "./components/budget-table.component";
 import { Button } from "../../shared/ui/button.component";
 import { Card } from "../../shared/ui/card.component";
 import { PageHeader } from "../../shared/ui/page-header.component";
@@ -11,12 +17,14 @@ import { Segmented } from "../../shared/ui/segmented.component";
 import { formatMonthLong, formatMonthShort } from "../../shared/utils/dates.util";
 import { budgetUsed, budgetVarianceCents, sumCents } from "../../shared/utils/metrics.util";
 import { formatMoney, formatPercent } from "../../shared/utils/money.util";
-import { getBudgetHistory, getBudgetMonths, getBudgets, getLatestBudgetMonth } from "../../services/budgets.service";
-import { getTransactions } from "../../services/transactions.service";
 import type { ExpenseCategory } from "../../types/finance.types";
+import { useAssistantControls } from "../assistant/assistant.provider";
+import { BudgetSummary } from "./components/budget-summary.component";
+import { BudgetTable, type BudgetScale } from "./components/budget-table.component";
 
 const MONTHS = getBudgetMonths();
 
+/** Budgets page. Month picker defaults to the latest month with budgets. */
 export function BudgetsPage() {
   const { ask } = useAssistantControls();
   const [month, setMonth] = useState(getLatestBudgetMonth());

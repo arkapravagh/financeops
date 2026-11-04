@@ -1,9 +1,12 @@
+/** Forecast verdict: the Forecast page hero (default alive or not, projected runway and key dates). */
+
 import { AlertTriangle, ArrowDownRight, ArrowUpRight, CheckCircle2 } from "lucide-react";
+import { FORECAST_MONTHS } from "../../../services/forecast.service";
 import { addMonths, formatMonthYear } from "../../../shared/utils/dates.util";
 import { formatCompact, formatMoney } from "../../../shared/utils/money.util";
-import { FORECAST_MONTHS } from "../../../services/forecast.service";
 import type { ScenarioResult } from "../scenario.model";
 
+/** Results for the scenario being edited and the current trajectory, plus the projection origin. */
 export type ForecastVerdictProps = {
   result: ScenarioResult;
   current: ScenarioResult;

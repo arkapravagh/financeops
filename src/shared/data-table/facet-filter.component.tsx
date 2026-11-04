@@ -1,9 +1,12 @@
+/** Facet filter: a popover of checkboxes for one low-cardinality column (category, status, account). */
+
 import { PlusCircle, Search } from "lucide-react";
 import { useState } from "react";
 import { Checkbox } from "../ui/checkbox.component";
 import { Popover } from "../ui/popover.component";
 import type { FacetOption } from "./data-table.types";
 
+/** Column title, available options with counts, and the controlled selection. */
 export type FacetFilterProps = {
   title: string;
   options: FacetOption[];
@@ -11,6 +14,7 @@ export type FacetFilterProps = {
   onChange: (values: string[]) => void;
 };
 
+/** Toolbar button that opens the option list; shows how many values are selected. */
 export function FacetFilter({ title, options, selected, onChange }: FacetFilterProps) {
   const [q, setQ] = useState("");
   const active = selected.length > 0;

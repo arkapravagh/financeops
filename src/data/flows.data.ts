@@ -1,3 +1,10 @@
+/**
+ * Mock data: monthly bank totals (cash in / cash out) and the opening balance they start from.
+ *
+ * Static and deterministic (no clock, no randomness), anchored to `AS_OF` in company.service.ts.
+ * Never import this file from a page or component; read it through `services/` (data-and-mocks rules).
+ */
+
 import type { MonthlyFlow } from "../types/finance.types";
 
 /** Cash balance before the first month below (end of Oct 2025). */

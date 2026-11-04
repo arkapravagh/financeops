@@ -1,5 +1,8 @@
+/** Scenario section: a titled, divided block inside the scenario panel or drawer. */
+
 import type { ReactNode } from "react";
 
+/** Section title, optional right-aligned summary, and the controls. */
 export type ScenarioSectionProps = { title: string; aside?: ReactNode; children: ReactNode };
 
 /** One divided block of the scenario panel or dialog: title, optional summary on the right, controls. */

@@ -1,4 +1,13 @@
+/**
+ * Transactions: every bank transaction, searchable and filterable.
+ *
+ * Route: `/transactions`. Sections: DataTable with search, facet filters, sorting, row selection with bulk actions, CSV export and totals.
+ * Pages compose components and read data only through `services/`; derived numbers come from `shared/utils/metrics.util.ts`.
+ */
+
 import { Clock, Tags, Upload } from "lucide-react";
+import { getAccounts } from "../../services/cash.service";
+import { getTransactions } from "../../services/transactions.service";
 import { DataTable } from "../../shared/data-table/data-table.component";
 import type { ColumnDef } from "../../shared/data-table/data-table.types";
 import { Amount } from "../../shared/finance/amount.component";
@@ -9,8 +18,6 @@ import { PageHeader } from "../../shared/ui/page-header.component";
 import { formatDate } from "../../shared/utils/dates.util";
 import { sumCents } from "../../shared/utils/metrics.util";
 import { formatMoney } from "../../shared/utils/money.util";
-import { getAccounts } from "../../services/cash.service";
-import { getTransactions } from "../../services/transactions.service";
 import type { Transaction } from "../../types/finance.types";
 
 const accountNames = new Map(getAccounts().map((a) => [a.id, a.name]));
@@ -113,6 +120,7 @@ const columns: ColumnDef<Transaction>[] = [
 const getRowId = (t: Transaction) => t.id;
 const data = getTransactions();
 
+/** Transactions page. */
 export function TransactionsPage() {
   return (
     <>
