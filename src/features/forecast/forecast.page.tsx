@@ -7,6 +7,11 @@
 
 import { Download } from "lucide-react";
 import { useMemo, useState } from "react";
+import { ForecastHorizon } from "../../enums/forecast-horizon.enum";
+import { MAX_SAVED, useCustomScenarios, useSavedScenarios } from "../../hooks/use-scenario-storage.hook";
+import { commonLabels } from "../../language/en/common.lang";
+import { forecastHorizonLabels } from "../../language/en/enums.lang";
+import { forecastLabels as L, scenarioNames } from "../../language/en/forecast.lang";
 import { getCashHistory } from "../../services/cash.service";
 import { getForecastBase, getForecastOrigin } from "../../services/forecast.service";
 import { LineChart, type ChartMarker, type LineSeries } from "../../shared/charts/line-chart.component";
@@ -16,6 +21,7 @@ import { PageHeader } from "../../shared/ui/page-header.component";
 import { Segmented } from "../../shared/ui/segmented.component";
 import { formatMonthLong, formatMonthShort, monthKeyAdd } from "../../shared/utils/dates.util";
 import { formatCompact } from "../../shared/utils/money.util";
+import type { LibraryScenario, Scenario } from "../../types/forecast.types";
 import { CustomScenarioDrawer, type CustomScenarioDraft } from "./components/custom-scenario-drawer.component";
 import { ForecastVerdict } from "./components/forecast-verdict.component";
 import { exportProjectionCsv, ProjectionTable } from "./components/projection-table.component";
@@ -23,10 +29,7 @@ import { RunwaySensitivity } from "./components/runway-sensitivity.component";
 import { ScenarioBuilder } from "./components/scenario-builder.component";
 import { ScenarioCompare, type CompareRow } from "./components/scenario-compare.component";
 import { scenarioLibrary } from "./scenario-library.config";
-import { evaluateScenario, fromBase, RAISE_LEAD_MONTHS, sameAssumptions, type LibraryScenario, type Scenario } from "./scenario.model";
-import { MAX_SAVED, useCustomScenarios, useSavedScenarios } from "./use-scenario-storage.hook";
-
-type Horizon = "12" | "24" | "36";
+import { evaluateScenario, fromBase, RAISE_LEAD_MONTHS, sameAssumptions } from "./scenario.model";
 
 // Derived from actuals once; the page only varies the scenario on top.
 const BASE = getForecastBase();
@@ -39,7 +42,7 @@ const SAVED_COLORS = ["var(--series-2)", "var(--series-3)"];
 /** Forecast page. Everything here is labelled as a projection; the base comes from `getForecastBase()`. */
 export function ForecastPage() {
   const [scenario, setScenario] = useState<Scenario>(CURRENT);
-  const [horizon, setHorizon] = useState<Horizon>("24");
+  const [horizon, setHorizon] = useState<ForecastHorizon>(ForecastHorizon.TwoYears);
   const { saved, save, remove } = useSavedScenarios();
   const { custom, upsert, remove: removeCustom } = useCustomScenarios();
   const options = useMemo(() => [...custom, ...LIBRARY], [custom]);
@@ -54,7 +57,7 @@ export function ForecastPage() {
   const closeEditor = () => setEditorOpen(false);
   // "Create custom scenario" starts from whatever is in the panel; editing starts from the stored one.
   const createCustom = () =>
-    openEditor({ ...scenario, id: undefined, name: "", description: scenario.id === "working" ? "" : `Based on ${scenario.name}.` });
+    openEditor({ ...scenario, id: undefined, name: "", description: scenario.id === "working" ? "" : L.basedOn(scenario.name) });
   const editCustom = (s: LibraryScenario) => openEditor({ ...s });
 
   const isCurrent = sameAssumptions(scenario, CURRENT);
@@ -73,21 +76,21 @@ export function ForecastPage() {
   const hist = HISTORY.map((m) => m.balanceCents);
   const pad = Array<null>(H - 1).fill(null);
   const projected = (pts: { cashCents: number }[]) => [...pad, BASE.startCashCents, ...pts.slice(0, h).map((p) => p.cashCents)];
-  const workingName = isCurrent ? "Current trajectory" : scenario.id === "working" ? "Your scenario" : scenario.name;
+  const workingName = isCurrent ? scenarioNames.current : scenario.id === "working" ? scenarioNames.working : scenario.name;
 
   const series: LineSeries[] = [
     { name: workingName, color: "var(--series-1)", values: [...hist, ...working.points.slice(0, h).map((p) => p.cashCents)] },
-    ...(isCurrent ? [] : [{ name: "Current trajectory", color: "var(--muted)", dashed: true, values: projected(current.points) }]),
+    ...(isCurrent ? [] : [{ name: scenarioNames.current, color: "var(--muted)", dashed: true, values: projected(current.points) }]),
     ...savedResults.map((r, i) => ({ name: r.scenario.name, color: SAVED_COLORS[i], dashed: true, values: projected(r.points) })),
   ];
 
   const markers: ChartMarker[] = [];
   if (scenario.raise && scenario.raise.month <= h)
-    markers.push({ index: H - 1 + scenario.raise.month, label: `Raise ${formatCompact(scenario.raise.amountCents)}` });
+    markers.push({ index: H - 1 + scenario.raise.month, label: L.chart.raiseMarker(formatCompact(scenario.raise.amountCents)) });
   if (!scenario.raise && working.runway !== null && working.runway - RAISE_LEAD_MONTHS > 0 && working.runway - RAISE_LEAD_MONTHS <= h)
-    markers.push({ index: H - 1 + Math.round(working.runway - RAISE_LEAD_MONTHS), label: "Start raising" });
+    markers.push({ index: H - 1 + Math.round(working.runway - RAISE_LEAD_MONTHS), label: L.chart.startRaising });
   if (working.runway !== null && working.runway <= h)
-    markers.push({ index: H - 1 + Math.round(working.runway), label: "Zero cash", tone: "critical" });
+    markers.push({ index: H - 1 + Math.round(working.runway), label: L.chart.zeroCash, tone: "critical" });
 
   const compareRows: CompareRow[] = [
     { result: working, color: "var(--series-1)", label: workingName },
@@ -95,23 +98,23 @@ export function ForecastPage() {
     ...savedResults.map((r, i) => ({ result: r, color: SAVED_COLORS[i], dashed: true, removable: true })),
   ];
 
-  const runwayText = (r: number | null) => (r === null ? `more than ${BASE.months} months` : `${r.toFixed(1)} months`);
+  const runwayText = (r: number | null) => (r === null ? L.chart.runwayBeyond(BASE.months) : commonLabels.months(r.toFixed(1)));
 
   return (
     <>
       <PageHeader
-        title="Runway & forecast"
-        subtitle="Model hiring, growth and fundraising to see how long the money lasts. Everything here is a projection, not a promise."
+        title={L.title}
+        subtitle={L.subtitle}
         actions={
           <Segmented
-            label="Forecast horizon"
+            label={L.horizon}
             size="md"
             value={horizon}
             onChange={setHorizon}
             options={[
-              { value: "12", label: "12 months" },
-              { value: "24", label: "24 months" },
-              { value: "36", label: "36 months" },
+              { value: ForecastHorizon.Year, label: forecastHorizonLabels[ForecastHorizon.Year] },
+              { value: ForecastHorizon.TwoYears, label: forecastHorizonLabels[ForecastHorizon.TwoYears] },
+              { value: ForecastHorizon.ThreeYears, label: forecastHorizonLabels[ForecastHorizon.ThreeYears] },
             ]}
           />
         }
@@ -123,26 +126,26 @@ export function ForecastPage() {
       <div className="@container mt-5">
       <div className="grid grid-cols-1 gap-5 @5xl:grid-cols-[minmax(0,1fr)_25rem]">
         <div className="flex min-w-0 flex-col gap-5">
-          <Card title="Projected cash balance" subtitle={`12 months of actuals, then ${h} months projected. Solid is actual; dashed is projected.`}>
+          <Card title={L.chart.title} subtitle={L.chart.subtitle(h)}>
             <LineChart
               labels={months.map(formatMonthShort)}
               tooltipLabels={months.map(formatMonthLong)}
               projectedFrom={H - 1}
               series={series}
               markers={markers}
-              ariaLabel={`Projected cash. ${workingName}: runway ${runwayText(working.runway)}.${
-                isCurrent ? "" : ` Current trajectory: ${runwayText(current.runway)}.`
-              }${savedResults.map((r) => ` ${r.scenario.name}: ${runwayText(r.runway)}.`).join("")}`}
+              ariaLabel={`${L.chart.summary(workingName, runwayText(working.runway))}${
+                isCurrent ? "" : L.chart.summaryOther(scenarioNames.current, runwayText(current.runway))
+              }${savedResults.map((r) => L.chart.summaryOther(r.scenario.name, runwayText(r.runway))).join("")}`}
               height={320}
             />
           </Card>
 
           <Card
-            title="Compare scenarios"
+            title={L.compare.title}
             subtitle={
               saved.length
-                ? `Saved scenarios stay on the chart until you delete them (up to ${MAX_SAVED}).`
-                : "Pick a scenario and press Compare in the panel to keep it here and on the chart."
+                ? L.compare.savedSubtitle(MAX_SAVED)
+                : L.compare.emptySubtitle
             }
             flush
           >
@@ -150,16 +153,16 @@ export function ForecastPage() {
           </Card>
 
           <Card
-            title="What moves your runway most"
-            subtitle={`Months gained or lost from one change to ${isCurrent ? "the current trajectory" : "your scenario"}.`}
+            title={L.sensitivity.title}
+            subtitle={L.sensitivity.subtitle(isCurrent ? L.sensitivity.targetCurrent : L.sensitivity.targetScenario)}
           >
             <RunwaySensitivity base={BASE} scenario={scenario} />
           </Card>
         </div>
 
         <Card
-          title="Scenario"
-          subtitle="Change the assumptions. The chart and numbers update as you go."
+          title={L.panel.title}
+          subtitle={L.panel.subtitle}
           flush
           className="self-start @5xl:sticky @5xl:top-20"
         >
@@ -180,12 +183,12 @@ export function ForecastPage() {
       </div>
       <Card
         className="mt-5"
-        title="Month by month"
-        subtitle={`${workingName}, next ${h} months.`}
+        title={L.table.title}
+        subtitle={L.table.subtitle(workingName, h)}
         flush
         action={
           <Button className="h-8" icon={<Download size={14} />} onClick={() => exportProjectionCsv(working.points.slice(0, h), ORIGIN, workingName)}>
-            Export CSV
+            {commonLabels.exportCsv}
           </Button>
         }
       >

@@ -2,12 +2,14 @@
 
 import { AlertTriangle, CheckCircle2, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
+import { commonLabels } from "../../../language/en/common.lang";
+import { customScenarioLabels as L, verdictLabels } from "../../../language/en/forecast.lang";
 import { FORECAST_MONTHS } from "../../../services/forecast.service";
 import { Button } from "../../../shared/ui/button.component";
 import { Drawer } from "../../../shared/ui/drawer.component";
 import { formatMonthYear } from "../../../shared/utils/dates.util";
-import type { ForecastInput } from "../../../shared/utils/metrics.util";
-import { evaluateScenario, type LibraryScenario, type Scenario } from "../scenario.model";
+import type { ForecastInput, LibraryScenario, Scenario } from "../../../types/forecast.types";
+import { evaluateScenario } from "../scenario.model";
 import { ScenarioLevers } from "./scenario-levers.component";
 import { ScenarioSection } from "./scenario-section.component";
 
@@ -48,8 +50,8 @@ export function CustomScenarioDrawer({ open, initial, base, current, origin, tak
   return (
     <Drawer
       open={open}
-      title={editing ? "Edit custom scenario" : "Create custom scenario"}
-      description="Set your own assumptions and save them. Custom scenarios appear at the top of the scenario list."
+      title={editing ? L.editTitle : L.createTitle}
+      description={L.description}
       onClose={onClose}
       footer={
         <>
@@ -60,14 +62,14 @@ export function CustomScenarioDrawer({ open, initial, base, current, origin, tak
               icon={<Trash2 size={14} />}
               onClick={() => (confirmDelete ? onDelete() : setConfirmDelete(true))}
             >
-              {confirmDelete ? "Click again to delete" : "Delete"}
+              {confirmDelete ? commonLabels.confirmDelete : commonLabels.delete}
             </Button>
           )}
           <Button variant="ghost" onClick={onClose}>
-            Cancel
+            {commonLabels.cancel}
           </Button>
           <Button type="submit" form="custom-scenario-form" variant="primary" disabled={!canSave}>
-            {editing ? "Save changes" : "Save scenario"}
+            {editing ? L.saveChanges : L.saveNew}
           </Button>
         </>
       }
@@ -79,36 +81,36 @@ export function CustomScenarioDrawer({ open, initial, base, current, origin, tak
           if (canSave) onSave({ ...draft, name });
         }}
       >
-        <ScenarioSection title="Details">
+        <ScenarioSection title={L.details}>
           <div className="flex flex-col gap-3">
             <label className="block">
-              <span className="text-sm font-medium text-ink">Name</span>
+              <span className="text-sm font-medium text-ink">{L.name}</span>
               <input
                 className={`${input} mt-1.5 h-9`}
                 value={draft.name}
                 maxLength={60}
                 required
                 data-autofocus
-                placeholder="For example: Hire 2 AEs after the bridge"
+                placeholder={L.namePlaceholder}
                 aria-invalid={duplicate}
                 aria-describedby={duplicate ? "custom-scenario-name-error" : undefined}
                 onChange={(e) => set({ name: e.target.value })}
               />
               {duplicate && (
                 <span id="custom-scenario-name-error" className="mt-1 flex items-center gap-1 text-xs text-critical">
-                  <AlertTriangle size={12} aria-hidden /> You already have a scenario with this name.
+                  <AlertTriangle size={12} aria-hidden /> {L.duplicateName}
                 </span>
               )}
             </label>
             <label className="block">
               <span className="text-sm font-medium text-ink">
-                Description <span className="font-normal text-muted">(optional)</span>
+                {L.descriptionLabel} <span className="font-normal text-muted">{L.optional}</span>
               </span>
               <textarea
                 className={`${input} mt-1.5 min-h-16 resize-y py-2`}
                 value={draft.description}
                 maxLength={200}
-                placeholder="What this scenario assumes, so you remember later"
+                placeholder={L.descriptionPlaceholder}
                 onChange={(e) => set({ description: e.target.value })}
               />
             </label>
@@ -124,15 +126,15 @@ export function CustomScenarioDrawer({ open, initial, base, current, origin, tak
       <div className="sticky bottom-0 border-t border-line bg-surface-2 px-5 py-3" aria-live="polite">
         <p className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px] text-ink-2">
           <span>
-            Projected runway{" "}
+            {L.projectedRunway}{" "}
             <strong className="font-semibold text-ink">
-              {result.runway === null ? `${FORECAST_MONTHS}+ months` : `${result.runway.toFixed(1)} months`}
+              {commonLabels.months(result.runway === null ? `${FORECAST_MONTHS}+` : result.runway.toFixed(1))}
             </strong>
-            {result.zeroDate && <> (cash runs out {formatMonthYear(result.zeroDate)})</>}
+            {result.zeroDate && L.runsOut(formatMonthYear(result.zeroDate))}
           </span>
           <span className={`inline-flex items-center gap-1 font-medium ${result.alive ? "text-good-ink" : "text-critical"}`}>
             {result.alive ? <CheckCircle2 size={13} aria-hidden /> : <AlertTriangle size={13} aria-hidden />}
-            {result.alive ? "Default alive" : "Default dead"}
+            {result.alive ? verdictLabels.alive : verdictLabels.dead}
           </span>
         </p>
       </div>

@@ -3,7 +3,11 @@
  * All money is integer cents. "Today" is always passed in as `asOf`.
  */
 
-import type { AiSeatCharge, AiUsage, Budget, Invoice, InvoiceStatus, MonthKey, MonthlyFlow } from "../../types/finance.types";
+import { AiUsageKind } from "../../enums/ai-usage-kind.enum";
+import { InvoiceStatus } from "../../enums/invoice-status.enum";
+import { ReceivablesAge } from "../../enums/receivables-age.enum";
+import type { AiSeatCharge, AiUsage, Budget, Invoice, MonthKey, MonthlyFlow } from "../../types/finance.types";
+import type { ForecastInput, ForecastPoint } from "../../types/forecast.types";
 import { addMonths, daysBetween, parseIso, toMonthKey } from "./dates.util";
 
 /** Sum a list of cent amounts. */
@@ -54,7 +58,7 @@ export function growthRate(current: number, previous: number): number | null {
 
 /** Display status: a sent invoice past its due date is "overdue"; otherwise the stored status. */
 export function invoiceStatus(inv: Invoice, asOf: Date): InvoiceStatus {
-  if (inv.status === "sent" && parseIso(inv.dueDate) < asOf) return "overdue";
+  if (inv.status === InvoiceStatus.Sent && parseIso(inv.dueDate) < asOf) return InvoiceStatus.Overdue;
   return inv.status;
 }
 
@@ -65,22 +69,22 @@ export function daysOverdue(inv: Invoice, asOf: Date): number {
 
 /** Unpaid amounts on sent invoices (incl. overdue). Drafts excluded. */
 export function receivablesCents(invoices: Invoice[]): number {
-  return sumCents(invoices.filter((i) => i.status === "sent").map((i) => i.amountCents));
+  return sumCents(invoices.filter((i) => i.status === InvoiceStatus.Sent).map((i) => i.amountCents));
 }
 
-/** One receivables ageing bucket: total unpaid and invoice count. */
-export type AgingBucket = { label: string; amountCents: number; count: number };
+/** One receivables ageing bucket (id from `ReceivablesAge`; label in `enums.lang.ts`): total unpaid and invoice count. */
+export type AgingBucket = { age: ReceivablesAge; amountCents: number; count: number };
 
 /** Unpaid sent invoices bucketed by days late: not yet due, 1–30, 31–60, 60+. */
 export function receivablesAging(invoices: Invoice[], asOf: Date): AgingBucket[] {
   const buckets: AgingBucket[] = [
-    { label: "Not yet due", amountCents: 0, count: 0 },
-    { label: "1–30 days late", amountCents: 0, count: 0 },
-    { label: "31–60 days late", amountCents: 0, count: 0 },
-    { label: "60+ days late", amountCents: 0, count: 0 },
+    { age: ReceivablesAge.Current, amountCents: 0, count: 0 },
+    { age: ReceivablesAge.Late1To30, amountCents: 0, count: 0 },
+    { age: ReceivablesAge.Late31To60, amountCents: 0, count: 0 },
+    { age: ReceivablesAge.Late60Plus, amountCents: 0, count: 0 },
   ];
   for (const inv of invoices) {
-    if (inv.status !== "sent") continue;
+    if (inv.status !== InvoiceStatus.Sent) continue;
     const late = daysBetween(parseIso(inv.dueDate), asOf);
     const idx = late <= 0 ? 0 : late <= 30 ? 1 : late <= 60 ? 2 : 3;
     buckets[idx].amountCents += inv.amountCents;
@@ -97,45 +101,6 @@ export const budgetUsed = (b: Budget) => (b.budgetCents === 0 ? 0 : b.actualCent
 export const budgetVarianceCents = (b: Budget) => b.actualCents - b.budgetCents;
 
 // ---------- Forecast ----------
-
-/** Everything the cash projection needs: starting point from actuals plus scenario levers. */
-export type ForecastInput = {
-  startCashCents: number;
-  /** Monthly cash in for the first projected month's base. */
-  startRevenueCents: number;
-  /** Monthly cash out for the first projected month's base. */
-  startExpenseCents: number;
-  /** Month-over-month growth, e.g. 0.05 */
-  revenueGrowth: number;
-  expenseGrowth: number;
-  /** One-off cut (negative) or increase (positive) to the expense base, e.g. -0.1 */
-  expenseAdjustment: number;
-  /** One-off drop (negative) or lift (positive) to the revenue base, e.g. -0.2 when a big customer churns. */
-  revenueAdjustment: number;
-  /** Planned hires; each adds its fully loaded monthly cost from its start month (1 = next month). */
-  hires: PlannedHire[];
-  /** Optional equity raise landing in a given month. */
-  raise: PlannedRaise | null;
-  months: number;
-};
-
-/** One planned hire: role, start month (1 = current month) and fully loaded monthly cost. */
-export type PlannedHire = { id: string; role: string; startMonth: number; monthlyCostCents: number };
-/** A raise landing in a projection month. */
-export type PlannedRaise = { month: number; amountCents: number };
-
-/** One projected month. */
-export type ForecastPoint = {
-  index: number;
-  cashCents: number;
-  revenueCents: number;
-  /** Total cash out, including hires. */
-  expenseCents: number;
-  /** Portion of expense from planned hires. */
-  hiringCents: number;
-  /** Raise proceeds landing this month (0 otherwise). */
-  raiseCents: number;
-};
 
 /**
  * Project cash month by month: revenue and spending compound from their (adjusted) bases, plus hires and a raise.
@@ -205,7 +170,7 @@ export function breakEvenIndex(points: ForecastPoint[]): number | null {
 
 /** Mean days from issue to payment across paid invoices; null if none paid. */
 export function averageDaysToPay(invoices: Invoice[]): number | null {
-  const paid = invoices.filter((i) => i.status === "paid" && i.paidDate);
+  const paid = invoices.filter((i) => i.status === InvoiceStatus.Paid && i.paidDate);
   if (paid.length === 0) return null;
   const days = paid.map((i) => daysBetween(parseIso(i.issueDate), parseIso(i.paidDate as string)));
   return Math.round(days.reduce((a, b) => a + b, 0) / days.length);
@@ -238,8 +203,8 @@ export function aiMonthlySummary(usage: AiUsage[], seats: AiSeatCharge[]): AiMon
   const months = [...new Set([...usage.map((u) => u.month), ...seats.map((s) => s.month)])].sort();
   return months.map((month) => {
     const u = usage.filter((x) => x.month === month);
-    const apiCents = sumCents(u.filter((x) => x.kind === "api").map((x) => x.costCents));
-    const computeCents = sumCents(u.filter((x) => x.kind === "compute").map((x) => x.costCents));
+    const apiCents = sumCents(u.filter((x) => x.kind === AiUsageKind.Api).map((x) => x.costCents));
+    const computeCents = sumCents(u.filter((x) => x.kind === AiUsageKind.Compute).map((x) => x.costCents));
     const seatsCents = sumCents(seats.filter((s) => s.month === month).map((s) => s.costCents));
     return {
       month,

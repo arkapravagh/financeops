@@ -5,7 +5,8 @@
  */
 
 import { aiBudgets, aiFeatures, aiSeatCharges, aiUsage } from "../data/ai-spend.data";
-import type { AiBudget, AiFeature, AiFeatureInfo, AiSeatCharge, AiUsage, MonthKey } from "../types/finance.types";
+import { AiFeature } from "../enums/ai-feature.enum";
+import type { AiBudget, AiFeatureInfo, AiSeatCharge, AiUsage, MonthKey } from "../types/finance.types";
 
 /** Months with AI usage data, oldest first. */
 export const getAiMonths = (): MonthKey[] =>

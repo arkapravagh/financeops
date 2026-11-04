@@ -6,11 +6,13 @@
 
 import { ArrowDown, History, MessageSquare, PanelRightClose, SquarePen, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useAssistant } from "../../../hooks/use-assistant.hook";
+import { assistantLabels as L } from "../../../language/en/assistant.lang";
+import { navigationLabels } from "../../../language/en/navigation.lang";
 import { pageSuggestions } from "../../../services/assistant.service";
 import { getCompany } from "../../../services/company.service";
 import { navItems, secondaryNavItems } from "../../../shared/config/navigation.config";
 import { Popover } from "../../../shared/ui/popover.component";
-import { useAssistant } from "../assistant.provider";
 import { AiMark } from "./ai-mark.component";
 import { ChatMessageView } from "./chat-message-view.component";
 import { Composer, type ComposerHandle } from "./composer.component";
@@ -21,15 +23,15 @@ const iconBtn =
 function pageLabel(path: string) {
   const all = [...navItems, ...secondaryNavItems];
   const hit = all.filter((n) => (n.to === "/" ? path === "/" : path.startsWith(n.to)))[0];
-  return hit ? hit.label : "This page";
+  return hit ? hit.label : navigationLabels.unknownPage;
 }
 
 function timeAgo(ts: number) {
   const m = Math.round((Date.now() - ts) / 60000);
-  if (m < 1) return "just now";
-  if (m < 60) return `${m}m ago`;
+  if (m < 1) return L.justNow;
+  if (m < 60) return L.minutesAgo(m);
   const h = Math.round(m / 60);
-  return h < 24 ? `${h}h ago` : `${Math.round(h / 24)}d ago`;
+  return h < 24 ? L.hoursAgo(h) : L.daysAgo(Math.round(h / 24));
 }
 
 /** The FinanceOps AI chat UI (Ctrl+J). Rendered by the dock. */
@@ -80,17 +82,17 @@ export function AssistantPanel({ onClose }: { onClose: () => void }) {
       <header className="flex h-14 shrink-0 items-center gap-2 border-b border-line px-3">
         <AiMark size={26} />
         <div className="min-w-0 flex-1 leading-tight">
-          <p className="truncate text-sm font-semibold text-ink">FinanceOps AI</p>
-          <p className="truncate text-[11px] text-muted">{a.active ? a.active.title : "Demo mode: answers come from sample data"}</p>
+          <p className="truncate text-sm font-semibold text-ink">{L.name}</p>
+          <p className="truncate text-[11px] text-muted">{a.active ? a.active.title : L.demoMode}</p>
         </div>
-        <button type="button" className={iconBtn} onClick={a.newChat} aria-label="New chat" title="New chat">
+        <button type="button" className={iconBtn} onClick={a.newChat} aria-label={L.newChat} title={L.newChat}>
           <SquarePen size={16} />
         </button>
-        <Popover align="end" ariaLabel="Chat history" buttonClassName={iconBtn} label={<History size={16} />} panelClassName="w-72">
+        <Popover align="end" ariaLabel={L.history} buttonClassName={iconBtn} label={<History size={16} />} panelClassName="w-72">
           {(close) => (
             <>
-              <p className="px-2 pt-1 pb-1.5 text-xs font-medium text-muted">Recent chats</p>
-              {a.conversations.length === 0 && <p className="px-2 py-4 text-center text-sm text-muted">No conversations yet</p>}
+              <p className="px-2 pt-1 pb-1.5 text-xs font-medium text-muted">{L.recentChats}</p>
+              {a.conversations.length === 0 && <p className="px-2 py-4 text-center text-sm text-muted">{L.noConversations}</p>}
               <ul className="max-h-80 overflow-y-auto">
                 {a.conversations.map((c) => (
                   <li key={c.id} className="group flex items-center gap-1">
@@ -111,7 +113,7 @@ export function AssistantPanel({ onClose }: { onClose: () => void }) {
                     <button
                       type="button"
                       onClick={() => a.deleteChat(c.id)}
-                      aria-label={`Delete chat: ${c.title}`}
+                      aria-label={L.deleteChat(c.title)}
                       className="grid size-7 shrink-0 place-items-center rounded-md text-muted opacity-0 outline-none group-hover:opacity-100 hover:bg-critical/10 hover:text-critical focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-accent"
                     >
                       <Trash2 size={13} />
@@ -122,7 +124,7 @@ export function AssistantPanel({ onClose }: { onClose: () => void }) {
             </>
           )}
         </Popover>
-        <button type="button" className={iconBtn} onClick={onClose} aria-label="Close assistant" title="Close (Ctrl+J)">
+        <button type="button" className={iconBtn} onClick={onClose} aria-label={L.close} title={L.closeTitle}>
           <PanelRightClose size={16} />
         </button>
       </header>
@@ -133,9 +135,9 @@ export function AssistantPanel({ onClose }: { onClose: () => void }) {
           {messages.length === 0 ? (
             <div className="flex min-h-full flex-col justify-center pb-6">
               <AiMark size={40} />
-              <h2 className="mt-4 text-xl font-semibold tracking-tight text-ink">How can I help?</h2>
+              <h2 className="mt-4 text-xl font-semibold tracking-tight text-ink">{L.emptyTitle}</h2>
               <p className="mt-1 text-sm text-ink-2">
-                Ask anything about {getCompany().name}'s finances. I'll answer from your live numbers.
+                {L.emptyBody(getCompany().name)}
               </p>
               <div className="mt-6 grid grid-cols-1 gap-2">
                 {pageSuggestions(a.page).map((s) => (
@@ -174,7 +176,7 @@ export function AssistantPanel({ onClose }: { onClose: () => void }) {
               setPinned(true);
               scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
             }}
-            aria-label="Scroll to latest"
+            aria-label={L.scrollToLatest}
             className="absolute bottom-3 left-1/2 grid size-8 -translate-x-1/2 place-items-center rounded-full border border-line bg-surface text-ink-2 shadow-[var(--shadow-float)] hover:text-ink"
           >
             <ArrowDown size={16} />

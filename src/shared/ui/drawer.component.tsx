@@ -7,6 +7,7 @@
 import { X } from "lucide-react";
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
+import { commonLabels } from "../../language/en/common.lang";
 
 /** Drawer content and state. Keep it mounted and toggle `open` so it can animate out. */
 export type DrawerProps = {
@@ -119,7 +120,7 @@ export function Drawer({ open, title, description, onClose, children, footer, cl
           </div>
           <button
             type="button"
-            aria-label="Close"
+            aria-label={commonLabels.close}
             onClick={onClose}
             className="-mr-1.5 grid size-8 shrink-0 place-items-center rounded-lg text-muted outline-none hover:bg-surface-2 hover:text-ink focus-visible:ring-2 focus-visible:ring-accent"
           >

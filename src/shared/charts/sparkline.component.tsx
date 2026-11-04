@@ -1,6 +1,6 @@
 /** Sparkline: tiny trend line for KPI cells. */
 
-import { useElementWidth } from "./chart.util";
+import { useElementWidth } from "../../hooks/use-element-width.hook";
 
 /** Values oldest first; `label` is the accessible description of the trend. */
 export type SparklineProps = {

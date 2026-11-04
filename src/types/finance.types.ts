@@ -2,27 +2,22 @@
  * Domain types shared by data, services, utils and UI.
  *
  * Conventions: money is integer cents (`*Cents`), dates are ISO strings, months are `YYYY-MM`.
- * Mock files must `satisfies` these types (data-and-mocks rules).
+ * Mock files must `satisfies` these types (data-and-mocks rules). Enumerations live in `src/enums/`.
  */
+
+import type { AccountKind } from "../enums/account-kind.enum";
+import type { AiFeature } from "../enums/ai-feature.enum";
+import type { AiUsageKind } from "../enums/ai-usage-kind.enum";
+import type { Category, ExpenseCategory } from "../enums/category.enum";
+import type { IntegrationStatus } from "../enums/integration-status.enum";
+import type { InvoiceStoredStatus } from "../enums/invoice-status.enum";
+import type { TeamRole } from "../enums/team-role.enum";
+import type { TransactionStatus } from "../enums/transaction-status.enum";
 
 /** ISO date, `YYYY-MM-DD` */
 export type IsoDate = string;
 /** Month key, `YYYY-MM` */
 export type MonthKey = string;
-
-/** Categories money goes out under. Budgets exist per expense category. */
-export type ExpenseCategory =
-  | "Payroll"
-  | "Software & cloud"
-  | "Rent"
-  | "Contractors"
-  | "Marketing"
-  | "Travel"
-  | "Office & misc"
-  | "Legal & accounting";
-
-/** Every transaction category: expenses plus money in (Revenue) and moves between accounts (Transfer). */
-export type Category = ExpenseCategory | "Revenue" | "Transfer";
 
 /** Company profile. */
 export type Company = {
@@ -40,7 +35,7 @@ export type BankAccount = {
   name: string;
   institution: string;
   mask: string;
-  kind: "checking" | "savings" | "treasury";
+  kind: AccountKind;
   balanceCents: number;
 };
 
@@ -61,13 +56,8 @@ export type Transaction = {
   accountId: string;
   /** Positive = money in, negative = money out */
   amountCents: number;
-  status: "cleared" | "pending";
+  status: TransactionStatus;
 };
-
-/** Stored status. "overdue" is derived from dueDate vs. today: see `invoiceStatus()` in shared/utils/metrics.util.ts. */
-export type InvoiceStoredStatus = "draft" | "sent" | "paid";
-/** Status shown in the UI: the stored status, or "overdue" when sent and past its due date. */
-export type InvoiceStatus = InvoiceStoredStatus | "overdue";
 
 /** A customer invoice. */
 export type Invoice = {
@@ -111,7 +101,7 @@ export type TeamMember = {
   id: string;
   name: string;
   email: string;
-  role: "Owner" | "Finance" | "Viewer";
+  role: TeamRole;
 };
 
 /** A bank, billing or accounting connection (placeholder in the prototype). */
@@ -119,16 +109,10 @@ export type Integration = {
   id: string;
   name: string;
   purpose: string;
-  status: "connected" | "available";
+  status: IntegrationStatus;
 };
 
 // ---------- AI spend ----------
-
-/** Where AI is used in the business. */
-export type AiFeature = "In-app assistant" | "Support triage" | "Search" | "Document parsing" | "Internal tools";
-
-/** "api" = billed per token by a model provider; "compute" = self-hosted model on rented GPUs (billed per GPU hour). */
-export type AiUsageKind = "api" | "compute";
 
 /** One month of usage for one model in one feature, as billed by the provider. */
 export type AiUsage = {

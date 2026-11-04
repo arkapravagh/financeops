@@ -1,21 +1,4 @@
-/** Shared helpers for the house SVG charts: sizing, tick generation, column paths and label thinning. */
-
-import { useLayoutEffect, useRef, useState } from "react";
-
-/** Measure an element's width so SVG text renders at true pixel size (no viewBox scaling). */
-export function useElementWidth<T extends HTMLElement>() {
-  const ref = useRef<T>(null);
-  const [width, setWidth] = useState(0);
-  useLayoutEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const ro = new ResizeObserver(([entry]) => setWidth(entry.contentRect.width));
-    ro.observe(el);
-    setWidth(el.getBoundingClientRect().width);
-    return () => ro.disconnect();
-  }, []);
-  return [ref, width] as const;
-}
+/** Shared helpers for the house SVG charts: tick generation, column paths and label thinning (pure functions). */
 
 /** Round tick values covering [min, max], e.g. 0 / 500K / 1M / 1.5M. */
 export function niceTicks(min: number, max: number, count = 4): number[] {

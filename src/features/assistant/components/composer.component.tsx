@@ -2,6 +2,9 @@
 
 import { ArrowUp, AtSign, Paperclip, Square } from "lucide-react";
 import { forwardRef, useImperativeHandle, useLayoutEffect, useRef, useState } from "react";
+import { assistantLabels } from "../../../language/en/assistant.lang";
+
+const L = assistantLabels.composer;
 
 /** Imperative handle so the panel can focus the input (e.g. after opening). */
 export type ComposerHandle = { focus: () => void };
@@ -39,7 +42,7 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
     <div className="px-4 pb-3">
       <div className="rounded-2xl border border-line bg-surface transition focus-within:border-accent/50 focus-within:ring-4 focus-within:ring-accent/10">
         <label className="sr-only" htmlFor="ai-composer">
-          Message FinanceOps AI
+          {L.label}
         </label>
         <textarea
           id="ai-composer"
@@ -55,28 +58,28 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
               onStop();
             }
           }}
-          placeholder="Ask about cash, burn, invoices…"
+          placeholder={L.placeholder}
           className="block max-h-[200px] w-full resize-none bg-transparent px-4 pt-3 pb-1 text-sm text-ink outline-none placeholder:text-muted"
         />
         <div className="flex items-center gap-1 px-2 pb-2">
           <button
             type="button"
             disabled
-            title="Attachments — coming soon"
-            aria-label="Attach file (coming soon)"
+            title={L.attachTitle}
+            aria-label={L.attach}
             className="grid size-8 place-items-center rounded-lg text-muted disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Paperclip size={16} />
           </button>
-          <span className="inline-flex max-w-[60%] items-center gap-1 truncate rounded-md bg-surface-2 px-2 py-1 text-[11px] text-ink-2" title="The assistant knows which page you're on">
+          <span className="inline-flex max-w-[60%] items-center gap-1 truncate rounded-md bg-surface-2 px-2 py-1 text-[11px] text-ink-2" title={L.contextTitle}>
             <AtSign size={11} aria-hidden /> {contextLabel}
           </span>
           {busy ? (
             <button
               type="button"
               onClick={onStop}
-              aria-label="Stop generating"
-              title="Stop (Esc)"
+              aria-label={L.stop}
+              title={L.stopTitle}
               className="ml-auto grid size-8 place-items-center rounded-full bg-ink text-surface outline-none transition hover:opacity-85 focus-visible:ring-2 focus-visible:ring-accent"
             >
               <Square size={12} fill="currentColor" />
@@ -86,8 +89,8 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
               type="button"
               onClick={submit}
               disabled={!text.trim()}
-              aria-label="Send message"
-              title="Send (Enter)"
+              aria-label={L.send}
+              title={L.sendTitle}
               className="ml-auto grid size-8 place-items-center rounded-full bg-ink text-surface outline-none transition hover:opacity-85 focus-visible:ring-2 focus-visible:ring-accent disabled:bg-surface-2 disabled:text-muted"
             >
               <ArrowUp size={16} strokeWidth={2.4} />
@@ -95,7 +98,7 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
           )}
         </div>
       </div>
-      <p className="mt-2 text-center text-[11px] text-muted">AI can make mistakes. Verify important numbers. Not financial advice.</p>
+      <p className="mt-2 text-center text-[11px] text-muted">{L.disclaimer}</p>
     </div>
   );
 });

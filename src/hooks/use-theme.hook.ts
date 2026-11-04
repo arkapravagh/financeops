@@ -6,18 +6,16 @@
  */
 
 import { useCallback, useState } from "react";
-
-/** The two supported themes. */
-export type Theme = "light" | "dark";
+import { Theme } from "../enums/theme.enum";
 
 /** Current theme and a `toggle()` that flips it, updates `<html data-theme>` and remembers the choice. */
 export function useTheme() {
   const [theme, setTheme] = useState<Theme>(() =>
-    document.documentElement.dataset.theme === "dark" ? "dark" : "light",
+    document.documentElement.dataset.theme === Theme.Dark ? Theme.Dark : Theme.Light,
   );
   const toggle = useCallback(() => {
     setTheme((prev) => {
-      const next = prev === "dark" ? "light" : "dark";
+      const next = prev === Theme.Dark ? Theme.Light : Theme.Dark;
       document.documentElement.dataset.theme = next;
       try {
         localStorage.setItem("fo-theme", next);

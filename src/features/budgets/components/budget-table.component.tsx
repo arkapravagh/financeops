@@ -3,6 +3,10 @@
 import { AlertTriangle, ArrowRight, ChevronDown, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { BudgetScale } from "../../../enums/budget-scale.enum";
+import type { ExpenseCategory } from "../../../enums/category.enum";
+import { budgetTableLabels as L } from "../../../language/en/budgets.lang";
+import { categoryLabels } from "../../../language/en/enums.lang";
 import { BulletBar } from "../../../shared/charts/bullet-bar.component";
 import { niceTicks } from "../../../shared/charts/chart.util";
 import { Amount } from "../../../shared/finance/amount.component";
@@ -10,10 +14,7 @@ import { Badge } from "../../../shared/ui/badge.component";
 import { formatDayMonth, formatMonthLong, formatMonthShort } from "../../../shared/utils/dates.util";
 import { budgetUsed, budgetVarianceCents } from "../../../shared/utils/metrics.util";
 import { formatCompact, formatMoney, formatPercent } from "../../../shared/utils/money.util";
-import type { Budget, ExpenseCategory, Transaction } from "../../../types/finance.types";
-
-/** Bullet bar scale: % of each budget, or dollars on a shared axis. */
-export type BudgetScale = "percent" | "amount";
+import type { Budget, Transaction } from "../../../types/finance.types";
 
 /** Budget rows, scale, per-category history, a transaction lookup for details, and an Ask AI hook. */
 export type BudgetTableProps = {
@@ -36,14 +37,14 @@ function Trend({ rows }: { rows: Budget[] }) {
     <span
       className="flex h-6 items-end gap-[3px]"
       role="img"
-      aria-label={`Share of budget used: ${rows.map((r) => `${formatMonthShort(r.month)} ${formatPercent(budgetUsed(r))}`).join(", ")}`}
+      aria-label={L.trendLabel(rows.map((r) => L.trendItem(formatMonthShort(r.month), formatPercent(budgetUsed(r)))).join(", "))}
     >
       {rows.map((r) => {
         const u = budgetUsed(r);
         return (
           <span
             key={r.month}
-            title={`${formatMonthShort(r.month)}: ${formatPercent(u)}`}
+            title={L.trendTitle(formatMonthShort(r.month), formatPercent(u))}
             className={`w-[7px] rounded-t-[2px] ${u > 1 ? "bg-critical" : "bg-accent/70"}`}
             style={{ height: Math.max(2, (Math.min(u, cap) / cap) * H) }}
           />
@@ -58,22 +59,22 @@ export function BudgetTable({ budgets, scale, history, transactionsFor, onAsk }:
   const [open, setOpen] = useState<string | null>(null);
 
   const rows =
-    scale === "percent"
+    scale === BudgetScale.Percent
       ? [...budgets].sort((a, b) => budgetUsed(b) - budgetUsed(a))
       : [...budgets].sort((a, b) => Math.max(b.budgetCents, b.actualCents) - Math.max(a.budgetCents, a.actualCents));
 
   const ticks =
-    scale === "percent"
+    scale === BudgetScale.Percent
       ? Array.from({ length: Math.max(5, Math.ceil(Math.max(...budgets.map(budgetUsed)) * 4)) + 1 }, (_, k) => k * 0.25)
       : niceTicks(0, Math.max(...budgets.map((b) => Math.max(b.actualCents, b.budgetCents))), 4);
   const max = ticks[ticks.length - 1];
-  const tickLabel = (t: number) => (scale === "percent" ? formatPercent(t) : formatCompact(t));
+  const tickLabel = (t: number) => (scale === BudgetScale.Percent ? formatPercent(t) : formatCompact(t));
 
   return (
     <div className="@container">
       {/* Column headings (wide layout only) */}
       <div className={`hidden items-end gap-x-4 border-b border-line px-5 pb-2 text-xs font-medium text-muted @5xl:grid ${wideGrid}`}>
-        <span>Category</span>
+        <span>{L.category}</span>
         <span className="relative h-4" aria-hidden>
           {ticks.map((t, i) => (
             <span
@@ -84,12 +85,12 @@ export function BudgetTable({ budgets, scale, history, transactionsFor, onAsk }:
               {tickLabel(t)}
             </span>
           ))}
-          <span className="sr-only">Spend against budget</span>
+          <span className="sr-only">{L.spendAgainstBudget}</span>
         </span>
-        <span className="text-right">Spent</span>
-        <span className="text-right">Budget</span>
-        <span className="text-right">Variance</span>
-        <span className="text-right">3 months</span>
+        <span className="text-right">{L.spent}</span>
+        <span className="text-right">{L.budget}</span>
+        <span className="text-right">{L.variance}</span>
+        <span className="text-right">{L.threeMonths}</span>
         <span />
       </div>
 
@@ -99,8 +100,8 @@ export function BudgetTable({ budgets, scale, history, transactionsFor, onAsk }:
           const variance = budgetVarianceCents(b);
           const over = variance > 0;
           const isOpen = open === b.category;
-          const actualV = scale === "percent" ? used : b.actualCents;
-          const targetV = scale === "percent" ? 1 : b.budgetCents;
+          const actualV = scale === BudgetScale.Percent ? used : b.actualCents;
+          const targetV = scale === BudgetScale.Percent ? 1 : b.budgetCents;
           const panelId = `budget-${b.category.replace(/\W+/g, "-")}`;
 
           return (
@@ -115,8 +116,8 @@ export function BudgetTable({ budgets, scale, history, transactionsFor, onAsk }:
                 }`}
               >
                 <span className="flex min-w-0 items-center gap-2">
-                  <span className="truncate text-sm font-medium text-ink">{b.category}</span>
-                  {scale === "percent" && <span className="text-xs text-muted tabular-nums @5xl:hidden">{formatPercent(used)}</span>}
+                  <span className="truncate text-sm font-medium text-ink">{categoryLabels[b.category]}</span>
+                  {scale === BudgetScale.Percent && <span className="text-xs text-muted tabular-nums @5xl:hidden">{formatPercent(used)}</span>}
                 </span>
 
                 {/* Variance + chevron (narrow: top-right) */}
@@ -130,7 +131,7 @@ export function BudgetTable({ budgets, scale, history, transactionsFor, onAsk }:
                 </span>
 
                 <span className="col-span-2 text-xs text-muted @5xl:hidden">
-                  {formatMoney(b.actualCents)} spent of {formatMoney(b.budgetCents)}
+                  {L.spentOf(formatMoney(b.actualCents), formatMoney(b.budgetCents))}
                 </span>
 
                 {/* Wide-only columns */}
@@ -167,11 +168,11 @@ function VarianceLabel({ variance }: { variance: number }) {
   if (variance > 0)
     return (
       <Badge tone="critical" icon={<AlertTriangle size={12} />}>
-        {formatCompact(variance)} over
+        {L.over(formatCompact(variance))}
       </Badge>
     );
-  if (variance === 0) return <span className="text-xs font-medium text-ink-2">On budget</span>;
-  return <span className="text-xs text-ink-2 tabular-nums">{formatCompact(-variance)} left</span>;
+  if (variance === 0) return <span className="text-xs font-medium text-ink-2">{L.onBudget}</span>;
+  return <span className="text-xs text-ink-2 tabular-nums">{L.left(formatCompact(-variance))}</span>;
 }
 
 function Details({
@@ -198,7 +199,7 @@ function Details({
   return (
     <div id={id} className="grid grid-cols-1 gap-5 border-t border-line bg-surface-2/40 px-5 py-4 @3xl:grid-cols-[minmax(0,1fr)_16rem]">
       <div className="min-w-0">
-        <p className="text-[13px] font-medium text-ink">Largest transactions in {formatMonthLong(budget.month)}</p>
+        <p className="text-[13px] font-medium text-ink">{L.largestTransactions(formatMonthLong(budget.month))}</p>
         {top.length ? (
           <ul className="mt-2 divide-y divide-line">
             {top.map((t) => (
@@ -212,13 +213,13 @@ function Details({
             ))}
           </ul>
         ) : (
-          <p className="mt-2 text-sm text-ink-2">The sample data only has transaction detail for October. Budget totals above are complete.</p>
+          <p className="mt-2 text-sm text-ink-2">{L.noDetail}</p>
         )}
         <Link
           to="/transactions"
           className="mt-2 inline-flex items-center gap-1 rounded text-[13px] font-medium text-accent outline-none hover:underline focus-visible:ring-2 focus-visible:ring-accent"
         >
-          Open transactions <ArrowRight size={13} aria-hidden />
+          {L.openTransactions} <ArrowRight size={13} aria-hidden />
         </Link>
       </div>
 
@@ -226,7 +227,7 @@ function Details({
         <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5">
           {change !== null && prev && (
             <>
-              <dt className="text-muted">vs {formatMonthShort(prev.month)}</dt>
+              <dt className="text-muted">{L.versus(formatMonthShort(prev.month))}</dt>
               <dd className={`text-right tabular-nums ${change > 0 ? "text-ink" : "text-good-ink"}`}>
                 {change > 0 ? "+" : change < 0 ? "−" : ""}
                 {formatMoney(Math.abs(change))}
@@ -235,22 +236,22 @@ function Details({
           )}
           {avgUsed !== null && (
             <>
-              <dt className="text-muted">{history.length}-month average</dt>
-              <dd className="text-right tabular-nums text-ink">{formatPercent(avgUsed)} used</dd>
+              <dt className="text-muted">{L.average(history.length)}</dt>
+              <dd className="text-right tabular-nums text-ink">{L.used(formatPercent(avgUsed))}</dd>
             </>
           )}
-          <dt className="text-muted">Months over budget</dt>
+          <dt className="text-muted">{L.monthsOver}</dt>
           <dd className="text-right tabular-nums text-ink">
-            {overMonths} of {history.length}
+            {L.monthsOverValue(overMonths, history.length)}
           </dd>
         </dl>
         {over && (
           <button
             type="button"
-            onClick={() => onAsk(`Why is ${budget.category} over budget?`)}
+            onClick={() => onAsk(L.askPrompt(categoryLabels[budget.category]))}
             className="inline-flex items-center gap-1.5 self-start rounded-lg border border-line bg-surface px-2.5 py-1.5 text-[13px] font-medium text-ink outline-none transition hover:bg-surface-2 focus-visible:ring-2 focus-visible:ring-accent"
           >
-            <Sparkles size={13} className="text-accent" aria-hidden /> Ask AI why it's over
+            <Sparkles size={13} className="text-accent" aria-hidden /> {L.askWhy}
           </button>
         )}
       </div>

@@ -7,6 +7,12 @@
 
 import { PencilLine } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
+import { BudgetScale } from "../../enums/budget-scale.enum";
+import { type ExpenseCategory } from "../../enums/category.enum";
+import { useAssistantControls } from "../../hooks/use-assistant.hook";
+import { budgetsLabels as L } from "../../language/en/budgets.lang";
+import { commonLabels } from "../../language/en/common.lang";
+import { budgetScaleLabels, categoryLabels } from "../../language/en/enums.lang";
 import { getBudgetHistory, getBudgetMonths, getBudgets, getLatestBudgetMonth } from "../../services/budgets.service";
 import { getTransactions } from "../../services/transactions.service";
 import { ColumnChart } from "../../shared/charts/column-chart.component";
@@ -17,10 +23,8 @@ import { Segmented } from "../../shared/ui/segmented.component";
 import { formatMonthLong, formatMonthShort } from "../../shared/utils/dates.util";
 import { budgetUsed, budgetVarianceCents, sumCents } from "../../shared/utils/metrics.util";
 import { formatMoney, formatPercent } from "../../shared/utils/money.util";
-import type { ExpenseCategory } from "../../types/finance.types";
-import { useAssistantControls } from "../assistant/assistant.provider";
 import { BudgetSummary } from "./components/budget-summary.component";
-import { BudgetTable, type BudgetScale } from "./components/budget-table.component";
+import { BudgetTable } from "./components/budget-table.component";
 
 const MONTHS = getBudgetMonths();
 
@@ -28,7 +32,7 @@ const MONTHS = getBudgetMonths();
 export function BudgetsPage() {
   const { ask } = useAssistantControls();
   const [month, setMonth] = useState(getLatestBudgetMonth());
-  const [scale, setScale] = useState<BudgetScale>("percent");
+  const [scale, setScale] = useState<BudgetScale>(BudgetScale.Percent);
 
   const budgets = useMemo(() => getBudgets(month), [month]);
   const prevMonth = MONTHS[MONTHS.indexOf(month) - 1];
@@ -53,19 +57,19 @@ export function BudgetsPage() {
   return (
     <>
       <PageHeader
-        title="Budgets"
-        subtitle="Are we spending what we planned? A month closes once the books are reconciled."
+        title={L.title}
+        subtitle={L.subtitle}
         actions={
           <>
             <Segmented
-              label="Month"
+              label={L.month}
               size="md"
               value={month}
               onChange={setMonth}
               options={MONTHS.map((m) => ({ value: m, label: formatMonthShort(m) }))}
             />
-            <Button icon={<PencilLine size={16} />} title="Not available in the prototype">
-              Edit budgets
+            <Button icon={<PencilLine size={16} />} title={commonLabels.notAvailableTitle}>
+              {L.editBudgets}
             </Button>
           </>
         }
@@ -76,37 +80,37 @@ export function BudgetsPage() {
       <Card
         className="mt-5"
         flush
-        title="By category"
+        title={L.byCategory.title}
         subtitle={
           over.length
-            ? `${over.map((b) => `${b.category} (${formatMoney(budgetVarianceCents(b))} over)`).join(" and ")} ran over. Select a row to see what's behind it.`
-            : "Every category stayed within budget. Select a row to see what's behind it."
+            ? L.byCategory.overSubtitle(over.map((b) => L.byCategory.overItem(categoryLabels[b.category], formatMoney(budgetVarianceCents(b)))).join(L.byCategory.overJoin))
+            : L.byCategory.withinSubtitle
         }
         action={
           <Segmented
-            label="Chart scale"
+            label={L.byCategory.chartScale}
             value={scale}
             onChange={setScale}
             options={[
-              { value: "percent", label: "% of budget" },
-              { value: "amount", label: "Amount" },
+              { value: BudgetScale.Percent, label: budgetScaleLabels[BudgetScale.Percent] },
+              { value: BudgetScale.Amount, label: budgetScaleLabels[BudgetScale.Amount] },
             ]}
           />
         }
       >
         <BudgetTable budgets={budgets} scale={scale} history={history} transactionsFor={transactionsFor} onAsk={ask} />
-        <ul className="flex flex-wrap gap-x-5 gap-y-1.5 border-t border-line px-5 py-3 text-xs text-ink-2" aria-label="Legend">
+        <ul className="flex flex-wrap gap-x-5 gap-y-1.5 border-t border-line px-5 py-3 text-xs text-ink-2" aria-label={L.legend.label}>
           <li className="inline-flex items-center gap-1.5">
-            <span className="h-2 w-4 rounded-sm bg-[var(--series-1)]" aria-hidden /> Spent
+            <span className="h-2 w-4 rounded-sm bg-[var(--series-1)]" aria-hidden /> {L.legend.spent}
           </li>
           <li className="inline-flex items-center gap-1.5">
-            <span className="h-3 w-4 rounded-sm bg-[var(--series-1-soft)]" aria-hidden /> Budget
+            <span className="h-3 w-4 rounded-sm bg-[var(--series-1-soft)]" aria-hidden /> {L.legend.budget}
           </li>
           <li className="inline-flex items-center gap-1.5">
-            <span className="h-3 w-[3px] rounded-full bg-ink" aria-hidden /> Budget line
+            <span className="h-3 w-[3px] rounded-full bg-ink" aria-hidden /> {L.legend.budgetLine}
           </li>
           <li className="inline-flex items-center gap-1.5">
-            <span className="h-2 w-4 rounded-sm bg-critical" aria-hidden /> Over budget
+            <span className="h-2 w-4 rounded-sm bg-critical" aria-hidden /> {L.legend.overBudget}
           </li>
           <li className="inline-flex items-center gap-1.5">
             <span className="flex h-3 items-end gap-px" aria-hidden>
@@ -114,33 +118,33 @@ export function BudgetsPage() {
               <span className="h-2.5 w-1 bg-accent/70" />
               <span className="h-3 w-1 bg-critical" />
             </span>
-            Share of budget used, last 3 months
+            {L.legend.trend}
           </li>
         </ul>
       </Card>
 
       <div className="mt-5 grid grid-cols-1 gap-5 xl:grid-cols-2">
-        <Card title="Spent vs budget by month" subtitle={`Budgets are tracked from ${formatMonthLong(MONTHS[0])}.`}>
+        <Card title={L.monthly.title} subtitle={L.monthly.subtitle(formatMonthLong(MONTHS[0]))}>
           <ColumnChart
             labels={monthly.map((m) => formatMonthShort(m.month))}
             tooltipLabels={monthly.map((m) => formatMonthLong(m.month))}
             series={[
-              { name: "Budget", color: "var(--muted)", values: monthly.map((m) => m.budget) },
-              { name: "Spent", color: "var(--series-1)", values: monthly.map((m) => m.spent) },
+              { name: L.monthly.budget, color: "var(--muted)", values: monthly.map((m) => m.budget) },
+              { name: L.monthly.spent, color: "var(--series-1)", values: monthly.map((m) => m.spent) },
             ]}
-            extraRows={(i) => [{ label: "Difference", value: formatMoney(monthly[i].spent - monthly[i].budget, { signed: true }) }]}
-            ariaLabel={monthly.map((m) => `${formatMonthShort(m.month)}: spent ${formatMoney(m.spent)} of ${formatMoney(m.budget)}`).join("; ")}
+            extraRows={(i) => [{ label: L.monthly.difference, value: formatMoney(monthly[i].spent - monthly[i].budget, { signed: true }) }]}
+            ariaLabel={monthly.map((m) => L.monthly.summaryItem(formatMonthShort(m.month), formatMoney(m.spent), formatMoney(m.budget))).join("; ")}
             height={240}
           />
         </Card>
 
-        <Card title="Where the money goes" subtitle={`Share of ${formatMonthLong(month)} spending by category.`}>
+        <Card title={L.share.title} subtitle={L.share.subtitle(formatMonthLong(month))}>
           <ul className="flex flex-col gap-3">
             {byShare.map((b) => {
               const share = total ? b.actualCents / total : 0;
               return (
                 <li key={b.category} className="grid grid-cols-[9.5rem_minmax(0,1fr)_3rem] items-center gap-3 text-sm">
-                  <span className="truncate text-ink">{b.category}</span>
+                  <span className="truncate text-ink">{categoryLabels[b.category]}</span>
                   <span className="h-2 rounded-full bg-surface-2" aria-hidden>
                     <span className="block h-full rounded-full bg-accent" style={{ width: `${Math.max(share * 100, 1)}%` }} />
                   </span>
@@ -149,7 +153,7 @@ export function BudgetsPage() {
               );
             })}
           </ul>
-          <p className="mt-5 text-xs text-muted">Payroll is shown as one total. Individual salaries will sit behind a permission.</p>
+          <p className="mt-5 text-xs text-muted">{L.share.payrollNote}</p>
         </Card>
       </div>
     </>

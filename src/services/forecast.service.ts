@@ -5,7 +5,8 @@
  */
 
 import { parseIso } from "../shared/utils/dates.util";
-import { completeMonths, compoundGrowth, sumCents, type ForecastInput, type PlannedHire } from "../shared/utils/metrics.util";
+import { completeMonths, compoundGrowth, sumCents } from "../shared/utils/metrics.util";
+import type { ForecastInput, PlannedHire } from "../types/forecast.types";
 import { getAccounts, getMonthlyFlows } from "./cash.service";
 import { AS_OF } from "./company.service";
 

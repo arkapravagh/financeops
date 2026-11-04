@@ -5,9 +5,10 @@
  */
 
 import { useState } from "react";
+import { useElementWidth } from "../../hooks/use-element-width.hook";
 import { formatCompact, formatMoney } from "../utils/money.util";
 import { ChartTooltip, Legend, type TooltipRow } from "./chart-parts.component";
-import { columnPath, labelStep, niceTicks, useElementWidth } from "./chart.util";
+import { columnPath, labelStep, niceTicks } from "./chart.util";
 
 /** One series: name, colour token and one value (cents) per label. */
 export type ColumnSeries = { name: string; color: string; values: number[] };

@@ -19,12 +19,14 @@ import {
   X,
 } from "lucide-react";
 import { memo, useState, type ReactNode } from "react";
+import { TableDensity } from "../../enums/table-density.enum";
+import { facetKey, useDataTable } from "../../hooks/use-data-table.hook";
+import { dataTableLabels as L } from "../../language/en/data-table.lang";
+import type { ColumnDef, Filters, QuickView, SortState } from "../../types/data-table.types";
 import { Checkbox } from "../ui/checkbox.component";
 import { Popover } from "../ui/popover.component";
 import { downloadCsv, toCsv } from "./csv.util";
-import type { ColumnDef, Density, Filters, QuickView, SortState } from "./data-table.types";
 import { FacetFilter } from "./facet-filter.component";
-import { facetKey, useDataTable } from "./use-data-table.hook";
 
 /** Rows, column definitions and optional features (quick views, selection, export file name). */
 export type DataTableProps<T> = {
@@ -88,7 +90,7 @@ function RowImpl<T>({ row, id, columns, selectable, selected, onToggle, cellPad,
     >
       {selectable && (
         <td className={`w-10 border-b border-line pr-0 pl-5 ${cellPad}`}>
-          <Checkbox checked={selected} onChange={() => onToggle(id)} label={`Select row ${id}`} />
+          <Checkbox checked={selected} onChange={() => onToggle(id)} label={L.selectRow(id)} />
         </td>
       )}
       {columns.map((c) => (
@@ -114,7 +116,7 @@ export function DataTable<T>({
   columns,
   getRowId,
   caption,
-  searchPlaceholder = "Search…",
+  searchPlaceholder = L.searchPlaceholder,
   initialSort,
   pageSizeOptions = [10, 25, 50, 100],
   initialPageSize = 10,
@@ -123,11 +125,11 @@ export function DataTable<T>({
   selectionSummary,
   bulkActions,
   exportFileName = "export",
-  emptyMessage = "No results match your filters.",
+  emptyMessage = L.noResultsMatch,
   rowClassName,
 }: DataTableProps<T>) {
   const t = useDataTable({ data, columns, getRowId, initialSort, initialPageSize });
-  const [density, setDensity] = useState<Density>("comfortable");
+  const [density, setDensity] = useState<TableDensity>(TableDensity.Comfortable);
   const cellPad = density === "compact" ? "py-1.5" : "py-3";
   const facetCols = columns.filter((c) => c.facet);
   const hasFooter = t.visibleColumns.some((c) => c.footer);
@@ -149,7 +151,7 @@ export function DataTable<T>({
     <div className="flex flex-col">
       {/* Quick views */}
       {quickViews && (
-        <div role="tablist" aria-label="Views" className="flex flex-wrap gap-1 px-5 pb-3">
+        <div role="tablist" aria-label={L.views} className="flex flex-wrap gap-1 px-5 pb-3">
           {quickViews.map((v) => {
             const active = sameFilters(t.filters, v.filters);
             return (
@@ -183,7 +185,7 @@ export function DataTable<T>({
           {t.search && (
             <button
               type="button"
-              aria-label="Clear search"
+              aria-label={L.clearSearch}
               onClick={() => t.setSearch("")}
               className="absolute right-2 grid size-5 place-items-center rounded text-muted hover:text-ink"
             >
@@ -212,25 +214,25 @@ export function DataTable<T>({
           <button
             type="button"
             className={toolBtn}
-            aria-pressed={density === "compact"}
-            title={density === "compact" ? "Comfortable rows" : "Compact rows"}
-            aria-label={density === "compact" ? "Switch to comfortable rows" : "Switch to compact rows"}
-            onClick={() => setDensity((d) => (d === "compact" ? "comfortable" : "compact"))}
+            aria-pressed={density === TableDensity.Compact}
+            title={density === TableDensity.Compact ? L.comfortableRows : L.compactRows}
+            aria-label={density === TableDensity.Compact ? L.switchToComfortable : L.switchToCompact}
+            onClick={() => setDensity((d) => (d === TableDensity.Compact ? TableDensity.Comfortable : TableDensity.Compact))}
           >
-            {density === "compact" ? <Rows3 size={16} /> : <Rows4 size={16} />}
+            {density === TableDensity.Compact ? <Rows3 size={16} /> : <Rows4 size={16} />}
           </button>
 
           <Popover
             align="end"
-            ariaLabel="Choose columns"
+            ariaLabel={L.chooseColumns}
             buttonClassName={toolBtn}
             label={
               <>
-                <Settings2 size={16} aria-hidden /> <span className="hidden sm:inline">Columns</span>
+                <Settings2 size={16} aria-hidden /> <span className="hidden sm:inline">{L.columns}</span>
               </>
             }
           >
-            <p className="px-2 pt-1 pb-1.5 text-xs font-medium text-muted">Toggle columns</p>
+            <p className="px-2 pt-1 pb-1.5 text-xs font-medium text-muted">{L.toggleColumns}</p>
             <ul>
               {columns
                 .filter((c) => c.hideable !== false)
@@ -245,8 +247,8 @@ export function DataTable<T>({
             </ul>
           </Popover>
 
-          <button type="button" className={toolBtn} onClick={() => exportRows(t.rows)} title="Export filtered rows as CSV">
-            <Download size={16} aria-hidden /> <span className="hidden sm:inline">Export</span>
+          <button type="button" className={toolBtn} onClick={() => exportRows(t.rows)} title={L.exportTitle}>
+            <Download size={16} aria-hidden /> <span className="hidden sm:inline">{L.export}</span>
           </button>
         </div>
       </div>
@@ -258,15 +260,15 @@ export function DataTable<T>({
           {selectionSummary && <span className="text-ink-2">{selectionSummary(t.selectedRows)}</span>}
           {t.selected.size < t.total && (
             <button type="button" onClick={t.selectAllFiltered} className="font-medium text-accent hover:underline">
-              Select all {t.total}
+              {L.selectAll(t.total)}
             </button>
           )}
           <div className="ml-auto flex flex-wrap items-center gap-2">
             {bulkActions?.(t.selectedRows, t.clearSelection)}
             <button type="button" className={toolBtn} onClick={() => exportRows(t.selectedRows, "-selected")}>
-              <Download size={14} aria-hidden /> Export selected
+              <Download size={14} aria-hidden /> {L.exportSelected}
             </button>
-            <button type="button" aria-label="Clear selection" className="grid size-8 place-items-center rounded-lg text-ink-2 hover:bg-surface-2 hover:text-ink" onClick={t.clearSelection}>
+            <button type="button" aria-label={L.clearSelection} className="grid size-8 place-items-center rounded-lg text-ink-2 hover:bg-surface-2 hover:text-ink" onClick={t.clearSelection}>
               <X size={16} />
             </button>
           </div>
@@ -285,7 +287,7 @@ export function DataTable<T>({
                     checked={allPageSelected}
                     indeterminate={t.pageSelectedCount > 0}
                     onChange={t.togglePage}
-                    label="Select all rows on this page"
+                    label={L.selectPage}
                   />
                 </th>
               )}
@@ -345,7 +347,7 @@ export function DataTable<T>({
                   <p className="text-sm font-medium text-ink">{emptyMessage}</p>
                   {t.hasActiveFilters && (
                     <button type="button" onClick={t.resetFilters} className="mt-2 text-sm font-medium text-accent hover:underline">
-                      Clear filters
+                      {L.clearFilters}
                     </button>
                   )}
                 </td>
@@ -376,12 +378,12 @@ export function DataTable<T>({
       {/* Pagination */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line px-5 py-3 text-sm text-ink-2">
         <span className="tabular-nums">
-          {t.total === 0 ? "No results" : `Showing ${from}–${to} of ${t.total}`}
-          {t.total !== data.length && <span className="text-muted"> (filtered from {data.length})</span>}
+          {t.total === 0 ? L.noResults : L.showing(from, to, t.total)}
+          {t.total !== data.length && <span className="text-muted">{L.filteredFrom(data.length)}</span>}
         </span>
         <div className="flex items-center gap-4">
           <label className="flex items-center gap-2">
-            <span className="hidden sm:inline">Rows per page</span>
+            <span className="hidden sm:inline">{L.rowsPerPage}</span>
             <select
               value={t.pageSize}
               onChange={(e) => t.setPageSize(Number(e.target.value))}
@@ -395,22 +397,22 @@ export function DataTable<T>({
             </select>
           </label>
           <span className="tabular-nums">
-            Page {t.page + 1} of {t.pageCount}
+            {L.page(t.page + 1, t.pageCount)}
           </span>
           <div className="flex items-center gap-1">
-            <button type="button" className={`${pageBtn} hidden sm:grid`} aria-label="First page" disabled={t.page === 0} onClick={() => t.setPage(0)}>
+            <button type="button" className={`${pageBtn} hidden sm:grid`} aria-label={L.firstPage} disabled={t.page === 0} onClick={() => t.setPage(0)}>
               <ChevronsLeft size={16} />
             </button>
-            <button type="button" className={pageBtn} aria-label="Previous page" disabled={t.page === 0} onClick={() => t.setPage(t.page - 1)}>
+            <button type="button" className={pageBtn} aria-label={L.previousPage} disabled={t.page === 0} onClick={() => t.setPage(t.page - 1)}>
               <ChevronLeft size={16} />
             </button>
-            <button type="button" className={pageBtn} aria-label="Next page" disabled={t.page >= t.pageCount - 1} onClick={() => t.setPage(t.page + 1)}>
+            <button type="button" className={pageBtn} aria-label={L.nextPage} disabled={t.page >= t.pageCount - 1} onClick={() => t.setPage(t.page + 1)}>
               <ChevronRight size={16} />
             </button>
             <button
               type="button"
               className={`${pageBtn} hidden sm:grid`}
-              aria-label="Last page"
+              aria-label={L.lastPage}
               disabled={t.page >= t.pageCount - 1}
               onClick={() => t.setPage(t.pageCount - 1)}
             >

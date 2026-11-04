@@ -5,9 +5,11 @@
  */
 
 import { useId, useState } from "react";
+import { useElementWidth } from "../../hooks/use-element-width.hook";
+import { commonLabels } from "../../language/en/common.lang";
 import { formatCompact, formatMoney } from "../utils/money.util";
 import { ChartTooltip, Legend } from "./chart-parts.component";
-import { labelStep, niceTicks, useElementWidth } from "./chart.util";
+import { labelStep, niceTicks } from "./chart.util";
 
 /** One line: values (null = gap), colour token, and whether it is dashed (projected/reference). */
 export type LineSeries = {
@@ -123,7 +125,7 @@ export function LineChart({
                   opacity={0.6}
                 />
                 <text x={x(projectedFrom) + 6} y={M.top + 12} className="fill-muted text-[11px] font-medium">
-                  Projected
+                  {commonLabels.projected}
                 </text>
               </g>
             )}
@@ -247,7 +249,7 @@ export function LineChart({
               <>
                 {tooltipLabels?.[hover] ?? labels[hover]}
                 {projectedFrom !== undefined && hover > projectedFrom && (
-                  <span className="ml-1.5 rounded bg-surface-2 px-1 py-px text-[10px] font-medium text-muted">Projected</span>
+                  <span className="ml-1.5 rounded bg-surface-2 px-1 py-px text-[10px] font-medium text-muted">{commonLabels.projected}</span>
                 )}
               </>
             }

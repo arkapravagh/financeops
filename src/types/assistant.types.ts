@@ -1,10 +1,15 @@
-/** Types for the FinanceOps AI panel: messages, conversations and the streaming reply protocol. */
+/**
+ * Types for the FinanceOps AI panel: messages, conversations and the streaming reply protocol.
+ *
+ * Enumerations (roles, message status, feedback) live in `src/enums/`.
+ */
+
+import type { ChatRole } from "../enums/chat-role.enum";
+import type { MessageFeedback } from "../enums/message-feedback.enum";
+import type { MessageStatus } from "../enums/message-status.enum";
 
 /** A link back to the screen a number came from, shown under an answer. */
 export type AssistantSource = { label: string; to: string };
-
-/** Who wrote a message. */
-export type ChatRole = "user" | "assistant";
 
 /** One chat message. Assistant messages also carry stream status, sources, follow-ups and feedback. */
 export type ChatMessage = {
@@ -13,10 +18,10 @@ export type ChatMessage = {
   content: string;
   createdAt: number;
   /** Assistant only. */
-  status?: "thinking" | "streaming" | "done" | "stopped" | "error";
+  status?: MessageStatus;
   sources?: AssistantSource[];
   followUps?: string[];
-  feedback?: "up" | "down";
+  feedback?: MessageFeedback;
 };
 
 /** A chat thread, kept in memory for the session. */

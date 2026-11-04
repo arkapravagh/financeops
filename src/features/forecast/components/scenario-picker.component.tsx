@@ -2,7 +2,9 @@
 
 import { Check, ChevronDown, Plus, Search } from "lucide-react";
 import { useEffect, useId, useMemo, useRef, useState, type KeyboardEvent } from "react";
-import type { LibraryScenario } from "../scenario.model";
+import { scenarioCategoryLabels } from "../../../language/en/enums.lang";
+import { pickerLabels as L, scenarioNames } from "../../../language/en/forecast.lang";
+import type { LibraryScenario } from "../../../types/forecast.types";
 
 /** Options in display order, the selected id, and select/create callbacks. */
 export type ScenarioPickerProps = {
@@ -14,7 +16,8 @@ export type ScenarioPickerProps = {
   onCreate: () => void;
 };
 
-const matches = (s: LibraryScenario, q: string) => `${s.name} ${s.description} ${s.category}`.toLowerCase().includes(q);
+const matches = (s: LibraryScenario, q: string) =>
+  `${s.name} ${s.description} ${scenarioCategoryLabels[s.category]}`.toLowerCase().includes(q);
 
 /**
  * Searchable, grouped scenario dropdown (ARIA combobox + listbox).
@@ -35,7 +38,7 @@ export function ScenarioPicker({ options, selectedId, onSelect, onCreate }: Scen
   const q = query.trim().toLowerCase();
   const filtered = useMemo(() => (q ? options.filter((o) => matches(o, q)) : options), [options, q]);
   const groups = useMemo(() => {
-    const out: { category: string; items: { option: LibraryScenario; index: number }[] }[] = [];
+    const out: { category: LibraryScenario["category"]; items: { option: LibraryScenario; index: number }[] }[] = [];
     filtered.forEach((option, index) => {
       const last = out.at(-1);
       if (last?.category === option.category) last.items.push({ option, index });
@@ -106,8 +109,8 @@ export function ScenarioPicker({ options, selectedId, onSelect, onCreate }: Scen
         className="flex h-11 w-full items-center gap-3 rounded-lg border border-line bg-surface px-3 text-left outline-none transition hover:bg-surface-2 focus-visible:ring-2 focus-visible:ring-accent"
       >
         <span className="min-w-0 flex-1">
-          <span className="block truncate text-sm font-medium text-ink">{selected?.name ?? "Your scenario"}</span>
-          <span className="block truncate text-xs text-muted">{selected ? selected.category : "Edited. Save it as a custom scenario to reuse it."}</span>
+          <span className="block truncate text-sm font-medium text-ink">{selected?.name ?? scenarioNames.working}</span>
+          <span className="block truncate text-xs text-muted">{selected ? scenarioCategoryLabels[selected.category] : L.edited}</span>
         </span>
         <ChevronDown size={16} aria-hidden className={`shrink-0 text-muted transition ${open ? "rotate-180" : ""}`} />
       </button>
@@ -119,12 +122,12 @@ export function ScenarioPicker({ options, selectedId, onSelect, onCreate }: Scen
             <input
               ref={inputRef}
               role="combobox"
-              aria-label="Search scenarios"
+              aria-label={L.search}
               aria-expanded
               aria-controls={listId}
               aria-autocomplete="list"
               aria-activedescendant={filtered[active] ? optId(active) : undefined}
-              placeholder={`Search ${options.length} scenarios`}
+              placeholder={L.searchPlaceholder(options.length)}
               value={query}
               onChange={(e) => {
                 setQuery(e.target.value);
@@ -135,11 +138,11 @@ export function ScenarioPicker({ options, selectedId, onSelect, onCreate }: Scen
             />
           </div>
 
-          <ul id={listId} role="listbox" aria-label="Scenarios" className="scroll-thin max-h-80 overflow-y-auto py-1">
+          <ul id={listId} role="listbox" aria-label={L.list} className="scroll-thin max-h-80 overflow-y-auto py-1">
             {groups.map((g, gi) => (
               <li key={g.category} role="presentation">
                 <div id={`${uid}-group-${gi}`} className="flex items-baseline justify-between px-3 pt-2.5 pb-1 text-xs font-medium text-muted">
-                  <span>{g.category}</span>
+                  <span>{scenarioCategoryLabels[g.category]}</span>
                   <span className="tabular-nums">{g.items.length}</span>
                 </div>
                 <ul role="group" aria-labelledby={`${uid}-group-${gi}`}>
@@ -169,10 +172,10 @@ export function ScenarioPicker({ options, selectedId, onSelect, onCreate }: Scen
             ))}
           </ul>
           {filtered.length === 0 && (
-            <p className="px-4 py-6 text-center text-[13px] text-ink-2">No scenarios match "{query.trim()}". Build your own instead.</p>
+            <p className="px-4 py-6 text-center text-[13px] text-ink-2">{L.noMatch(query.trim())}</p>
           )}
           <p className="sr-only" aria-live="polite">
-            {filtered.length} {filtered.length === 1 ? "scenario" : "scenarios"}
+            {L.resultCount(filtered.length)}
           </p>
 
           <div className="border-t border-line p-1">
@@ -184,7 +187,7 @@ export function ScenarioPicker({ options, selectedId, onSelect, onCreate }: Scen
               }}
               className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-[13px] font-medium text-accent outline-none hover:bg-accent-soft focus-visible:ring-2 focus-visible:ring-accent"
             >
-              <Plus size={14} aria-hidden /> Create custom scenario
+              <Plus size={14} aria-hidden /> {L.create}
             </button>
           </div>
         </div>

@@ -7,6 +7,12 @@
  * `/api/assistant` (Claude on the server, with finance tools) — see .claude/skills/ai-assistant.
  */
 
+import { AccountKind } from "../enums/account-kind.enum";
+import { AiFeature } from "../enums/ai-feature.enum";
+import { Category, EXPENSE_CATEGORIES, type ExpenseCategory } from "../enums/category.enum";
+import { ChatRole } from "../enums/chat-role.enum";
+import { InvoiceStatus } from "../enums/invoice-status.enum";
+import { categoryLabels, aiFeatureLabels } from "../language/en/enums.lang";
 import { addMonths, daysBetween, formatDayMonth, formatMonthLong, formatMonthYear, parseIso } from "../shared/utils/dates.util";
 import {
   aiMonthlySummary,
@@ -32,26 +38,14 @@ import {
 } from "../shared/utils/metrics.util";
 import { formatCompact, formatMoney, formatPercent } from "../shared/utils/money.util";
 import type { AssistantRequest, AssistantSource, ReplyEvent } from "../types/assistant.types";
-import type { ExpenseCategory } from "../types/finance.types";
 import { getAiMonths, getAiSeatCharges, getAiUsage } from "./ai-spend.service";
 import { getBudgetHistory, getBudgets } from "./budgets.service";
-import { DEFAULT_HIRE_COST_CENTS, getForecastBase, spreadHires } from "./forecast.service";
-import { getTransactions } from "./transactions.service";
-
-const EXPENSE_CATEGORIES: ExpenseCategory[] = [
-  "Payroll",
-  "Software & cloud",
-  "Rent",
-  "Contractors",
-  "Marketing",
-  "Travel",
-  "Office & misc",
-  "Legal & accounting",
-];
 import { getAccounts, getMonthlyFlows, getUpcomingBills } from "./cash.service";
 import { AS_OF, getCompany } from "./company.service";
+import { DEFAULT_HIRE_COST_CENTS, getForecastBase, spreadHires } from "./forecast.service";
 import { getInvoices } from "./invoices.service";
 import { getMrrHistory } from "./revenue.service";
+import { getTransactions } from "./transactions.service";
 
 type Answer = { text: string; sources: AssistantSource[]; followUps: string[] };
 
@@ -113,8 +107,8 @@ function burnAnswer(): Answer {
 
 **What's driving it**
 - Spending grew **${formatPercent(outGrowth, 1)}/month** over the last 6 months, while cash in grew **${formatPercent(inGrowth, 1)}/month** — revenue is growing faster, but from a smaller base.
-- In ${formatMonthLong(last.month)}, the biggest costs were ${top.map((b) => `${b.category} (${formatCompact(b.actualCents)})`).join(", ")}.
-${over.length ? `- ${over.map((b) => `**${b.category}** ran ${formatMoney(budgetVarianceCents(b))} over budget`).join("; ")}.` : "- Every category stayed within budget."}
+- In ${formatMonthLong(last.month)}, the biggest costs were ${top.map((b) => `${categoryLabels[b.category]} (${formatCompact(b.actualCents)})`).join(", ")}.
+${over.length ? `- ${over.map((b) => `**${categoryLabels[b.category]}** ran ${formatMoney(budgetVarianceCents(b))} over budget`).join("; ")}.` : "- Every category stayed within budget."}
 
 Burn is roughly flat, which is healthy for a growing seed-stage company. The quickest lever is usually software & tools — worth an audit of unused seats.`,
     sources: [SRC.budgets, SRC.overview],
@@ -125,11 +119,11 @@ Burn is roughly flat, which is healthy for a growing seed-stage company. The qui
 function invoicesAnswer(): Answer {
   const invoices = getInvoices();
   const overdue = invoices
-    .filter((i) => invoiceStatus(i, AS_OF) === "overdue")
+    .filter((i) => invoiceStatus(i, AS_OF) === InvoiceStatus.Overdue)
     .sort((a, b) => daysOverdue(b, AS_OF) - daysOverdue(a, AS_OF));
   const ar = receivablesCents(invoices);
   const dueSoon = invoices.filter((i) => {
-    if (invoiceStatus(i, AS_OF) !== "sent") return false;
+    if (invoiceStatus(i, AS_OF) !== InvoiceStatus.Sent) return false;
     const d = daysBetween(AS_OF, parseIso(i.dueDate));
     return d >= 0 && d <= 7;
   });
@@ -157,7 +151,7 @@ ${
 
 function reminderDraftAnswer(): Answer {
   const overdue = getInvoices()
-    .filter((i) => invoiceStatus(i, AS_OF) === "overdue")
+    .filter((i) => invoiceStatus(i, AS_OF) === InvoiceStatus.Overdue)
     .sort((a, b) => daysOverdue(b, AS_OF) - daysOverdue(a, AS_OF));
   const i = overdue[0];
   if (!i) return { text: "There are no overdue invoices to chase right now.", sources: [SRC.invoices], followUps: [] };
@@ -185,7 +179,7 @@ Sending isn't available in the prototype yet, but you can copy this.`,
 function paymentTimeAnswer(): Answer {
   const invoices = getInvoices();
   const dtp = averageDaysToPay(invoices);
-  const paid = invoices.filter((i) => i.status === "paid" && i.paidDate);
+  const paid = invoices.filter((i) => i.status === InvoiceStatus.Paid && i.paidDate);
   return {
     text: `Customers take **${dtp ?? "—"} days on average** to pay, measured from invoice date to payment across ${paid.length} paid invoices:
 
@@ -210,7 +204,7 @@ function categoryBudgetAnswer(category: ExpenseCategory): Answer {
     .slice(0, 3);
   const growth = prev ? growthRate(now.actualCents, prev.actualCents) : null;
   return {
-    text: `**${category}** used **${formatPercent(used)}** of its ${formatMonthLong(now.month)} budget: ${formatMoney(now.actualCents)} against ${formatMoney(
+    text: `**${categoryLabels[category]}** used **${formatPercent(used)}** of its ${formatMonthLong(now.month)} budget: ${formatMoney(now.actualCents)} against ${formatMoney(
       now.budgetCents,
     )}, so ${variance > 0 ? `**${formatMoney(variance)} over**` : `${formatMoney(-variance)} under`}.
 
@@ -244,10 +238,10 @@ function budgetsAnswer(): Answer {
     text: `For ${formatMonthLong(budgets[0].month)}, total spend came in **${formatMoney(Math.abs(total))} ${total <= 0 ? "under" : "over"} budget**.
 
 **Over budget**
-${over.length ? over.map((b) => `- **${b.category}** — ${formatPercent(budgetUsed(b))} of budget (${formatMoney(budgetVarianceCents(b))} over)`).join("\n") : "- None"}
+${over.length ? over.map((b) => `- **${categoryLabels[b.category]}** — ${formatPercent(budgetUsed(b))} of budget (${formatMoney(budgetVarianceCents(b))} over)`).join("\n") : "- None"}
 
 **Close to the limit (90–100%)**
-${near.length ? near.map((b) => `- ${b.category} — ${formatPercent(budgetUsed(b))}`).join("\n") : "- None"}
+${near.length ? near.map((b) => `- ${categoryLabels[b.category]} — ${formatPercent(budgetUsed(b))}`).join("\n") : "- None"}
 
 Software & cloud is the one to watch: it tends to creep as usage-based tools scale. Consider raising its budget to match reality, or set a usage alert on cloud spend.`,
     sources: [SRC.budgets],
@@ -275,7 +269,7 @@ function aiSpendAnswer(): Answer {
 - **GPU hosting:** ${formatMoney(now.computeCents)}
 - **Team seats:** ${formatMoney(now.seatsCents)}
 
-**Biggest features:** ${features.map((f) => `${f.key} (${formatMoney(f.costCents)})`).join(", ")}.
+**Biggest features:** ${features.map((f) => `${aiFeatureLabels[f.key as AiFeature] ?? f.key} (${formatMoney(f.costCents)})`).join(", ")}.
 
 **Ways to cut it:**
 - Remove the **${idleCount} unused seats** (${formatMoney(idle)} a month).
@@ -341,16 +335,16 @@ _Projection assumes recent revenue and spend growth continue. It's an estimate, 
 function extendRunwayAnswer(): Answer {
   const f = facts();
   const budgets = getBudgets();
-  const sw = budgets.find((b) => b.category === "Software & cloud");
-  const mk = budgets.find((b) => b.category === "Marketing");
-  const ct = budgets.find((b) => b.category === "Contractors");
+  const sw = budgets.find((b) => b.category === Category.SoftwareCloud);
+  const mk = budgets.find((b) => b.category === Category.Marketing);
+  const ct = budgets.find((b) => b.category === Category.Contractors);
   const target = f.runway === null ? null : f.cash / (f.runway + 6);
   const needed = target === null ? 0 : f.avgBurn - target;
   return {
     text: `To add **6 months** of runway at today's cash, net burn needs to drop by about **${formatMoney(Math.round(needed))}/month** (to ~${formatMoney(Math.round(target ?? 0))}).
 
 Realistic levers, smallest pain first:
-1. **Collect overdue invoices** — one-time boost of ${formatMoney(sumCents(getInvoices().filter((i) => invoiceStatus(i, AS_OF) === "overdue").map((i) => i.amountCents)))}.
+1. **Collect overdue invoices** — one-time boost of ${formatMoney(sumCents(getInvoices().filter((i) => invoiceStatus(i, AS_OF) === InvoiceStatus.Overdue).map((i) => i.amountCents)))}.
 2. **Tools & cloud audit** — trimming 15% of ${formatCompact(sw?.actualCents ?? 0)}/month saves ~${formatMoney(Math.round((sw?.actualCents ?? 0) * 0.15))}/month.
 3. **Pause paid marketing tests** that aren't converting — up to ${formatCompact(mk?.actualCents ?? 0)}/month.
 4. **Bring contractor work in-house** where possible — ${formatCompact(ct?.actualCents ?? 0)}/month today.
@@ -370,7 +364,7 @@ function cashAnswer(): Answer {
 
 ${accounts.map((a) => `- **${a.name}** (${a.institution} ··${a.mask}) — ${formatMoney(a.balanceCents)}`).join("\n")}
 
-About ${formatPercent(accounts.find((a) => a.kind === "treasury")!.balanceCents / f.cash)} sits in T-bills earning interest, which is sensible for cash you won't need for 6+ months.`,
+About ${formatPercent(accounts.find((a) => a.kind === AccountKind.Treasury)!.balanceCents / f.cash)} sits in T-bills earning interest, which is sensible for cash you won't need for 6+ months.`,
     sources: [SRC.overview],
     followUps: ["What's my runway?", "What bills are due this week?"],
   };
@@ -397,14 +391,14 @@ function summaryAnswer(): Answer {
   const now = mrr[mrr.length - 1];
   const mom = growthRate(now.mrrCents, mrr[mrr.length - 2].mrrCents) ?? 0;
   const over = getBudgets().filter((b) => budgetUsed(b) > 1);
-  const overdue = getInvoices().filter((i) => invoiceStatus(i, AS_OF) === "overdue");
+  const overdue = getInvoices().filter((i) => invoiceStatus(i, AS_OF) === InvoiceStatus.Overdue);
   return {
     text: `### ${formatMonthLong(last.month)} at a glance
 
 - **Cash in:** ${formatMoney(last.inCents)} · **Cash out:** ${formatMoney(last.outCents)} · **Net burn:** ${formatMoney(netBurnCents(last))}
 - **MRR:** ${formatMoney(now.mrrCents)} (**+${formatPercent(mom, 1)}** MoM), ${now.customers} customers
 - **Runway:** ${f.runway === null ? "default alive" : `${f.runway.toFixed(1)} months`} — cash ${formatCompact(f.cash)}
-- **Budgets:** ${over.length ? `${over.map((b) => b.category).join(" and ")} over budget` : "all on track"}
+- **Budgets:** ${over.length ? `${over.map((b) => categoryLabels[b.category]).join(" and ")} over budget` : "all on track"}
 - **Collections:** ${overdue.length} invoices overdue (${formatMoney(sumCents(overdue.map((i) => i.amountCents)))})
 
 **Bottom line:** revenue momentum is strong and burn is flat. The two things to act on this week are chasing overdue invoices and reining in software spend.`,
@@ -480,7 +474,7 @@ function route(q: string, page: string): Answer {
   if (has(/extend|longer runway|cut costs?|save money|reduce (burn|spend)|lean/)) return extendRunwayAnswer();
   if (has(/runway|run out|zero.?cash|how long|last us|fundrais/)) return runwayAnswer();
   if (has(/invoice|overdue|chase|owe|receivable|collect|late pay|days to pay|pay us/)) return invoicesAnswer();
-  const named = EXPENSE_CATEGORIES.find((c) => s.includes(c.toLowerCase()));
+  const named = EXPENSE_CATEGORIES.find((c) => s.includes(categoryLabels[c].toLowerCase()));
   if (named && has(/budget|over|spend|why|cost/)) return categoryBudgetAnswer(named);
   if (has(/budget|overspend|over budget|category|categories/)) return budgetsAnswer();
   if (has(/\bburn|spending|expenses?|costs?\b|going up/)) return burnAnswer();
@@ -515,7 +509,7 @@ const wait = (ms: number, signal?: AbortSignal) =>
 
 /** Stream a reply as ReplyEvents. Throws AbortError when `signal` aborts. */
 export async function* streamReply(req: AssistantRequest, signal?: AbortSignal): AsyncGenerator<ReplyEvent> {
-  const question = [...req.messages].reverse().find((m) => m.role === "user")?.content ?? "";
+  const question = [...req.messages].reverse().find((m) => m.role === ChatRole.User)?.content ?? "";
   const answer = route(question, req.page);
 
   await wait(550, signal); // "thinking"

@@ -1,74 +1,15 @@
 /**
  * Scenario model for the Runway & forecast feature.
  *
- * A {@link Scenario} is the *editable* part of a forecast: growth rates, one-off changes, hires and a raise.
+ * A `Scenario` (types/forecast.types.ts) is the *editable* part of a forecast: growth rates, one-off changes, hires and a raise.
  * Everything else (cash today, base revenue and spend) comes from actuals via `services/forecast.service.ts`.
- * This file is pure: no React, no storage. Persistence lives in `use-scenario-storage.hook.ts`.
+ * This file is pure: no React, no storage. Persistence lives in `hooks/use-scenario-storage.hook.ts`.
  */
 
+import { scenarioNames } from "../../language/en/forecast.lang";
 import { addMonths } from "../../shared/utils/dates.util";
-import {
-  breakEvenIndex,
-  isDefaultAlive,
-  peakBurn,
-  projectCash,
-  projectedRunway,
-  type ForecastInput,
-  type ForecastPoint,
-  type PlannedHire,
-  type PlannedRaise,
-} from "../../shared/utils/metrics.util";
-
-/** The editable part of a forecast. Everything else (cash, base revenue/spend) comes from actuals. */
-export type Scenario = {
-  /** "current" for the trajectory, "working" for unsaved edits, `lib-*` for library, `custom-*` for user-made. */
-  id: string;
-  name: string;
-  /** Month-over-month revenue growth, e.g. 0.046. May be negative (net churn). */
-  revenueGrowth: number;
-  /** Month-over-month spending growth, e.g. 0.017. */
-  expenseGrowth: number;
-  /** One-off change to the spending base from month 1, e.g. -0.15 for a 15% cut. */
-  expenseAdjustment: number;
-  /** One-off change to the revenue base from month 1, e.g. -0.2 when a big customer churns. */
-  revenueAdjustment: number;
-  hires: PlannedHire[];
-  raise: PlannedRaise | null;
-};
-
-/** A scenario offered in the picker: a predefined one from the library, or one the user built. */
-export type LibraryScenario = Scenario & {
-  /** Picker group heading, e.g. "Hiring". */
-  category: string;
-  /** One sentence on what the scenario assumes. */
-  description: string;
-  /** True for scenarios the user created (editable and deletable). */
-  custom?: boolean;
-};
-
-/** Picker group that holds user-made scenarios; always listed first. */
-export const CUSTOM_CATEGORY = "My scenarios";
-
-/** Everything the page shows for one scenario, computed once by {@link evaluateScenario}. */
-export type ScenarioResult = {
-  scenario: Scenario;
-  /** Month-by-month projection, month 1 = current month. */
-  points: ForecastPoint[];
-  /** Months until cash < 0, or null if it lasts past the model horizon. */
-  runway: number | null;
-  /** Projected zero-cash date, or null if cash lasts past the horizon. */
-  zeroDate: Date | null;
-  /** Start of a 9-month fundraising window before zero cash (null when no raise is needed). */
-  raiseBy: Date | null;
-  /** First projected month where revenue ≥ spending, or null if never within the horizon. */
-  breakEven: number | null;
-  /** Default alive: revenue overtakes spending before cash runs out, ignoring any planned raise. */
-  alive: boolean;
-  /** Projected cash balance 12 months out, in cents. */
-  cash12: number;
-  /** Highest monthly net burn in the projection, with its month index. */
-  peak: { index: number; cents: number } | null;
-};
+import { breakEvenIndex, isDefaultAlive, peakBurn, projectCash, projectedRunway } from "../../shared/utils/metrics.util";
+import type { ForecastInput, Scenario, ScenarioResult } from "../../types/forecast.types";
 
 /** Months a round takes to close; "Start raising by" = zero-cash date minus this (finance-domain rules). */
 export const RAISE_LEAD_MONTHS = 9;
@@ -88,7 +29,7 @@ export const LIMITS = {
 export function fromBase(base: ForecastInput): Scenario {
   return {
     id: "current",
-    name: "Current trajectory",
+    name: scenarioNames.current,
     revenueGrowth: base.revenueGrowth,
     expenseGrowth: base.expenseGrowth,
     expenseAdjustment: base.expenseAdjustment,

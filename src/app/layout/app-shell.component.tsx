@@ -8,8 +8,9 @@
 import { X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
-import { useAssistantControls } from "../../features/assistant/assistant.provider";
 import { AssistantDock } from "../../features/assistant/components/assistant-dock.component";
+import { useAssistantControls } from "../../hooks/use-assistant.hook";
+import { appShellLabels as L } from "../../language/en/app-shell.lang";
 import { Sidebar } from "./sidebar.component";
 import { Topbar } from "./topbar.component";
 
@@ -77,7 +78,7 @@ export function AppShell() {
         className={`fixed inset-0 z-40 lg:hidden ${drawerOpen ? "" : "pointer-events-none"}`}
         role="dialog"
         aria-modal="true"
-        aria-label="Navigation"
+        aria-label={L.navigation}
         aria-hidden={!drawerOpen}
         inert={!drawerOpen}
       >
@@ -95,7 +96,7 @@ export function AppShell() {
           <Sidebar onNavigate={() => setDrawerOpen(false)} />
           <button
             className="absolute top-4 right-3 grid size-8 place-items-center rounded-lg text-ink-2 outline-none hover:bg-surface-2 focus-visible:ring-2 focus-visible:ring-accent"
-            aria-label="Close navigation"
+            aria-label={L.closeNavigation}
             onClick={() => setDrawerOpen(false)}
           >
             <X size={18} />

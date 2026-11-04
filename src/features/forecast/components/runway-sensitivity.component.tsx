@@ -1,19 +1,22 @@
 /** Runway sensitivity: how many months each single change (cut 10%, hire one more, grow faster) adds or removes. */
 
+import { sensitivityLabels as L } from "../../../language/en/forecast.lang";
+import { hireRoleLabels } from "../../../language/en/scenario-library.lang";
 import { DEFAULT_HIRE_COST_CENTS, FORECAST_MONTHS } from "../../../services/forecast.service";
-import { projectCash, projectedRunway, type ForecastInput } from "../../../shared/utils/metrics.util";
-import { toInput, type Scenario } from "../scenario.model";
+import { projectCash, projectedRunway } from "../../../shared/utils/metrics.util";
+import type { ForecastInput, Scenario } from "../../../types/forecast.types";
+import { toInput } from "../scenario.model";
 
 type Lever = { label: string; apply: (s: Scenario) => Scenario };
 
 const LEVERS: Lever[] = [
-  { label: "Revenue grows 1 point faster", apply: (s) => ({ ...s, revenueGrowth: s.revenueGrowth + 0.01 }) },
-  { label: "Revenue grows 1 point slower", apply: (s) => ({ ...s, revenueGrowth: Math.max(0, s.revenueGrowth - 0.01) }) },
-  { label: "Cut spending by 10%", apply: (s) => ({ ...s, expenseAdjustment: s.expenseAdjustment - 0.1 }) },
-  { label: "Spending grows 1 point faster", apply: (s) => ({ ...s, expenseGrowth: s.expenseGrowth + 0.01 }) },
+  { label: L.revenueFaster, apply: (s) => ({ ...s, revenueGrowth: s.revenueGrowth + 0.01 }) },
+  { label: L.revenueSlower, apply: (s) => ({ ...s, revenueGrowth: Math.max(0, s.revenueGrowth - 0.01) }) },
+  { label: L.cutSpending, apply: (s) => ({ ...s, expenseAdjustment: s.expenseAdjustment - 0.1 }) },
+  { label: L.spendingFaster, apply: (s) => ({ ...s, expenseGrowth: s.expenseGrowth + 0.01 }) },
   {
-    label: "Hire one more engineer next month",
-    apply: (s) => ({ ...s, hires: [...s.hires, { id: "lever", role: "Engineer", startMonth: 1, monthlyCostCents: DEFAULT_HIRE_COST_CENTS }] }),
+    label: L.hireOne,
+    apply: (s) => ({ ...s, hires: [...s.hires, { id: "lever", role: hireRoleLabels.engineer, startMonth: 1, monthlyCostCents: DEFAULT_HIRE_COST_CENTS }] }),
   },
 ];
 
@@ -35,10 +38,10 @@ export function RunwaySensitivity({ base, scenario }: { base: ForecastInput; sce
     <div className="@container">
       {atCap && (
         <p className="mb-3 text-[13px] text-ink-2">
-          This scenario already lasts beyond {cap} months, so gains can't be measured. Losses still show.
+          {L.atCap(cap)}
         </p>
       )}
-      <ul className="flex flex-col gap-2.5" aria-label="Change in runway by lever">
+      <ul className="flex flex-col gap-2.5" aria-label={L.listLabel}>
         {rows.map((r) => {
           const w = `${(Math.abs(r.delta) / maxAbs) * 50}%`;
           const gain = r.delta > 0.05;
@@ -62,7 +65,7 @@ export function RunwaySensitivity({ base, scenario }: { base: ForecastInput; sce
           );
         })}
       </ul>
-      <p className="mt-4 text-xs text-muted">Each row changes one assumption in your scenario and keeps everything else the same.</p>
+      <p className="mt-4 text-xs text-muted">{L.footnote}</p>
     </div>
   );
 }

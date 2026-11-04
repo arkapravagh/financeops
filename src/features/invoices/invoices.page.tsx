@@ -6,10 +6,12 @@
  */
 
 import { BellRing, Plus } from "lucide-react";
+import { InvoiceStatus } from "../../enums/invoice-status.enum";
+import { commonLabels } from "../../language/en/common.lang";
+import { invoicesLabels as L } from "../../language/en/invoices.lang";
 import { AS_OF } from "../../services/company.service";
 import { getInvoices } from "../../services/invoices.service";
 import { DataTable } from "../../shared/data-table/data-table.component";
-import type { ColumnDef, QuickView } from "../../shared/data-table/data-table.types";
 import { Button } from "../../shared/ui/button.component";
 import { Card } from "../../shared/ui/card.component";
 import { KpiRow } from "../../shared/ui/kpi-row.component";
@@ -17,59 +19,55 @@ import { PageHeader } from "../../shared/ui/page-header.component";
 import { daysBetween, formatDate, parseIso } from "../../shared/utils/dates.util";
 import { averageDaysToPay, daysOverdue, invoiceStatus, receivablesCents, sumCents } from "../../shared/utils/metrics.util";
 import { formatCompact, formatMoney } from "../../shared/utils/money.util";
-import type { Invoice, InvoiceStatus } from "../../types/finance.types";
+import type { ColumnDef, QuickView } from "../../types/data-table.types";
+import type { Invoice } from "../../types/finance.types";
 import { InvoiceStatusBadge } from "./components/invoice-status-badge.component";
 
+/** An invoice plus its display status (Overdue is derived from the due date). */
 type InvoiceRow = Invoice & { derived: InvoiceStatus };
-
-const statusLabels: Record<InvoiceStatus, string> = {
-  overdue: "Overdue",
-  sent: "Awaiting payment",
-  paid: "Paid",
-  draft: "Draft",
-};
 
 const columns: ColumnDef<InvoiceRow>[] = [
   {
     id: "number",
-    header: "Invoice",
+    header: L.columns.invoice,
     accessor: (i) => i.number,
     cell: (i) => <span className="font-medium whitespace-nowrap">{i.number}</span>,
     hideable: false,
-    footer: (rows) => <span className="text-ink-2">{rows.length} invoices</span>,
+    footer: (rows) => <span className="text-ink-2">{L.rowCount(rows.length)}</span>,
   },
-  { id: "customer", header: "Customer", accessor: (i) => i.customer, facet: true },
+  { id: "customer", header: L.columns.customer, accessor: (i) => i.customer, facet: true },
   {
     id: "issued",
-    header: "Issued",
+    header: L.columns.issued,
     accessor: (i) => i.issueDate,
     cell: (i) => <span className="whitespace-nowrap text-ink-2">{formatDate(i.issueDate)}</span>,
     className: "hidden md:table-cell",
   },
   {
     id: "due",
-    header: "Due",
+    header: L.columns.due,
     accessor: (i) => i.dueDate,
     cell: (i) => (
       <div className="whitespace-nowrap">
         <div className="text-ink-2">{formatDate(i.dueDate)}</div>
-        {i.derived === "overdue" && <div className="text-xs font-medium text-critical">{daysOverdue(i, AS_OF)} days late</div>}
-        {i.derived === "paid" && i.paidDate && <div className="text-xs text-muted">Paid {formatDate(i.paidDate)}</div>}
+        {i.derived === InvoiceStatus.Overdue && <div className="text-xs font-medium text-critical">{L.daysLate(daysOverdue(i, AS_OF))}</div>}
+        {i.derived === InvoiceStatus.Paid && i.paidDate && <div className="text-xs text-muted">{L.paidOn(formatDate(i.paidDate))}</div>}
       </div>
     ),
   },
   {
     id: "status",
-    header: "Status",
+    header: L.columns.status,
     accessor: (i) => i.derived,
     facet: true,
-    facetLabel: (v) => statusLabels[v as InvoiceStatus] ?? v,
-    facetOptions: ["overdue", "sent", "paid", "draft"],
+    facetLabel: (v) => L.statusFilter[v as InvoiceStatus] ?? v,
+    facetOptions: [InvoiceStatus.Overdue, InvoiceStatus.Sent, InvoiceStatus.Paid, InvoiceStatus.Draft],
+    csv: (i) => L.statusFilter[i.derived],
     cell: (i) => <InvoiceStatusBadge status={i.derived} />,
   },
   {
     id: "amount",
-    header: "Amount",
+    header: L.columns.amount,
     align: "right",
     accessor: (i) => i.amountCents,
     cell: (i) => <span className="font-medium">{formatMoney(i.amountCents, { cents: true })}</span>,
@@ -78,27 +76,27 @@ const columns: ColumnDef<InvoiceRow>[] = [
   },
   {
     id: "actions",
-    header: "Actions",
+    header: L.columns.actions,
     align: "right",
     accessor: () => null,
     sortable: false,
     hideable: false,
     csv: false,
     cell: (i) =>
-      i.derived === "overdue" ? (
-        <Button variant="ghost" icon={<BellRing size={14} />} className="h-8" title="Not available in the prototype">
-          Remind
+      i.derived === InvoiceStatus.Overdue ? (
+        <Button variant="ghost" icon={<BellRing size={14} />} className="h-8" title={commonLabels.notAvailableTitle}>
+          {L.remind}
         </Button>
       ) : null,
   },
 ];
 
 const quickViews: QuickView[] = [
-  { id: "all", label: "All", filters: {} },
-  { id: "overdue", label: "Overdue", filters: { status: ["overdue"] } },
-  { id: "open", label: "Awaiting payment", filters: { status: ["sent"] } },
-  { id: "paid", label: "Paid", filters: { status: ["paid"] } },
-  { id: "draft", label: "Drafts", filters: { status: ["draft"] } },
+  { id: "all", label: L.views.all, filters: {} },
+  { id: "overdue", label: L.views.overdue, filters: { status: [InvoiceStatus.Overdue] } },
+  { id: "open", label: L.views.open, filters: { status: [InvoiceStatus.Sent] } },
+  { id: "paid", label: L.views.paid, filters: { status: [InvoiceStatus.Paid] } },
+  { id: "draft", label: L.views.drafts, filters: { status: [InvoiceStatus.Draft] } },
 ];
 
 const getRowId = (i: InvoiceRow) => i.id;
@@ -108,37 +106,37 @@ const rows: InvoiceRow[] = invoices.map((inv) => ({ ...inv, derived: invoiceStat
 /** Invoices page. "Overdue" is derived at render time from due date vs. `AS_OF`. */
 export function InvoicesPage() {
   const ar = receivablesCents(invoices);
-  const overdue = rows.filter((i) => i.derived === "overdue");
-  const openCount = rows.filter((i) => i.derived === "sent" || i.derived === "overdue").length;
-  const paidRecently = rows.filter((i) => i.status === "paid" && i.paidDate && daysBetween(parseIso(i.paidDate), AS_OF) <= 30);
+  const overdue = rows.filter((i) => i.derived === InvoiceStatus.Overdue);
+  const openCount = rows.filter((i) => i.derived === InvoiceStatus.Sent || i.derived === InvoiceStatus.Overdue).length;
+  const paidRecently = rows.filter((i) => i.status === InvoiceStatus.Paid && i.paidDate && daysBetween(parseIso(i.paidDate), AS_OF) <= 30);
   const dtp = averageDaysToPay(invoices);
 
   return (
     <>
       <PageHeader
-        title="Invoices"
-        subtitle="Who owes you money, and who needs a nudge."
+        title={L.title}
+        subtitle={L.subtitle}
         actions={
-          <Button variant="primary" icon={<Plus size={16} />} title="Not available in the prototype">
-            New invoice
+          <Button variant="primary" icon={<Plus size={16} />} title={commonLabels.notAvailableTitle}>
+            {L.newInvoice}
           </Button>
         }
       />
 
       <KpiRow
         items={[
-          { label: "Outstanding", value: formatCompact(ar), context: `across ${openCount} open invoices` },
+          { label: L.kpi.outstanding, value: formatCompact(ar), context: L.kpi.outstandingContext(openCount) },
           {
-            label: "Overdue",
+            label: L.kpi.overdue,
             value: formatCompact(sumCents(overdue.map((i) => i.amountCents))),
-            context: <span className="text-critical">{overdue.length} invoices past their due date</span>,
+            context: <span className="text-critical">{L.kpi.overdueContext(overdue.length)}</span>,
           },
           {
-            label: "Collected in the last 30 days",
+            label: L.kpi.collected,
             value: formatCompact(sumCents(paidRecently.map((i) => i.amountCents))),
-            context: `${paidRecently.length} invoices paid`,
+            context: L.kpi.collectedContext(paidRecently.length),
           },
-          { label: "Average time to get paid", value: dtp === null ? "—" : `${dtp} days`, context: "from invoice date to payment" },
+          { label: L.kpi.timeToPay, value: dtp === null ? "—" : L.kpi.timeToPayValue(dtp), context: L.kpi.timeToPayContext },
         ]}
       />
 
@@ -147,21 +145,21 @@ export function InvoicesPage() {
           data={rows}
           columns={columns}
           getRowId={getRowId}
-          caption="Invoices"
-          searchPlaceholder="Search invoice or customer"
+          caption={L.title}
+          searchPlaceholder={L.searchPlaceholder}
           initialSort={{ id: "issued", desc: true }}
           quickViews={quickViews}
           selectable
-          selectionSummary={(sel) => `Total ${formatMoney(sumCents(sel.map((r) => r.amountCents)))}`}
+          selectionSummary={(sel) => L.selectionTotal(formatMoney(sumCents(sel.map((r) => r.amountCents))))}
           bulkActions={(sel) =>
-            sel.some((r) => r.derived === "overdue") ? (
-              <Button className="h-8" icon={<BellRing size={14} />} title="Not available in the prototype">
-                Send reminders
+            sel.some((r) => r.derived === InvoiceStatus.Overdue) ? (
+              <Button className="h-8" icon={<BellRing size={14} />} title={commonLabels.notAvailableTitle}>
+                {L.sendReminders}
               </Button>
             ) : null
           }
           exportFileName="invoices"
-          emptyMessage="No invoices here."
+          emptyMessage={L.empty}
         />
       </Card>
     </>

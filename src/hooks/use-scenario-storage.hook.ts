@@ -10,7 +10,9 @@
  */
 
 import { useCallback, useEffect, useState } from "react";
-import { CUSTOM_CATEGORY, type LibraryScenario, type Scenario } from "./scenario.model";
+import { ScenarioCategory } from "../enums/scenario-category.enum";
+import { scenarioNames } from "../language/en/forecast.lang";
+import type { LibraryScenario, Scenario } from "../types/forecast.types";
 
 /** Saved comparisons cap: + current + working = the 3-series limit the chart palette is validated for. */
 export const MAX_SAVED = 2;
@@ -18,9 +20,13 @@ export const MAX_SAVED = 2;
 /** Upper bound on user-built scenarios kept in the picker. */
 export const MAX_CUSTOM = 50;
 
-/** Fill fields added after a scenario was stored, so older saves keep working. */
+/**
+ * Fill fields added after a scenario was stored, so older saves keep working. Custom scenarios saved before
+ * categories became enum ids (they stored the text "My scenarios") are re-tagged as `ScenarioCategory.Custom`.
+ */
 function normalize<T extends Scenario>(s: T): T {
-  return { ...s, revenueAdjustment: s.revenueAdjustment ?? 0, hires: s.hires ?? [], raise: s.raise ?? null };
+  const base = { ...s, revenueAdjustment: s.revenueAdjustment ?? 0, hires: s.hires ?? [], raise: s.raise ?? null };
+  return "category" in s ? { ...base, category: ScenarioCategory.Custom, custom: true } : base;
 }
 
 /** A list in React state mirrored to `localStorage[key]`, read once on mount and capped at `max` items. */
@@ -50,7 +56,7 @@ export function useSavedScenarios() {
   const [saved, setSaved] = useStoredList<Scenario>("fo-scenarios", MAX_SAVED);
   const save = useCallback(
     (s: Scenario, name: string) =>
-      setSaved((list) => [{ ...s, id: crypto.randomUUID(), name: name.trim() || "Untitled scenario" }, ...list].slice(0, MAX_SAVED)),
+      setSaved((list) => [{ ...s, id: crypto.randomUUID(), name: name.trim() || scenarioNames.untitled }, ...list].slice(0, MAX_SAVED)),
     [setSaved],
   );
   const remove = useCallback((id: string) => setSaved((list) => list.filter((s) => s.id !== id)), [setSaved]);
@@ -69,9 +75,9 @@ export function useCustomScenarios() {
       const stored: LibraryScenario = {
         ...s,
         id: s.id ?? `custom-${crypto.randomUUID()}`,
-        name: s.name.trim() || "Untitled scenario",
+        name: s.name.trim() || scenarioNames.untitled,
         description: s.description.trim(),
-        category: CUSTOM_CATEGORY,
+        category: ScenarioCategory.Custom,
         custom: true,
       };
       setCustom((list) =>

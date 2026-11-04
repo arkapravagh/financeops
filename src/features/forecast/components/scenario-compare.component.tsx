@@ -3,10 +3,12 @@
  */
 
 import { AlertTriangle, CheckCircle2, Trash2 } from "lucide-react";
+import { commonLabels } from "../../../language/en/common.lang";
+import { compareLabels as L } from "../../../language/en/forecast.lang";
 import { FORECAST_MONTHS } from "../../../services/forecast.service";
 import { addMonths, formatMonthYear } from "../../../shared/utils/dates.util";
 import { formatCompact } from "../../../shared/utils/money.util";
-import type { ScenarioResult } from "../scenario.model";
+import type { ScenarioResult } from "../../../types/forecast.types";
 
 /** One row: the evaluated scenario and how its line is drawn on the chart (colour, dashed). */
 export type CompareRow = { result: ScenarioResult; color: string; dashed?: boolean; removable?: boolean; label?: string };
@@ -24,10 +26,10 @@ export function ScenarioCompare({ rows, origin, onRemove }: ScenarioCompareProps
   return (
     <div className="overflow-x-auto">
       <table className="w-full min-w-[35rem] border-separate border-spacing-0 text-sm">
-        <caption className="sr-only">Scenario comparison</caption>
+        <caption className="sr-only">{L.caption}</caption>
         <thead>
           <tr className="text-xs text-muted">
-            {["Scenario", "Runway", "Zero cash", "Break-even", "Cash in 12 months", "Verdict", ""].map((h, i) => (
+            {L.columns.map((h, i) => (
               <th key={i} scope="col" className={`border-b border-line px-4 py-2.5 font-medium whitespace-nowrap ${i === 0 ? "text-left" : i === 6 ? "w-10" : "text-right"}`}>
                 {h}
               </th>
@@ -49,7 +51,7 @@ export function ScenarioCompare({ rows, origin, onRemove }: ScenarioCompareProps
                 </td>
                 <td className="border-b border-line px-4 py-3 text-right whitespace-nowrap tabular-nums">
                   <span className={runway === best && rows.length > 1 ? "font-semibold text-ink" : "text-ink"}>
-                    {r.runway === null ? `${FORECAST_MONTHS}+` : r.runway.toFixed(1)} mo
+                    {commonLabels.monthsShort(r.runway === null ? `${FORECAST_MONTHS}+` : r.runway.toFixed(1))}
                   </span>
                 </td>
                 <td className="border-b border-line px-4 py-3 text-right whitespace-nowrap text-ink-2">{r.zeroDate ? formatMonthYear(r.zeroDate) : "—"}</td>
@@ -60,7 +62,7 @@ export function ScenarioCompare({ rows, origin, onRemove }: ScenarioCompareProps
                 <td className="border-b border-line px-4 py-3 text-right whitespace-nowrap">
                   <span className={`inline-flex items-center gap-1 text-xs font-medium ${r.alive ? "text-good-ink" : "text-critical"}`}>
                     {r.alive ? <CheckCircle2 size={12} aria-hidden /> : <AlertTriangle size={12} aria-hidden />}
-                    {r.alive ? "Alive" : "Dead"}
+                    {r.alive ? L.alive : L.dead}
                   </span>
                 </td>
                 <td className="border-b border-line px-3 py-3 text-right">
@@ -68,7 +70,7 @@ export function ScenarioCompare({ rows, origin, onRemove }: ScenarioCompareProps
                     <button
                       type="button"
                       onClick={() => onRemove(r.scenario.id)}
-                      aria-label={`Delete saved scenario ${r.scenario.name}`}
+                      aria-label={L.deleteSaved(r.scenario.name)}
                       className="grid size-7 place-items-center rounded-md text-muted outline-none hover:bg-critical/10 hover:text-critical focus-visible:ring-2 focus-visible:ring-accent"
                     >
                       <Trash2 size={14} />

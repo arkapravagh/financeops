@@ -5,7 +5,7 @@
  */
 
 import { useCallback, useDeferredValue, useMemo, useState } from "react";
-import type { CellValue, ColumnDef, FacetOption, Filters, SortState } from "./data-table.types";
+import type { CellValue, ColumnDef, FacetOption, Filters, SortState } from "../types/data-table.types";
 
 const collator = new Intl.Collator("en-US", { numeric: true, sensitivity: "base" });
 
@@ -51,14 +51,20 @@ export function useDataTable<T>({ data, columns, getRowId, initialSort = null, i
   const visibleColumns = useMemo(() => columns.filter((c) => !hidden.has(c.id)), [columns, hidden]);
   const facetColumns = useMemo(() => columns.filter((c) => c.facet), [columns]);
 
-  // Search index: one lowercase string per row, built once per data change.
+  // Search index: one lowercase string per row, built once per data change. Columns holding enum ids are
+  // searched by their display label (`facetLabel`), so "software" finds the Software & cloud category.
   const searchIndex = useMemo(() => {
     const idx = new Map<T, string>();
+    const textOf = (c: ColumnDef<T>, row: T) => {
+      if (c.searchValue) return c.searchValue(row);
+      const raw = String(c.accessor(row) ?? "");
+      return c.facetLabel ? `${raw} ${c.facetLabel(raw)}` : raw;
+    };
     for (const row of data) {
       idx.set(
         row,
         columns
-          .map((c) => (c.searchValue ? c.searchValue(row) : String(c.accessor(row) ?? "")))
+          .map((c) => textOf(c, row))
           .join(" \u0000 ")
           .toLowerCase(),
       );

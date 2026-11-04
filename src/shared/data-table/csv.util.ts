@@ -1,6 +1,6 @@
 /** CSV export for data tables. Values come from each column's `csv` (or `accessor`), never from formatted cells. */
 
-import type { ColumnDef } from "./data-table.types";
+import type { ColumnDef } from "../../types/data-table.types";
 
 /** Escape a CSV field. Strings starting with = + - @ are prefixed to block formula injection in Excel/Sheets. */
 function field(v: unknown): string {

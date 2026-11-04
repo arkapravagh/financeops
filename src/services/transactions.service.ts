@@ -5,13 +5,15 @@
  */
 
 import { transactions } from "../data/transactions.data";
-import type { Category, MonthKey } from "../types/finance.types";
+import { Category } from "../enums/category.enum";
+import { TransactionDirection } from "../enums/transaction-direction.enum";
+import type { MonthKey } from "../types/finance.types";
 
 /** Query for {@link getTransactions}. Omitted fields (or "All"/"all") don't filter. */
 export type TransactionFilter = {
   search?: string;
   category?: Category | "All";
-  direction?: "all" | "in" | "out";
+  direction?: TransactionDirection;
   accountId?: string | "all";
   /** `YYYY-MM` */
   month?: MonthKey;
@@ -25,7 +27,7 @@ export function getTransactions(filter: TransactionFilter = {}) {
     .filter((t) => !filter.category || filter.category === "All" || t.category === filter.category)
     .filter((t) => !filter.accountId || filter.accountId === "all" || t.accountId === filter.accountId)
     .filter((t) =>
-      filter.direction === "in" ? t.amountCents > 0 : filter.direction === "out" ? t.amountCents < 0 : true,
+      filter.direction === TransactionDirection.In ? t.amountCents > 0 : filter.direction === TransactionDirection.Out ? t.amountCents < 0 : true,
     )
     .filter((t) => !q || `${t.description} ${t.counterparty}`.toLowerCase().includes(q))
     .sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
@@ -33,4 +35,4 @@ export function getTransactions(filter: TransactionFilter = {}) {
 
 /** The `limit` most recent transactions (Overview widget). */
 export const getRecentTransactions = (limit = 6) =>
-  getTransactions().filter((t) => t.category !== "Transfer").slice(0, limit);
+  getTransactions().filter((t) => t.category !== Category.Transfer).slice(0, limit);

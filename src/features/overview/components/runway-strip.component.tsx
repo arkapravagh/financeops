@@ -2,6 +2,7 @@
  * Runway strip: the Overview's hero, showing cash, runway and the zero-cash and start-raising dates on one line.
  */
 
+import { runwayStripLabels as L } from "../../../language/en/overview.lang";
 import { addMonths, formatMonthYear, toMonthKey } from "../../../shared/utils/dates.util";
 import { formatCompact, formatMoney } from "../../../shared/utils/money.util";
 import type { BankAccount } from "../../../types/finance.types";
@@ -36,7 +37,7 @@ export function RunwayStrip({ runwayMonths, cashCents, avgNetBurnCents, accounts
   const tickLabel = (m: number) => {
     const d = addMonths(asOf, m);
     const yy = toMonthKey(d).slice(2, 4);
-    return m === 0 ? "Today" : `${shortMonth.format(d)} ’${yy}`;
+    return m === 0 ? L.today : L.tick(shortMonth.format(d), yy);
   };
 
   return (
@@ -44,35 +45,35 @@ export function RunwayStrip({ runwayMonths, cashCents, avgNetBurnCents, accounts
       <div className="flex flex-col gap-6 @3xl:flex-row @3xl:items-end @3xl:justify-between">
         <div className="min-w-0">
           <h2 id="runway-title" className="text-[13px] text-muted">
-            Runway at current burn
+            {L.title}
           </h2>
           {alive ? (
-            <p className="mt-1 text-[56px] leading-none font-semibold tracking-[-0.035em] text-ink">Profitable</p>
+            <p className="mt-1 text-[56px] leading-none font-semibold tracking-[-0.035em] text-ink">{L.profitable}</p>
           ) : (
             <p className="mt-1 leading-none text-ink">
               <span className="text-[56px] font-semibold tracking-[-0.035em]">{runway.toFixed(1)}</span>
-              <span className="ml-2 text-2xl font-medium tracking-[-0.02em] text-ink-2">months</span>
+              <span className="ml-2 text-2xl font-medium tracking-[-0.02em] text-ink-2">{L.months}</span>
             </p>
           )}
           <p className="mt-3 max-w-[52ch] text-sm leading-relaxed text-ink-2">
             {alive ? (
-              "Revenue covers spending, so there's no runway clock."
+              L.aliveNote
             ) : (
               <>
-                Cash lasts until about <span className="font-medium text-ink">{formatMonthYear(zeroDate as Date)}</span>. Start
-                raising by <span className="font-medium text-ink">{formatMonthYear(raiseDate as Date)}</span> to leave time to close.
+                {L.cashLastsUntil} <span className="font-medium text-ink">{formatMonthYear(zeroDate as Date)}</span>
+                {L.startRaisingBy} <span className="font-medium text-ink">{formatMonthYear(raiseDate as Date)}</span> {L.toLeaveTime}
               </>
             )}
           </p>
         </div>
 
         <dl className="grid shrink-0 grid-cols-2 gap-x-10 gap-y-1">
-          <dt className="text-[13px] text-muted">Cash in the bank</dt>
-          <dt className="text-[13px] text-muted">Net burn</dt>
+          <dt className="text-[13px] text-muted">{L.cashInBank}</dt>
+          <dt className="text-[13px] text-muted">{L.netBurn}</dt>
           <dd className="text-xl font-semibold tracking-[-0.015em] text-ink">{formatMoney(cashCents)}</dd>
           <dd className="text-xl font-semibold tracking-[-0.015em] text-ink">
             {formatCompact(avgNetBurnCents)}
-            <span className="text-sm font-normal text-ink-2">/mo</span>
+            <span className="text-sm font-normal text-ink-2">{L.perMonth}</span>
           </dd>
           <dd className="col-span-2 mt-1.5">
             <ul className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">
@@ -88,7 +89,7 @@ export function RunwayStrip({ runwayMonths, cashCents, avgNetBurnCents, accounts
 
       {/* Horizon track */}
       {!alive && (
-        <div className="mt-9" role="img" aria-label={`Runway timeline: today, start raising ${formatMonthYear(raiseDate as Date)}, zero cash ${formatMonthYear(zeroDate as Date)}.`}>
+        <div className="mt-9" role="img" aria-label={L.timeline(formatMonthYear(raiseDate as Date), formatMonthYear(zeroDate as Date))}>
           <div className="relative h-5">
             {/* marker labels above the track */}
             <span
@@ -96,14 +97,14 @@ export function RunwayStrip({ runwayMonths, cashCents, avgNetBurnCents, accounts
               style={{ left: pct(raiseAt) }}
               aria-hidden
             >
-              Start raising
+              {L.startRaising}
             </span>
             <span
               className="absolute bottom-0 -translate-x-1/2 text-xs font-medium whitespace-nowrap text-ink"
               style={{ left: pct(runway) }}
               aria-hidden
             >
-              Zero cash
+              {L.zeroCash}
             </span>
           </div>
 
@@ -144,10 +145,10 @@ export function RunwayStrip({ runwayMonths, cashCents, avgNetBurnCents, accounts
 
           <ul className="mt-4 flex flex-wrap gap-x-5 gap-y-1 text-xs text-ink-2" aria-hidden>
             <li className="inline-flex items-center gap-1.5">
-              <span className="h-2 w-4 rounded-full bg-accent" /> Runway before you need to raise
+              <span className="h-2 w-4 rounded-full bg-accent" /> {L.legendRunway}
             </li>
             <li className="inline-flex items-center gap-1.5">
-              <span className="h-2 w-4 rounded-full bg-accent/35" /> Fundraising window ({raiseLeadMonths} months)
+              <span className="h-2 w-4 rounded-full bg-accent/35" /> {L.legendWindow(raiseLeadMonths)}
             </li>
           </ul>
         </div>

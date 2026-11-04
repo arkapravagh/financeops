@@ -1,6 +1,7 @@
 /** Assistant dock: positions the AI panel beside (desktop) or over (mobile) the page. */
 
-import { useAssistantControls } from "../assistant.provider";
+import { useAssistantControls } from "../../../hooks/use-assistant.hook";
+import { assistantLabels } from "../../../language/en/assistant.lang";
 import { AssistantPanel } from "./assistant-panel.component";
 
 /**
@@ -21,7 +22,7 @@ export function AssistantDock() {
         }`}
       />
       <aside
-        aria-label="FinanceOps AI assistant"
+        aria-label={assistantLabels.dockLabel}
         aria-hidden={!open}
         inert={!open}
         className={`fixed inset-y-0 right-0 z-50 w-full max-w-[420px] shadow-[var(--shadow-float)] transition-transform duration-300 ease-in-out motion-reduce:transition-none lg:sticky lg:top-0 lg:z-auto lg:h-screen lg:max-w-none lg:shrink-0 lg:translate-x-0 lg:overflow-hidden lg:shadow-none lg:transition-[width] ${

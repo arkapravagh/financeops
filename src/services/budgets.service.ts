@@ -5,7 +5,8 @@
  */
 
 import { budgets } from "../data/budgets.data";
-import type { Budget, ExpenseCategory, MonthKey } from "../types/finance.types";
+import { type ExpenseCategory } from "../enums/category.enum";
+import type { Budget, MonthKey } from "../types/finance.types";
 
 /** Months that have budgets, oldest first. */
 export const getBudgetMonths = (): MonthKey[] => [...new Set(budgets.map((b) => b.month))].sort();

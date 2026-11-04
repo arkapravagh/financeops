@@ -7,9 +7,14 @@
 
 import { ArrowRight, Download, Plus, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
+import { InvoiceStatus } from "../../enums/invoice-status.enum";
+import { useAssistantControls } from "../../hooks/use-assistant.hook";
+import { commonLabels } from "../../language/en/common.lang";
+import { categoryLabels, receivablesAgeLabels } from "../../language/en/enums.lang";
+import { overviewLabels as L } from "../../language/en/overview.lang";
 import { getBudgets } from "../../services/budgets.service";
 import { getAccounts, getCashHistory, getMonthlyFlows, getUpcomingBills } from "../../services/cash.service";
-import { AS_OF, getCompany } from "../../services/company.service";
+import { AS_OF, getCompany, getTeam } from "../../services/company.service";
 import { getInvoices } from "../../services/invoices.service";
 import { getMrrHistory } from "../../services/revenue.service";
 import { getRecentTransactions } from "../../services/transactions.service";
@@ -36,7 +41,6 @@ import {
   sumCents,
 } from "../../shared/utils/metrics.util";
 import { formatCompact, formatMoney, formatPercent } from "../../shared/utils/money.util";
-import { useAssistantControls } from "../assistant/assistant.provider";
 import { RunwayStrip } from "./components/runway-strip.component";
 
 const PROJECTION_MONTHS = 6;
@@ -50,6 +54,7 @@ const linkCls =
 export function OverviewPage() {
   const { ask } = useAssistantControls();
   const company = getCompany();
+  const firstName = getTeam()[0].name.split(" ")[0];
   const accounts = getAccounts();
   const flows = getMonthlyFlows();
   const history = getCashHistory();
@@ -70,7 +75,7 @@ export function OverviewPage() {
   const burnChange = growthRate(avgBurn, prevAvgBurn) ?? 0;
   const ar = receivablesCents(invoices);
   const overdue = invoices
-    .filter((i) => invoiceStatus(i, AS_OF) === "overdue")
+    .filter((i) => invoiceStatus(i, AS_OF) === InvoiceStatus.Overdue)
     .sort((a, b) => a.dueDate.localeCompare(b.dueDate));
   const overdueTotal = sumCents(overdue.map((i) => i.amountCents));
   const overBudget = budgets.filter((b) => budgetUsed(b) > 1);
@@ -89,15 +94,15 @@ export function OverviewPage() {
   return (
     <>
       <PageHeader
-        title="Good morning, Alex"
-        subtitle={`Here's where ${company.name} stands on ${formatDate(AS_OF)}.`}
+        title={L.greeting(firstName)}
+        subtitle={L.subtitle(company.name, formatDate(AS_OF))}
         actions={
           <>
-            <Button icon={<Download size={16} />} title="Not available in the prototype">
-              Export
+            <Button icon={<Download size={16} />} title={commonLabels.notAvailableTitle}>
+              {L.export}
             </Button>
-            <Button variant="primary" icon={<Plus size={16} />} title="Not available in the prototype">
-              Add transaction
+            <Button variant="primary" icon={<Plus size={16} />} title={commonLabels.notAvailableTitle}>
+              {L.addTransaction}
             </Button>
           </>
         }
@@ -110,28 +115,28 @@ export function OverviewPage() {
         className="mt-5"
         items={[
           {
-            label: "Net burn, 3-month average",
-            value: `${formatCompact(avgBurn)}/mo`,
+            label: L.kpi.netBurn,
+            value: L.kpi.perMonth(formatCompact(avgBurn)),
             delta: { text: formatPercent(Math.abs(burnChange), 1), direction: burnChange > 0 ? "up" : "down", good: burnChange <= 0 },
-            context: "vs the 3 months before",
+            context: L.kpi.netBurnContext,
             trend: complete.map(netBurnCents),
           },
           {
-            label: "Monthly recurring revenue",
+            label: L.kpi.mrr,
             value: formatCompact(mrrNow.mrrCents),
             delta: { text: formatPercent(mrrGrowth, 1), direction: mrrGrowth >= 0 ? "up" : "down", good: mrrGrowth >= 0 },
-            context: `from ${mrrNow.customers} customers`,
+            context: L.kpi.mrrContext(mrrNow.customers),
             trend: mrr.map((m) => m.mrrCents),
           },
           {
-            label: "Owed to you",
+            label: L.kpi.owed,
             value: formatCompact(ar),
-            context: <span className={overdueTotal > 0 ? "text-critical" : ""}>{formatCompact(overdueTotal)} of it overdue</span>,
+            context: <span className={overdueTotal > 0 ? "text-critical" : ""}>{L.kpi.owedContext(formatCompact(overdueTotal))}</span>,
           },
           {
-            label: "Bills in the next 14 days",
+            label: L.kpi.bills,
             value: formatCompact(billsTotal),
-            context: manualBills ? `${manualBills} need a manual payment` : "All on autopay",
+            context: manualBills ? L.kpi.billsManual(manualBills) : L.kpi.billsAutopay,
           },
         ]}
       />
@@ -140,26 +145,24 @@ export function OverviewPage() {
       <div className="mt-5 grid grid-cols-1 gap-5 xl:grid-cols-3">
         <Card
           className="xl:col-span-2"
-          title="Cash balance"
-          subtitle={`Down ${formatCompact(startCash - cash)} over 12 months. The dashed line projects the next 6 months at current burn.`}
+          title={L.cash.title}
+          subtitle={L.cash.subtitle(formatCompact(startCash - cash))}
         >
           <LineChart
             labels={cashMonths.map(formatMonthShort)}
             tooltipLabels={cashMonths.map(formatMonthLong)}
-            series={[{ name: "Cash balance", color: "var(--series-1)", values: cashValues, area: true }]}
+            series={[{ name: L.cash.series, color: "var(--series-1)", values: cashValues, area: true }]}
             projectedFrom={history.length - 1}
-            ariaLabel={`Cash balance fell from ${formatCompact(startCash)} to ${formatCompact(cash)} over 12 months, projected ${formatCompact(
-              cashValues[cashValues.length - 1],
-            )} in 6 months at current burn.`}
+            ariaLabel={L.cash.chartSummary(formatCompact(startCash), formatCompact(cash), formatCompact(cashValues[cashValues.length - 1]))}
             height={300}
           />
         </Card>
 
         <Card
-          title="Needs your attention"
+          title={L.attention.title}
           action={
-            <button type="button" onClick={() => ask("Summarize last month")} className={linkCls}>
-              <Sparkles size={13} aria-hidden /> Ask AI
+            <button type="button" onClick={() => ask(L.attention.askPrompt)} className={linkCls}>
+              <Sparkles size={13} aria-hidden /> {L.attention.askAi}
             </button>
           }
           flush
@@ -168,24 +171,24 @@ export function OverviewPage() {
             {overdue.length > 0 && (
               <Insight
                 tone="critical"
-                title={`${overdue.length} invoices overdue, ${formatMoney(overdueTotal)} in total`}
+                title={L.attention.overdueTitle(overdue.length, formatMoney(overdueTotal))}
                 action={
                   <Link to="/invoices" className={linkCls}>
-                    Review invoices <ArrowRight size={13} aria-hidden />
+                    {L.attention.reviewInvoices} <ArrowRight size={13} aria-hidden />
                   </Link>
                 }
               >
-                The oldest is {overdue[0].customer}, {daysBetween(parseIso(overdue[0].dueDate), AS_OF)} days late.
+                {L.attention.oldestOverdue(overdue[0].customer, daysBetween(parseIso(overdue[0].dueDate), AS_OF))}
               </Insight>
             )}
             {overBudget.map((b) => (
-              <Insight key={b.category} tone="warning" title={`${b.category} is ${formatPercent(budgetUsed(b) - 1)} over budget`}>
-                {formatMoney(b.actualCents)} spent against {formatMoney(b.budgetCents)} planned in October.
+              <Insight key={b.category} tone="warning" title={L.attention.overBudgetTitle(categoryLabels[b.category], formatPercent(budgetUsed(b) - 1))}>
+                {L.attention.overBudgetDetail(formatMoney(b.actualCents), formatMoney(b.budgetCents), formatMonthLong(b.month))}
               </Insight>
             ))}
             {manualBills > 0 && (
-              <Insight tone="info" title={`${manualBills} bills need a manual payment`}>
-                The first is due {formatDayMonth(billsSoon.find((b) => !b.autopay)!.dueDate)}.
+              <Insight tone="info" title={L.attention.manualBillsTitle(manualBills)}>
+                {L.attention.firstDue(formatDayMonth(billsSoon.find((b) => !b.autopay)!.dueDate))}
               </Insight>
             )}
           </div>
@@ -196,23 +199,23 @@ export function OverviewPage() {
       <div className="mt-5 grid grid-cols-1 gap-5 xl:grid-cols-3">
         <Card
           className="xl:col-span-2"
-          title="Cash in and out"
-          subtitle="Revenue is growing faster than spending, so net burn is holding near $125K a month."
+          title={L.flows.title}
+          subtitle={L.flows.subtitle}
         >
           <ColumnChart
             labels={complete.map((f) => formatMonthShort(f.month))}
             tooltipLabels={complete.map((f) => formatMonthLong(f.month))}
             series={[
-              { name: "Cash in", color: "var(--series-1)", values: complete.map((f) => f.inCents) },
-              { name: "Cash out", color: "var(--series-2)", values: complete.map((f) => f.outCents) },
+              { name: L.flows.cashIn, color: "var(--series-1)", values: complete.map((f) => f.inCents) },
+              { name: L.flows.cashOut, color: "var(--series-2)", values: complete.map((f) => f.outCents) },
             ]}
-            extraRows={(i) => [{ label: "Net burn", value: formatMoney(netBurnCents(complete[i])) }]}
-            ariaLabel="Monthly cash in rose from $41K to $68K while cash out rose from $158K to $194K over the last 12 months."
+            extraRows={(i) => [{ label: L.flows.netBurn, value: formatMoney(netBurnCents(complete[i])) }]}
+            ariaLabel={L.flows.chartSummary}
             height={360}
           />
         </Card>
 
-        <Card title="Upcoming bills" subtitle={`${formatMoney(billsTotal)} due in the next 14 days`} flush>
+        <Card title={L.bills.title} subtitle={L.bills.subtitle(formatMoney(billsTotal))} flush>
           <ul className="divide-y divide-line px-5 pb-2">
             {billsSoon.map((b) => {
               const d = parseIso(b.dueDate);
@@ -225,8 +228,8 @@ export function OverviewPage() {
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium text-ink">{b.vendor}</p>
                     <p className="text-xs text-muted">
-                      <span className="sr-only">Due {formatDayMonth(b.dueDate)}. </span>
-                      {b.autopay ? "Autopay" : <span className="font-medium text-ink-2">Pay manually</span>}
+                      <span className="sr-only">{L.bills.due(formatDayMonth(b.dueDate))}</span>
+                      {b.autopay ? L.bills.autopay : <span className="font-medium text-ink-2">{L.bills.payManually}</span>}
                     </p>
                   </div>
                   <span className="shrink-0 text-sm font-medium tabular-nums text-ink">{formatMoney(b.amountCents)}</span>
@@ -241,21 +244,21 @@ export function OverviewPage() {
       <div className="mt-5 grid grid-cols-1 gap-5 xl:grid-cols-3">
         <Card
           className="xl:col-span-2"
-          title="Recent transactions"
+          title={L.recent.title}
           flush
           action={
             <Link to="/transactions" className={linkCls}>
-              View all <ArrowRight size={13} aria-hidden />
+              {L.recent.viewAll} <ArrowRight size={13} aria-hidden />
             </Link>
           }
         >
-          <Table caption="Recent transactions">
+          <Table caption={L.recent.title}>
             <thead>
               <tr>
-                <Th>Date</Th>
-                <Th>Description</Th>
-                <Th className="hidden sm:table-cell">Category</Th>
-                <Th align="right">Amount</Th>
+                <Th>{L.recent.date}</Th>
+                <Th>{L.recent.description}</Th>
+                <Th className="hidden sm:table-cell">{L.recent.category}</Th>
+                <Th align="right">{L.recent.amount}</Th>
               </tr>
             </thead>
             <tbody>
@@ -266,7 +269,7 @@ export function OverviewPage() {
                     <div className="font-medium">{t.description}</div>
                     <div className="text-xs text-muted">{t.counterparty}</div>
                   </Td>
-                  <Td className="hidden text-ink-2 sm:table-cell">{t.category}</Td>
+                  <Td className="hidden text-ink-2 sm:table-cell">{categoryLabels[t.category]}</Td>
                   <Td align="right">
                     <Amount cents={t.amountCents} />
                   </Td>
@@ -276,17 +279,17 @@ export function OverviewPage() {
           </Table>
         </Card>
 
-        <Card title="Who owes you" subtitle={`${formatMoney(ar)} across ${invoices.filter((i) => i.status === "sent").length} open invoices`}>
+        <Card title={L.owed.title} subtitle={L.owed.subtitle(formatMoney(ar), invoices.filter((i) => i.status === InvoiceStatus.Sent).length)}>
           <ul className="flex flex-col gap-4">
             {aging.map((b, i) => {
               const share = ar === 0 ? 0 : b.amountCents / ar;
               const fill = ["bg-accent", "bg-warning", "bg-serious", "bg-critical"][i];
               return (
-                <li key={b.label}>
+                <li key={b.age}>
                   <div className="flex items-baseline justify-between gap-3 text-sm">
                     <span className="inline-flex items-center gap-2 text-ink">
                       <span className={`size-2 rounded-full ${fill}`} aria-hidden />
-                      {b.label}
+                      {receivablesAgeLabels[b.age]}
                     </span>
                     <span className="font-medium tabular-nums text-ink">{formatMoney(b.amountCents)}</span>
                   </div>
@@ -294,7 +297,7 @@ export function OverviewPage() {
                     <div className={`h-full rounded-full ${fill}`} style={{ width: `${share * 100}%` }} />
                   </div>
                   <p className="mt-1 text-xs text-muted">
-                    {b.count} {b.count === 1 ? "invoice" : "invoices"}, {formatPercent(share)} of the total
+                    {L.owed.bucketDetail(b.count, formatPercent(share))}
                   </p>
                 </li>
               );

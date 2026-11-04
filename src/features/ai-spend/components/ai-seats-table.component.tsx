@@ -1,6 +1,7 @@
 /** AI seats table: per-seat AI tools, seats used vs. bought, and the cost of unused seats. */
 
 import { CircleCheck, CircleAlert } from "lucide-react";
+import { aiSeatsTableLabels as L } from "../../../language/en/ai-spend.lang";
 import { Badge } from "../../../shared/ui/badge.component";
 import { Table, Td, Th } from "../../../shared/ui/table.component";
 import { idleSeatCostCents } from "../../../shared/utils/metrics.util";
@@ -13,13 +14,13 @@ export type AiSeatsTableProps = { seats: AiSeatCharge[] };
 /** Per-seat AI tools with how many seats were actually used. Status is icon + text, never colour alone. */
 export function AiSeatsTable({ seats }: AiSeatsTableProps) {
   return (
-    <Table caption="Team AI tools">
+    <Table caption={L.caption}>
       <thead>
         <tr>
-          <Th>Tool</Th>
-          <Th align="right">Seats used</Th>
-          <Th align="right">Cost</Th>
-          <Th align="right">Unused seats</Th>
+          <Th>{L.tool}</Th>
+          <Th align="right">{L.seatsUsed}</Th>
+          <Th align="right">{L.cost}</Th>
+          <Th align="right">{L.unusedSeats}</Th>
         </tr>
       </thead>
       <tbody>
@@ -33,7 +34,7 @@ export function AiSeatsTable({ seats }: AiSeatsTableProps) {
                 <span className="block text-xs text-muted">{s.vendor}</span>
               </Td>
               <Td align="right" className="text-ink-2">
-                {s.activeSeats} of {s.seats}
+                {L.usedOf(s.activeSeats, s.seats)}
               </Td>
               <Td align="right" className="font-medium">
                 {formatMoney(s.costCents)}
@@ -41,11 +42,11 @@ export function AiSeatsTable({ seats }: AiSeatsTableProps) {
               <Td align="right">
                 {unused > 0 ? (
                   <Badge tone="warning" icon={<CircleAlert size={12} />}>
-                    {unused} unused, {formatMoney(idle)}
+                    {L.unused(unused, formatMoney(idle))}
                   </Badge>
                 ) : (
                   <Badge tone="good" icon={<CircleCheck size={12} />}>
-                    All in use
+                    {L.allInUse}
                   </Badge>
                 )}
               </Td>

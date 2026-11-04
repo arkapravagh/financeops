@@ -6,6 +6,12 @@
  */
 
 import { useMemo, useState } from "react";
+import { AiFeature } from "../../enums/ai-feature.enum";
+import { AiUsageKind } from "../../enums/ai-usage-kind.enum";
+import { AiUsageView } from "../../enums/ai-usage-view.enum";
+import { useAssistantControls } from "../../hooks/use-assistant.hook";
+import { aiSpendLabels as L } from "../../language/en/ai-spend.lang";
+import { aiFeatureLabels, aiUsageViewLabels } from "../../language/en/enums.lang";
 import { getAiBudget, getAiFeatures, getAiMonths, getAiSeatCharges, getAiUsage } from "../../services/ai-spend.service";
 import { getMrrHistory } from "../../services/revenue.service";
 import { BulletBar } from "../../shared/charts/bullet-bar.component";
@@ -29,9 +35,8 @@ import {
   sumCents,
 } from "../../shared/utils/metrics.util";
 import { formatCount, formatMoney, formatPercent } from "../../shared/utils/money.util";
-import { useAssistantControls } from "../assistant/assistant.provider";
 import { AiSeatsTable } from "./components/ai-seats-table.component";
-import { AiUsageTable, type AiUsageView } from "./components/ai-usage-table.component";
+import { AiUsageTable } from "./components/ai-usage-table.component";
 
 const MONTHS = getAiMonths();
 const SUMMARY = aiMonthlySummary(getAiUsage(), getAiSeatCharges());
@@ -52,7 +57,7 @@ function costDelta(current: number, previous: number | undefined, upIsGood = fal
 export function AiSpendPage() {
   const { ask } = useAssistantControls();
   const [month, setMonth] = useState(MONTHS[MONTHS.length - 1]);
-  const [view, setView] = useState<AiUsageView>("feature");
+  const [view, setView] = useState<AiUsageView>(AiUsageView.Feature);
 
   const i = MONTHS.indexOf(month);
   const now = SUMMARY[i];
@@ -62,7 +67,7 @@ export function AiSpendPage() {
   const usage = useMemo(() => getAiUsage({ month }), [month]);
   const seats = useMemo(() => getAiSeatCharges({ month }), [month]);
   const rows = useMemo(
-    () => (view === "feature" ? groupAiUsage(usage, (u) => u.feature) : groupAiUsage(usage, (u) => u.model)),
+    () => (view === AiUsageView.Feature ? groupAiUsage(usage, (u) => u.feature) : groupAiUsage(usage, (u) => u.model)),
     [usage, view],
   );
   const budget = getAiBudget(month);
@@ -91,37 +96,37 @@ export function AiSpendPage() {
 
   const kpis: Kpi[] = [
     {
-      label: "AI spend",
+      label: L.kpi.spend,
       value: formatMoney(now.totalCents),
       delta: costDelta(now.totalCents, prev?.totalCents),
-      context: prev ? `vs ${formatMonthShort(prev.month)}` : "first month tracked",
+      context: prev ? L.kpi.versus(formatMonthShort(prev.month)) : L.kpi.firstMonth,
       trend: SUMMARY.slice(0, i + 1).map((s) => s.totalCents),
     },
     {
-      label: "Share of revenue",
+      label: L.kpi.share,
       value: shareNow === null ? "—" : formatPercent(shareNow, 1),
       delta:
         shareNow !== null && sharePrev !== null
           ? {
-              text: `${Math.abs((shareNow - sharePrev) * 100).toFixed(1)} pts`,
+              text: L.kpi.sharePoints(Math.abs((shareNow - sharePrev) * 100).toFixed(1)),
               direction: Math.abs(shareNow - sharePrev) < 0.0005 ? "flat" : shareNow > sharePrev ? "up" : "down",
               good: shareNow <= sharePrev,
             }
           : undefined,
-      context: `of ${formatMoney(mrrNow)} MRR`,
+      context: L.kpi.shareContext(formatMoney(mrrNow)),
     },
     {
-      label: "Tokens processed",
+      label: L.kpi.tokens,
       value: formatCount(now.tokens),
       delta: costDelta(now.tokens, prev?.tokens, true),
-      context: `${formatCount(now.requests)} requests`,
+      context: L.kpi.requests(formatCount(now.requests)),
       trend: SUMMARY.slice(0, i + 1).map((s) => s.tokens),
     },
     {
-      label: "AI cost per customer",
+      label: L.kpi.perCustomer,
       value: perCustomerNow === null ? "—" : formatMoney(perCustomerNow, { cents: true }),
       delta: perCustomerNow !== null && perCustomerPrev !== null ? costDelta(perCustomerNow, perCustomerPrev) : undefined,
-      context: `${mrrOf(month)?.customers ?? 0} paying customers`,
+      context: L.kpi.customers(mrrOf(month)?.customers ?? 0),
     },
   ];
 
@@ -132,18 +137,18 @@ export function AiSpendPage() {
   return (
     <>
       <PageHeader
-        title="AI spend"
-        subtitle="What is AI costing us, and is it growing faster than revenue?"
+        title={L.title}
+        subtitle={L.subtitle}
         actions={
           <>
             <Segmented
-              label="Month"
+              label={L.month}
               size="md"
               value={month}
               onChange={setMonth}
               options={MONTHS.map((m) => ({ value: m, label: formatMonthShort(m) }))}
             />
-            <Button onClick={() => ask("Where is our AI spend going, and how can we cut it?")}>Ask AI</Button>
+            <Button onClick={() => ask(L.askPrompt)}>{L.askAi}</Button>
           </>
         }
       />
@@ -153,30 +158,30 @@ export function AiSpendPage() {
       <div className="mt-5 grid grid-cols-1 gap-5 xl:grid-cols-3">
         <Card
           className="xl:col-span-2"
-          title="AI spend by month"
+          title={L.byMonth.title}
           subtitle={
             aiGrowth3 !== null && mrrGrowth3 !== null
-              ? `Up ${formatPercent(aiGrowth3)} since ${formatMonthShort(MONTHS[base!])}, while revenue grew ${formatPercent(mrrGrowth3)}.`
-              : "Model APIs, self-hosted GPUs and per-seat team tools."
+              ? L.byMonth.growthSubtitle(formatPercent(aiGrowth3), formatMonthShort(MONTHS[base!]), formatPercent(mrrGrowth3))
+              : L.byMonth.defaultSubtitle
           }
         >
           <ColumnChart
             labels={historyMonths.map(formatMonthShort)}
             tooltipLabels={historyMonths.map(formatMonthLong)}
             series={[
-              { name: "Model APIs", color: "var(--series-1)", values: history.map((s) => s.apiCents) },
-              { name: "GPU hosting", color: "var(--series-2)", values: history.map((s) => s.computeCents) },
-              { name: "Team seats", color: "var(--series-3)", values: history.map((s) => s.seatsCents) },
+              { name: L.byMonth.api, color: "var(--series-1)", values: history.map((s) => s.apiCents) },
+              { name: L.byMonth.gpu, color: "var(--series-2)", values: history.map((s) => s.computeCents) },
+              { name: L.byMonth.seats, color: "var(--series-3)", values: history.map((s) => s.seatsCents) },
             ]}
-            extraRows={(m) => [{ label: "Total", value: formatMoney(history[m].totalCents) }]}
+            extraRows={(m) => [{ label: L.byMonth.total, value: formatMoney(history[m].totalCents) }]}
             ariaLabel={history
-              .map((s) => `${formatMonthShort(s.month)}: ${formatMoney(s.totalCents)} total`)
+              .map((s) => L.byMonth.summaryItem(formatMonthShort(s.month), formatMoney(s.totalCents)))
               .join("; ")}
             height={300}
           />
         </Card>
 
-        <Card title={`${formatMonthLong(month)} budget`} flush>
+        <Card title={L.budget.title(formatMonthLong(month))} flush>
           <div className="px-5">
             {budget ? (
               <>
@@ -184,38 +189,36 @@ export function AiSpendPage() {
                   <span className="text-[26px] font-semibold tracking-[-0.02em]">
                     {formatMoney(Math.abs(now.totalCents - budget.budgetCents))}
                   </span>
-                  <span className="ml-2 text-sm text-ink-2">{now.totalCents > budget.budgetCents ? "over budget" : "under budget"}</span>
+                  <span className="ml-2 text-sm text-ink-2">{now.totalCents > budget.budgetCents ? L.budget.over : L.budget.under}</span>
                 </p>
                 <div className="mt-3 mb-1.5 flex justify-between text-xs text-muted">
                   <span>
-                    Spent <span className="font-medium text-ink tabular-nums">{formatMoney(now.totalCents)}</span>
+                    {L.budget.spent} <span className="font-medium text-ink tabular-nums">{formatMoney(now.totalCents)}</span>
                   </span>
                   <span>
-                    Budget <span className="font-medium text-ink tabular-nums">{formatMoney(budget.budgetCents)}</span>
+                    {L.budget.budget} <span className="font-medium text-ink tabular-nums">{formatMoney(budget.budgetCents)}</span>
                   </span>
                 </div>
                 <BulletBar actual={now.totalCents} target={budget.budgetCents} max={Math.max(budget.budgetCents, now.totalCents) * 1.05} />
               </>
             ) : (
-              <p className="text-sm text-ink-2">No AI budget for this month. AI budgets start in August 2026.</p>
+              <p className="text-sm text-ink-2">{L.budget.none}</p>
             )}
           </div>
           <div className="mt-3 divide-y divide-line border-t border-line px-5 pb-1.5">
             {aiGrowth3 !== null && mrrGrowth3 !== null && aiGrowth3 > mrrGrowth3 && (
-              <Insight tone="warning" title="AI spend is growing faster than revenue">
-                {formatPercent(aiGrowth3)} in three months against {formatPercent(mrrGrowth3)} for MRR. AI is now{" "}
-                {shareNow === null ? "—" : formatPercent(shareNow, 1)} of revenue.
+              <Insight tone="warning" title={L.insights.fasterTitle}>
+                {L.insights.fasterBody(formatPercent(aiGrowth3), formatPercent(mrrGrowth3), shareNow === null ? "—" : formatPercent(shareNow, 1))}
               </Insight>
             )}
             {topFeature && (
-              <Insight tone="info" title={`${topFeature.key} is the biggest cost`}>
-                {formatMoney(topFeature.costCents)}, {formatPercent(topFeature.costCents / (now.totalCents - now.seatsCents))} of usage-based AI
-                spend this month.
+              <Insight tone="info" title={L.insights.biggestTitle(aiFeatureLabels[topFeature.key as AiFeature] ?? topFeature.key)}>
+                {L.insights.biggestBody(formatMoney(topFeature.costCents), formatPercent(topFeature.costCents / (now.totalCents - now.seatsCents)))}
               </Insight>
             )}
             {idleSeats > 0 && (
-              <Insight tone="info" title={`${idleSeats} AI seats went unused`}>
-                That is {formatMoney(idleCents)} this month. Remove them before the next renewal.
+              <Insight tone="info" title={L.insights.idleTitle(idleSeats)}>
+                {L.insights.idleBody(formatMoney(idleCents))}
               </Insight>
             )}
           </div>
@@ -225,16 +228,16 @@ export function AiSpendPage() {
       <Card
         className="mt-5"
         flush
-        title="Where the tokens go"
-        subtitle={`Usage-based AI in ${formatMonthLong(month)}, as billed by each provider. Hover tokens for the input and output split.`}
+        title={L.tokens.title}
+        subtitle={L.tokens.subtitle(formatMonthLong(month))}
         action={
           <Segmented
-            label="Group by"
+            label={L.tokens.groupBy}
             value={view}
             onChange={setView}
             options={[
-              { value: "feature", label: "By feature" },
-              { value: "model", label: "By model" },
+              { value: AiUsageView.Feature, label: aiUsageViewLabels[AiUsageView.Feature] },
+              { value: AiUsageView.Model, label: aiUsageViewLabels[AiUsageView.Model] },
             ]}
           />
         }
@@ -243,22 +246,23 @@ export function AiSpendPage() {
           view={view}
           rows={rows}
           detailFor={(key) => {
-            if (view === "feature") return FEATURES.find((f) => f.feature === key)?.description ?? "";
+            if (view === AiUsageView.Feature) return FEATURES.find((f) => f.feature === key)?.description ?? "";
             const u = usage.find((x) => x.model === key);
-            return u ? `${u.vendor}, ${u.kind === "api" ? "billed per token" : "billed per GPU hour"}` : "";
+            return u ? L.tokens.modelDetail(u.vendor, u.kind === AiUsageKind.Api ? L.tokens.billedPerToken : L.tokens.billedPerGpuHour) : "";
           }}
-          audienceFor={(key) => (CUSTOMER_FACING.has(key as never) ? "Customers" : "Team")}
+          nameFor={(key) => (view === AiUsageView.Feature ? (aiFeatureLabels[key as AiFeature] ?? key) : key)}
+          audienceFor={(key) => (CUSTOMER_FACING.has(key as AiFeature) ? L.tokens.customers : L.tokens.team)}
         />
       </Card>
 
       <div className="mt-5 grid grid-cols-1 gap-5 xl:grid-cols-2">
-        <Card title="AI spend as a share of revenue" subtitle="AI spend divided by that month's MRR. Lower means AI pays for itself more easily.">
+        <Card title={L.share.title} subtitle={L.share.subtitle}>
           <LineChart
             labels={historyMonths.map(formatMonthShort)}
             tooltipLabels={historyMonths.map(formatMonthLong)}
             series={[
               {
-                name: "Share of revenue",
+                name: L.share.series,
                 color: "var(--series-1)",
                 area: true,
                 // basis points, so the shared integer tick logic works for small ratios
@@ -268,23 +272,23 @@ export function AiSpendPage() {
             formatTick={(v) => `${(v / 100).toFixed(v % 100 === 0 ? 0 : 1)}%`}
             formatValue={(v) => `${(v / 100).toFixed(1)}%`}
             ariaLabel={historyMonths
-              .map((m, k) => `${formatMonthShort(m)}: ${sharePoints[k] === null ? "no revenue" : formatPercent(sharePoints[k]!, 1)}`)
+              .map((m, k) => L.share.summaryItem(formatMonthShort(m), sharePoints[k] === null ? L.share.noRevenue : formatPercent(sharePoints[k]!, 1)))
               .join("; ")}
             height={220}
           />
         </Card>
 
         <Card
-          title="Team AI tools"
+          title={L.seats.title}
           flush
           subtitle={
             seats.length
-              ? `${formatMoney(sumCents(seats.map((s) => s.costCents)))} in per-seat tools this month.`
-              : "No per-seat AI tools this month."
+              ? L.seats.subtitle(formatMoney(sumCents(seats.map((s) => s.costCents))))
+              : L.seats.none
           }
         >
           {seats.length > 0 && <AiSeatsTable seats={seats} />}
-          <p className="px-5 py-3 text-xs text-muted">AI spend is booked under Software & cloud in Budgets. Figures are as billed.</p>
+          <p className="px-5 py-3 text-xs text-muted">{L.seats.note}</p>
         </Card>
       </div>
     </>

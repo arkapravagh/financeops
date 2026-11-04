@@ -37,8 +37,6 @@ export type ColumnDef<T> = {
 
 /** Active sort: column id and direction. */
 export type SortState = { id: string; desc: boolean };
-/** Row height setting. */
-export type Density = "comfortable" | "compact";
 /** Selected facet values per column id. */
 export type Filters = Record<string, string[]>;
 

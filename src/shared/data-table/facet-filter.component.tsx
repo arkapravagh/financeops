@@ -2,9 +2,10 @@
 
 import { PlusCircle, Search } from "lucide-react";
 import { useState } from "react";
+import { dataTableLabels as L } from "../../language/en/data-table.lang";
+import type { FacetOption } from "../../types/data-table.types";
 import { Checkbox } from "../ui/checkbox.component";
 import { Popover } from "../ui/popover.component";
-import type { FacetOption } from "./data-table.types";
 
 /** Column title, available options with counts, and the controlled selection. */
 export type FacetFilterProps = {
@@ -25,7 +26,7 @@ export function FacetFilter({ title, options, selected, onChange }: FacetFilterP
 
   return (
     <Popover
-      ariaLabel={`Filter by ${title}${active ? `, ${selected.length} selected` : ""}`}
+      ariaLabel={L.filterBy(title, selected.length)}
       buttonClassName={`inline-flex h-9 items-center gap-1.5 rounded-lg border px-3 text-sm font-medium outline-none transition focus-visible:ring-2 focus-visible:ring-accent ${
         active ? "border-line bg-surface text-ink" : "border-dashed border-line text-ink-2 hover:bg-surface-2 hover:text-ink"
       }`}
@@ -52,7 +53,7 @@ export function FacetFilter({ title, options, selected, onChange }: FacetFilterP
     >
       {options.length > 7 && (
         <label className="relative mb-1 flex items-center">
-          <span className="sr-only">Search {title}</span>
+          <span className="sr-only">{L.searchFacet(title)}</span>
           <Search size={14} className="pointer-events-none absolute left-2.5 text-muted" aria-hidden />
           <input
             autoFocus
@@ -73,7 +74,7 @@ export function FacetFilter({ title, options, selected, onChange }: FacetFilterP
             </label>
           </li>
         ))}
-        {shown.length === 0 && <li className="px-2 py-3 text-center text-sm text-muted">No matches</li>}
+        {shown.length === 0 && <li className="px-2 py-3 text-center text-sm text-muted">{L.noMatches}</li>}
       </ul>
       {active && (
         <button
@@ -81,7 +82,7 @@ export function FacetFilter({ title, options, selected, onChange }: FacetFilterP
           onClick={() => onChange([])}
           className="mt-1 w-full rounded-md border-t border-line px-2 py-1.5 text-center text-sm font-medium text-ink-2 outline-none hover:bg-surface-2 hover:text-ink focus-visible:ring-2 focus-visible:ring-accent"
         >
-          Clear filter
+          {L.clearFilter}
         </button>
       )}
     </Popover>

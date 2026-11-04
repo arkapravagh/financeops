@@ -1,10 +1,11 @@
 /** Projection table and CSV export for the month-by-month forecast. */
 
+import { projectionTableLabels as L } from "../../../language/en/forecast.lang";
 import { downloadCsv, toCsv } from "../../../shared/data-table/csv.util";
-import type { ColumnDef } from "../../../shared/data-table/data-table.types";
 import { addMonths, formatMonthYear } from "../../../shared/utils/dates.util";
-import type { ForecastPoint } from "../../../shared/utils/metrics.util";
 import { formatCompact, formatMoney } from "../../../shared/utils/money.util";
+import type { ColumnDef } from "../../../types/data-table.types";
+import type { ForecastPoint } from "../../../types/forecast.types";
 
 /** Projected months to show, the origin (for month labels) and the scenario name. */
 export type ProjectionTableProps = {
@@ -19,13 +20,13 @@ const dollars = (c: number) => (c / 100).toFixed(2);
 export function exportProjectionCsv(points: ForecastPoint[], origin: Date, scenarioName: string) {
   const monthOf = (p: ForecastPoint) => formatMonthYear(addMonths(origin, p.index));
   const csvColumns: ColumnDef<ForecastPoint>[] = [
-    { id: "month", header: "Month", accessor: monthOf },
-    { id: "in", header: "Cash in", accessor: (p) => p.revenueCents, csv: (p) => dollars(p.revenueCents) },
-    { id: "out", header: "Cash out", accessor: (p) => p.expenseCents, csv: (p) => dollars(p.expenseCents) },
-    { id: "hiring", header: "Of which new hires", accessor: (p) => p.hiringCents, csv: (p) => dollars(p.hiringCents) },
-    { id: "raise", header: "Raise", accessor: (p) => p.raiseCents, csv: (p) => dollars(p.raiseCents) },
-    { id: "net", header: "Net", accessor: (p) => p.revenueCents - p.expenseCents + p.raiseCents, csv: (p) => dollars(p.revenueCents - p.expenseCents + p.raiseCents) },
-    { id: "cash", header: "Ending cash", accessor: (p) => p.cashCents, csv: (p) => dollars(p.cashCents) },
+    { id: "month", header: L.month, accessor: monthOf },
+    { id: "in", header: L.cashIn, accessor: (p) => p.revenueCents, csv: (p) => dollars(p.revenueCents) },
+    { id: "out", header: L.cashOut, accessor: (p) => p.expenseCents, csv: (p) => dollars(p.expenseCents) },
+    { id: "hiring", header: L.newHires, accessor: (p) => p.hiringCents, csv: (p) => dollars(p.hiringCents) },
+    { id: "raise", header: L.raise, accessor: (p) => p.raiseCents, csv: (p) => dollars(p.raiseCents) },
+    { id: "net", header: L.net, accessor: (p) => p.revenueCents - p.expenseCents + p.raiseCents, csv: (p) => dollars(p.revenueCents - p.expenseCents + p.raiseCents) },
+    { id: "cash", header: L.endingCash, accessor: (p) => p.cashCents, csv: (p) => dollars(p.cashCents) },
   ];
   downloadCsv(`forecast-${scenarioName.toLowerCase().replace(/\W+/g, "-")}`, toCsv(points, csvColumns));
 }
@@ -44,16 +45,16 @@ export function ProjectionTable({ points, origin, scenarioName }: ProjectionTabl
     <div>
       <div className="max-h-[28rem] overflow-auto border-t border-line">
         <table className="w-full border-separate border-spacing-0 text-sm">
-          <caption className="sr-only">Projected monthly cash flow for {scenarioName}</caption>
+          <caption className="sr-only">{L.caption(scenarioName)}</caption>
           <thead>
             <tr>
-              <th scope="col" className={`${th} text-left`}>Month</th>
-              <th scope="col" className={`${th} text-right`}>Cash in</th>
-              <th scope="col" className={`${th} text-right`}>Cash out</th>
-              {hasHiring && <th scope="col" className={`${th} hidden text-right md:table-cell`}>Of which new hires</th>}
-              {hasRaise && <th scope="col" className={`${th} text-right`}>Raise</th>}
-              <th scope="col" className={`${th} text-right`}>Net</th>
-              <th scope="col" className={`${th} text-right`}>Ending cash</th>
+              <th scope="col" className={`${th} text-left`}>{L.month}</th>
+              <th scope="col" className={`${th} text-right`}>{L.cashIn}</th>
+              <th scope="col" className={`${th} text-right`}>{L.cashOut}</th>
+              {hasHiring && <th scope="col" className={`${th} hidden text-right md:table-cell`}>{L.newHires}</th>}
+              {hasRaise && <th scope="col" className={`${th} text-right`}>{L.raise}</th>}
+              <th scope="col" className={`${th} text-right`}>{L.net}</th>
+              <th scope="col" className={`${th} text-right`}>{L.endingCash}</th>
             </tr>
           </thead>
           <tbody>
@@ -65,8 +66,8 @@ export function ProjectionTable({ points, origin, scenarioName }: ProjectionTabl
                 <tr key={p.index} className={isZero ? "bg-critical/6" : p.raiseCents ? "bg-accent-soft/60" : ""}>
                   <td className={`${td} whitespace-nowrap text-ink`}>
                     {monthOf(p)}
-                    {isZero && <span className="ml-2 text-xs font-medium text-critical">Cash runs out</span>}
-                    {p.raiseCents > 0 && <span className="ml-2 text-xs font-medium text-accent">Raise lands</span>}
+                    {isZero && <span className="ml-2 text-xs font-medium text-critical">{L.runsOut}</span>}
+                    {p.raiseCents > 0 && <span className="ml-2 text-xs font-medium text-accent">{L.raiseLands}</span>}
                   </td>
                   <td className={`${td} text-right text-ink`}>{formatMoney(p.revenueCents)}</td>
                   <td className={`${td} text-right text-ink`}>{formatMoney(p.expenseCents)}</td>

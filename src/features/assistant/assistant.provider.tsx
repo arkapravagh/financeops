@@ -1,60 +1,29 @@
 /**
  * AI assistant state: conversations, streaming, panel open/close.
  *
- * Split into two contexts so streaming tokens only re-render the panel: pages and the top bar use
- * `useAssistantControls()` (stable), the panel uses `useAssistant()` (changes every frame).
+ * Provides the two contexts defined in `hooks/use-assistant.hook.ts` (split so streaming tokens only re-render
+ * the panel). Consumers read them with `useAssistantControls()` / `useAssistant()` from that file.
  * Replies come from `services/assistant.service.ts`; no LLM calls from the browser, ever.
  */
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useLocation } from "react-router-dom";
+import { ChatRole } from "../../enums/chat-role.enum";
+import { MessageFeedback } from "../../enums/message-feedback.enum";
+import { MessageStatus } from "../../enums/message-status.enum";
+import {
+  AssistantContext,
+  AssistantControlsContext,
+  type AssistantContextValue,
+  type AssistantControls,
+} from "../../hooks/use-assistant.hook";
+import { assistantLabels } from "../../language/en/assistant.lang";
 import { streamReply } from "../../services/assistant.service";
 import type { ChatMessage, Conversation } from "../../types/assistant.types";
 
 const OPEN_KEY = "fo-ai-open";
 const HISTORY_KEY = "fo-ai-history";
 const MAX_CONVERSATIONS = 20;
-
-/** Stable controls — safe to consume anywhere (doesn't change while tokens stream). */
-type AssistantControls = {
-  open: boolean;
-  setOpen: (open: boolean) => void;
-  toggle: () => void;
-  /** Open the panel and send a prompt in a fresh conversation. */
-  ask: (prompt: string) => void;
-};
-
-/** Fast-changing chat state — consume only inside the panel. */
-type AssistantContextValue = AssistantControls & {
-  conversations: Conversation[];
-  active: Conversation | null;
-  isStreaming: boolean;
-  send: (text: string) => void;
-  stop: () => void;
-  regenerate: () => void;
-  setFeedback: (messageId: string, feedback: "up" | "down" | undefined) => void;
-  newChat: () => void;
-  selectChat: (id: string) => void;
-  deleteChat: (id: string) => void;
-  page: string;
-};
-
-const AssistantContext = createContext<AssistantContextValue | null>(null);
-const ControlsContext = createContext<AssistantControls | null>(null);
-
-/** Full chat state. Re-renders on every streamed frame — use only in the assistant panel. */
-export function useAssistant() {
-  const ctx = useContext(AssistantContext);
-  if (!ctx) throw new Error("useAssistant must be used inside <AssistantProvider>");
-  return ctx;
-}
-
-/** Open/close/ask only. Stable while streaming — use this everywhere else (top bar, pages). */
-export function useAssistantControls() {
-  const ctx = useContext(ControlsContext);
-  if (!ctx) throw new Error("useAssistantControls must be used inside <AssistantProvider>");
-  return ctx;
-}
 
 const uid = () => crypto.randomUUID();
 const titleFrom = (text: string) => (text.length > 48 ? `${text.slice(0, 45).trimEnd()}…` : text);
@@ -68,7 +37,7 @@ function loadHistory(): Conversation[] {
     return list.map((c) => ({
       ...c,
       messages: c.messages.map((m) =>
-        m.status === "streaming" || m.status === "thinking" ? { ...m, status: "stopped" as const } : m,
+        m.status === MessageStatus.Streaming || m.status === MessageStatus.Thinking ? { ...m, status: MessageStatus.Stopped } : m,
       ),
     }));
   } catch {
@@ -135,7 +104,7 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
   const runAssistant = useCallback(
     async (convId: string, history: ChatMessage[]) => {
       const assistantId = uid();
-      const placeholder: ChatMessage = { id: assistantId, role: "assistant", content: "", createdAt: Date.now(), status: "thinking" };
+      const placeholder: ChatMessage = { id: assistantId, role: ChatRole.Assistant, content: "", createdAt: Date.now(), status: MessageStatus.Thinking };
       setConversations((list) =>
         list.map((c) => (c.id === convId ? { ...c, messages: [...history, placeholder], updatedAt: Date.now() } : c)),
       );
@@ -153,7 +122,7 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
         if (!buffer) return;
         const chunk = buffer;
         buffer = "";
-        patchMessage(convId, assistantId, (m) => ({ ...m, status: "streaming", content: m.content + chunk }));
+        patchMessage(convId, assistantId, (m) => ({ ...m, status: MessageStatus.Streaming, content: m.content + chunk }));
       };
 
       try {
@@ -172,15 +141,15 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
         }
         if (frame) cancelAnimationFrame(frame);
         flush();
-        patchMessage(convId, assistantId, (m) => ({ ...m, status: "done" }));
+        patchMessage(convId, assistantId, (m) => ({ ...m, status: MessageStatus.Done }));
       } catch (err) {
         if (frame) cancelAnimationFrame(frame);
         flush();
         const aborted = err instanceof DOMException && err.name === "AbortError";
         patchMessage(convId, assistantId, (m) => ({
           ...m,
-          status: aborted ? "stopped" : "error",
-          content: aborted ? m.content : m.content || "Something went wrong. Please try again.",
+          status: aborted ? MessageStatus.Stopped : MessageStatus.Error,
+          content: aborted ? m.content : m.content || assistantLabels.message.failedContent,
         }));
       } finally {
         if (abortRef.current === controller) abortRef.current = null;
@@ -194,7 +163,7 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
     (convId: string | null, text: string) => {
       const content = text.trim();
       if (!content) return;
-      const userMsg: ChatMessage = { id: uid(), role: "user", content, createdAt: Date.now() };
+      const userMsg: ChatMessage = { id: uid(), role: ChatRole.User, content, createdAt: Date.now() };
       let id = convId;
       let history: ChatMessage[];
       const existing = id ? conversations.find((c) => c.id === id) : undefined;
@@ -239,13 +208,13 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
     const { active: cur, isStreaming: busy } = latest.current;
     if (!cur || busy) return;
     const msgs = cur.messages;
-    const lastUser = msgs.map((m) => m.role).lastIndexOf("user");
+    const lastUser = msgs.map((m) => m.role).lastIndexOf(ChatRole.User);
     if (lastUser < 0) return;
     void runAssistant(cur.id, msgs.slice(0, lastUser + 1));
   }, [runAssistant]);
 
   const setFeedback = useCallback(
-    (messageId: string, feedback: "up" | "down" | undefined) => {
+    (messageId: string, feedback: MessageFeedback | undefined) => {
       if (!activeId) return;
       patchMessage(activeId, messageId, (m) => ({ ...m, feedback }));
     },
@@ -292,8 +261,8 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
   );
 
   return (
-    <ControlsContext.Provider value={controls}>
+    <AssistantControlsContext.Provider value={controls}>
       <AssistantContext.Provider value={value}>{children}</AssistantContext.Provider>
-    </ControlsContext.Provider>
+    </AssistantControlsContext.Provider>
   );
 }

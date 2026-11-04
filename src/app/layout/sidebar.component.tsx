@@ -1,6 +1,7 @@
 /** Sidebar: company switcher, grouped navigation, Settings and the profile footer. */
 
 import { NavLink } from "react-router-dom";
+import { appShellLabels as L } from "../../language/en/app-shell.lang";
 import { getCompany, getTeam } from "../../services/company.service";
 import { navGroups, secondaryNavItems, type NavItem } from "../../shared/config/navigation.config";
 
@@ -71,13 +72,13 @@ export function Sidebar({ collapsed = false, onNavigate }: SidebarProps) {
           <span className="block leading-tight">
             <span className="block text-sm font-semibold text-ink">{company.name}</span>
             <span className="block text-xs text-muted">
-              {company.stage}, {company.headcount} people
+              {L.companySummary(company.stage, company.headcount)}
             </span>
           </span>
         </FadeLabel>
       </div>
 
-      <nav aria-label="Main" className="mt-6 flex flex-col gap-5">
+      <nav aria-label={L.mainNavigation} className="mt-6 flex flex-col gap-5">
         {navGroups.map((g) => (
           <div key={g.label} className="flex flex-col gap-0.5">
             <p
@@ -104,7 +105,7 @@ export function Sidebar({ collapsed = false, onNavigate }: SidebarProps) {
         <div className={`mt-3 flex items-center border-t border-line px-1 pt-4 transition-[gap] duration-300 ${collapsed ? "gap-0" : "gap-2.5"}`}>
           <div
             className="grid size-8 shrink-0 place-items-center rounded-full bg-accent-soft text-xs font-semibold text-accent"
-            title={collapsed ? `${me.name} (sample data)` : undefined}
+            title={collapsed ? L.sampleDataUser(me.name) : undefined}
             aria-hidden
           >
             {initials(me.name)}
@@ -112,7 +113,7 @@ export function Sidebar({ collapsed = false, onNavigate }: SidebarProps) {
           <FadeLabel collapsed={collapsed}>
             <span className="block leading-tight">
               <span className="block text-sm font-medium text-ink">{me.name}</span>
-              <span className="block text-xs text-muted">Prototype with sample data</span>
+              <span className="block text-xs text-muted">{L.sampleDataNote}</span>
             </span>
           </FadeLabel>
         </div>

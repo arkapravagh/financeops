@@ -6,10 +6,14 @@
  */
 
 import { Clock, Tags, Upload } from "lucide-react";
+import { Category } from "../../enums/category.enum";
+import { TransactionStatus } from "../../enums/transaction-status.enum";
+import { commonLabels } from "../../language/en/common.lang";
+import { categoryLabels, transactionStatusLabels } from "../../language/en/enums.lang";
+import { flowLabels, transactionsLabels as L, type TransactionFlow } from "../../language/en/transactions.lang";
 import { getAccounts } from "../../services/cash.service";
 import { getTransactions } from "../../services/transactions.service";
 import { DataTable } from "../../shared/data-table/data-table.component";
-import type { ColumnDef } from "../../shared/data-table/data-table.types";
 import { Amount } from "../../shared/finance/amount.component";
 import { Badge } from "../../shared/ui/badge.component";
 import { Button } from "../../shared/ui/button.component";
@@ -18,26 +22,27 @@ import { PageHeader } from "../../shared/ui/page-header.component";
 import { formatDate } from "../../shared/utils/dates.util";
 import { sumCents } from "../../shared/utils/metrics.util";
 import { formatMoney } from "../../shared/utils/money.util";
+import type { ColumnDef } from "../../types/data-table.types";
 import type { Transaction } from "../../types/finance.types";
 
 const accountNames = new Map(getAccounts().map((a) => [a.id, a.name]));
-const flowOf = (t: Transaction) => (t.category === "Transfer" ? "Transfer" : t.amountCents > 0 ? "Money in" : "Money out");
+const flowOf = (t: Transaction): TransactionFlow => (t.category === Category.Transfer ? "transfer" : t.amountCents > 0 ? "in" : "out");
 /** Totals exclude internal transfers, which net to zero and inflate both sides. */
-const external = (rows: Transaction[]) => rows.filter((t) => t.category !== "Transfer");
+const external = (rows: Transaction[]) => rows.filter((t) => t.category !== Category.Transfer);
 
 // Module scope = referentially stable → the table's memoization holds across renders.
 const columns: ColumnDef<Transaction>[] = [
   {
     id: "date",
-    header: "Date",
+    header: L.columns.date,
     accessor: (t) => t.date,
     cell: (t) => <span className="whitespace-nowrap text-ink-2">{formatDate(t.date)}</span>,
     hideable: false,
-    footer: (rows) => <span className="text-ink-2">{rows.length} transactions</span>,
+    footer: (rows) => <span className="text-ink-2">{L.rowCount(rows.length)}</span>,
   },
   {
     id: "description",
-    header: "Description",
+    header: L.columns.description,
     accessor: (t) => t.description,
     searchValue: (t) => `${t.description} ${t.counterparty}`,
     cell: (t) => (
@@ -50,28 +55,32 @@ const columns: ColumnDef<Transaction>[] = [
   },
   {
     id: "counterparty",
-    header: "Counterparty",
+    header: L.columns.counterparty,
     accessor: (t) => t.counterparty,
     defaultHidden: true,
   },
   {
     id: "category",
-    header: "Category",
+    header: L.columns.category,
     accessor: (t) => t.category,
-    cell: (t) => <span className="text-ink-2">{t.category}</span>,
+    cell: (t) => <span className="text-ink-2">{categoryLabels[t.category]}</span>,
     facet: true,
+    facetLabel: (v) => categoryLabels[v as Category] ?? v,
+    csv: (t) => categoryLabels[t.category],
   },
   {
     id: "flow",
-    header: "Type",
+    header: L.columns.type,
     accessor: flowOf,
     facet: true,
-    facetOptions: ["Money in", "Money out", "Transfer"],
+    facetLabel: (v) => flowLabels[v as TransactionFlow] ?? v,
+    facetOptions: ["in", "out", "transfer"] satisfies TransactionFlow[],
+    csv: (t) => flowLabels[flowOf(t)],
     defaultHidden: true,
   },
   {
     id: "account",
-    header: "Account",
+    header: L.columns.account,
     accessor: (t) => accountNames.get(t.accountId) ?? t.accountId,
     cell: (t) => <span className="text-ink-2">{accountNames.get(t.accountId)}</span>,
     facet: true,
@@ -79,24 +88,25 @@ const columns: ColumnDef<Transaction>[] = [
   },
   {
     id: "status",
-    header: "Status",
+    header: L.columns.status,
     accessor: (t) => t.status,
     facet: true,
-    facetLabel: (v) => (v === "pending" ? "Pending" : "Cleared"),
-    facetOptions: ["pending", "cleared"],
+    facetLabel: (v) => transactionStatusLabels[v as TransactionStatus] ?? v,
+    facetOptions: [TransactionStatus.Pending, TransactionStatus.Cleared],
+    csv: (t) => transactionStatusLabels[t.status],
     cell: (t) =>
-      t.status === "pending" ? (
+      t.status === TransactionStatus.Pending ? (
         <Badge tone="warning" icon={<Clock size={12} />}>
-          Pending
+          {transactionStatusLabels[t.status]}
         </Badge>
       ) : (
-        <span className="text-xs text-muted">Cleared</span>
+        <span className="text-xs text-muted">{transactionStatusLabels[t.status]}</span>
       ),
     className: "hidden md:table-cell",
   },
   {
     id: "amount",
-    header: "Amount",
+    header: L.columns.amount,
     align: "right",
     accessor: (t) => t.amountCents,
     cell: (t) => <Amount cents={t.amountCents} />,
@@ -107,10 +117,8 @@ const columns: ColumnDef<Transaction>[] = [
       const out = sumCents(ext.filter((t) => t.amountCents < 0).map((t) => t.amountCents));
       return (
         <span className="inline-flex flex-col items-end leading-tight">
-          <span>Net {formatMoney(inn + out, { signed: true, cents: true })}</span>
-          <span className="text-xs font-normal text-muted">
-            In {formatMoney(inn)}, out {formatMoney(-out)}
-          </span>
+          <span>{L.net(formatMoney(inn + out, { signed: true, cents: true }))}</span>
+          <span className="text-xs font-normal text-muted">{L.inOut(formatMoney(inn), formatMoney(-out))}</span>
         </span>
       );
     },
@@ -125,11 +133,11 @@ export function TransactionsPage() {
   return (
     <>
       <PageHeader
-        title="Transactions"
-        subtitle="Every dollar in and out, auto-categorised from your bank feeds."
+        title={L.title}
+        subtitle={L.subtitle}
         actions={
-          <Button icon={<Upload size={16} />} title="Not available in the prototype">
-            Import CSV
+          <Button icon={<Upload size={16} />} title={commonLabels.notAvailableTitle}>
+            {L.importCsv}
           </Button>
         }
       />
@@ -139,18 +147,18 @@ export function TransactionsPage() {
           data={data}
           columns={columns}
           getRowId={getRowId}
-          caption="Transactions"
-          searchPlaceholder="Search description or vendor"
+          caption={L.title}
+          searchPlaceholder={L.searchPlaceholder}
           initialSort={{ id: "date", desc: true }}
           selectable
-          selectionSummary={(rows) => `Net ${formatMoney(sumCents(rows.map((r) => r.amountCents)), { signed: true, cents: true })}`}
+          selectionSummary={(rows) => L.net(formatMoney(sumCents(rows.map((r) => r.amountCents)), { signed: true, cents: true }))}
           bulkActions={() => (
-            <Button className="h-8" icon={<Tags size={14} />} title="Not available in the prototype">
-              Recategorize
+            <Button className="h-8" icon={<Tags size={14} />} title={commonLabels.notAvailableTitle}>
+              {L.recategorize}
             </Button>
           )}
           exportFileName="transactions"
-          emptyMessage="No transactions match these filters."
+          emptyMessage={L.empty}
         />
       </Card>
     </>

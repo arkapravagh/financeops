@@ -1,10 +1,11 @@
 /** Forecast verdict: the Forecast page hero (default alive or not, projected runway and key dates). */
 
 import { AlertTriangle, ArrowDownRight, ArrowUpRight, CheckCircle2 } from "lucide-react";
+import { verdictLabels as L } from "../../../language/en/forecast.lang";
 import { FORECAST_MONTHS } from "../../../services/forecast.service";
 import { addMonths, formatMonthYear } from "../../../shared/utils/dates.util";
 import { formatCompact, formatMoney } from "../../../shared/utils/money.util";
-import type { ScenarioResult } from "../scenario.model";
+import type { ScenarioResult } from "../../../types/forecast.types";
 
 /** Results for the scenario being edited and the current trajectory, plus the projection origin. */
 export type ForecastVerdictProps = {
@@ -32,7 +33,7 @@ export function ForecastVerdict({ result, current, isCurrent, origin }: Forecast
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <h2 id="verdict-title" className="text-[13px] text-muted">
-              Projected runway, {isCurrent ? "current trajectory" : scenario.name}
+              {L.heading(isCurrent ? L.currentName : scenario.name)}
             </h2>
             <span
               className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${
@@ -40,19 +41,19 @@ export function ForecastVerdict({ result, current, isCurrent, origin }: Forecast
               }`}
             >
               {alive ? <CheckCircle2 size={12} aria-hidden /> : <AlertTriangle size={12} aria-hidden />}
-              {alive ? "Default alive" : "Default dead"}
+              {alive ? L.alive : L.dead}
             </span>
           </div>
 
           <p className="mt-1 flex flex-wrap items-baseline gap-x-3 leading-none text-ink">
             <span>
               <span className="text-[44px] font-semibold tracking-[-0.035em] @lg:text-[56px]">{runwayLabel(runway)}</span>
-              <span className="ml-2 text-xl font-medium tracking-[-0.02em] text-ink-2 @lg:text-2xl">months</span>
+              <span className="ml-2 text-xl font-medium tracking-[-0.02em] text-ink-2 @lg:text-2xl">{L.months}</span>
             </span>
             {diff !== null && Math.abs(diff) >= 0.05 && (
               <span className={`inline-flex items-center gap-0.5 text-sm font-medium ${diff > 0 ? "text-good-ink" : "text-critical"}`}>
                 {diff > 0 ? <ArrowUpRight size={15} aria-hidden /> : <ArrowDownRight size={15} aria-hidden />}
-                {Math.abs(diff).toFixed(1)} months vs current trajectory
+                {L.diff(Math.abs(diff).toFixed(1))}
               </span>
             )}
           </p>
@@ -60,27 +61,26 @@ export function ForecastVerdict({ result, current, isCurrent, origin }: Forecast
           <p className="mt-3 max-w-[64ch] text-sm leading-relaxed text-ink-2">
             {alive ? (
               <>
-                Revenue overtakes spending around{" "}
-                <span className="font-medium text-ink">{formatMonthYear(breakEvenDate as Date)}</span>, while there's still cash in the
-                bank. You can reach profitability without new money{raise ? ", even before the planned raise" : ""}.
+                {L.aliveLead} <span className="font-medium text-ink">{formatMonthYear(breakEvenDate as Date)}</span>
+                {L.aliveTail(!!raise)}
               </>
             ) : (
               <>
-                At these growth rates, spending stays ahead of revenue
+                {L.deadLead}
                 {zeroDate ? (
                   <>
                     {" "}
-                    and cash runs out around <span className="font-medium text-ink">{formatMonthYear(zeroDate)}</span>
+                    {L.runsOut} <span className="font-medium text-ink">{formatMonthYear(zeroDate)}</span>
                   </>
                 ) : raise ? (
-                  ", so the business depends on the planned raise"
+                  L.dependsOnRaise
                 ) : null}
-                . {raiseBy && !raise ? <>Start raising by <span className="font-medium text-ink">{formatMonthYear(raiseBy)}</span>, or cut spending.</> : null}
+                . {raiseBy && !raise ? <>{L.startRaisingBy} <span className="font-medium text-ink">{formatMonthYear(raiseBy)}</span>{L.orCut}</> : null}
                 {raise && (
                   <>
                     {" "}
-                    The {formatCompact(raise.amountCents)} raise in {formatMonthYear(addMonths(origin, raise.month))}{" "}
-                    {zeroDate ? "isn't enough on its own." : `carries you past ${FORECAST_MONTHS} months.`}
+                    {L.raiseLead(formatCompact(raise.amountCents), formatMonthYear(addMonths(origin, raise.month)))}{" "}
+                    {zeroDate ? L.raiseNotEnough : L.raiseCarries(FORECAST_MONTHS)}
                   </>
                 )}
               </>
@@ -90,12 +90,12 @@ export function ForecastVerdict({ result, current, isCurrent, origin }: Forecast
 
         <dl className="grid w-full shrink-0 grid-cols-2 overflow-hidden rounded-xl border border-line bg-line gap-px @4xl:w-[22rem]">
           {[
-            ["Zero-cash date", zeroDate ? formatMonthYear(zeroDate) : `Beyond ${FORECAST_MONTHS} months`],
-            ["Start raising by", raiseBy ? formatMonthYear(raiseBy) : "Not needed"],
-            ["Cash in 12 months", formatMoney(Math.max(cash12, 0))],
-            ["Break-even month", breakEvenDate ? formatMonthYear(breakEvenDate) : `Beyond ${FORECAST_MONTHS} months`],
-            ["Peak monthly burn", peak ? formatCompact(peak.cents) : "None"],
-            ["Peak burn in", peak ? formatMonthYear(addMonths(origin, peak.index)) : "—"],
+            [L.facts.zeroCash, zeroDate ? formatMonthYear(zeroDate) : L.facts.beyond(FORECAST_MONTHS)],
+            [L.facts.startRaising, raiseBy ? formatMonthYear(raiseBy) : L.facts.notNeeded],
+            [L.facts.cash12, formatMoney(Math.max(cash12, 0))],
+            [L.facts.breakEven, breakEvenDate ? formatMonthYear(breakEvenDate) : L.facts.beyond(FORECAST_MONTHS)],
+            [L.facts.peakBurn, peak ? formatCompact(peak.cents) : L.facts.none],
+            [L.facts.peakIn, peak ? formatMonthYear(addMonths(origin, peak.index)) : "—"],
           ].map(([k, v]) => (
             <div key={k} className="bg-surface px-4 py-3">
               <dt className="text-xs text-muted">{k}</dt>
