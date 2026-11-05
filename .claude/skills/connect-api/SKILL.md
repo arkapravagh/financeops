@@ -15,7 +15,7 @@ Don't start this without the user confirming the backend choice. Propose, then b
 - **Client data**: TanStack Query for fetching/caching.
 
 ## Migration steps
-1. Add `src/services/http.ts` (base URL from `import.meta.env.VITE_API_URL`, JSON + error handling).
+1. Add `src/services/http.service.ts` (base URL from `import.meta.env.VITE_API_URL`, JSON + error handling).
 2. Convert each service from sync mock return to `async` fetch, **keeping the same return types**.
 3. Wrap pages' data access in TanStack Query hooks (`useTransactions(filter)`), adding loading/empty/error states
    with the existing `Card` component.

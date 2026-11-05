@@ -16,7 +16,7 @@ description: The FinanceOps visual language — tokens, type scale, radius/eleva
 3. **Numbers are the content.** Big figures in proportional digits, columns in `tabular-nums`, units in words.
 4. **Calm colour.** Indigo is the only accent. Status colours appear only as small marks (icon, dot, bar) with text.
 
-## Tokens (`src/index.css`)
+## Tokens (`src/styles/index.css`)
 | Role | Light | Dark | Token / class |
 |---|---|---|---|
 | Page (paper) | `#f4f5f8` | `#0d0e13` | `bg-page` |

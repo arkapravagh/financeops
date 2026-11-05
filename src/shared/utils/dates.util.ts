@@ -1,0 +1,54 @@
+/**
+ * Date helpers. Dates are local calendar dates (no timezone drift); months are `YYYY-MM` keys.
+ *
+ * Pure functions: "today" is always passed in, never read from the clock.
+ */
+
+import type { IsoDate, MonthKey } from "../../types/finance.types";
+
+/** Parse `YYYY-MM-DD` as a local calendar date (no timezone drift). */
+export function parseIso(iso: IsoDate): Date {
+  const [y, m, d] = iso.split("-").map(Number);
+  return new Date(y, m - 1, d ?? 1);
+}
+
+/** Date → `YYYY-MM`. */
+export function toMonthKey(date: Date): MonthKey {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+}
+
+/** Add whole or fractional months (fractions as ~30.4 days each), e.g. a 14.5-month runway. */
+export function addMonths(date: Date, months: number): Date {
+  const whole = Math.floor(months);
+  const d = new Date(date.getFullYear(), date.getMonth() + whole, date.getDate());
+  const fraction = months - whole;
+  if (fraction > 0) d.setDate(d.getDate() + Math.round(fraction * 30.4));
+  return d;
+}
+
+/** Shift a `YYYY-MM` key by `months`, e.g. ("2026-11", 2) → "2027-01". */
+export function monthKeyAdd(key: MonthKey, months: number): MonthKey {
+  return toMonthKey(addMonths(parseIso(`${key}-01`), months));
+}
+
+/** Whole days from `from` to `to` (negative if `to` is earlier). */
+export function daysBetween(from: Date, to: Date): number {
+  return Math.round((to.getTime() - from.getTime()) / 86_400_000);
+}
+
+const shortMonth = new Intl.DateTimeFormat("en-US", { month: "short" });
+const longMonth = new Intl.DateTimeFormat("en-US", { month: "long", year: "numeric" });
+const monthYear = new Intl.DateTimeFormat("en-US", { month: "short", year: "numeric" });
+const dayMonth = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" });
+const full = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric" });
+
+/** "2026-10" → "Oct" */
+export const formatMonthShort = (key: MonthKey) => shortMonth.format(parseIso(`${key}-01`));
+/** "2026-10" → "October 2026" */
+export const formatMonthLong = (key: MonthKey) => longMonth.format(parseIso(`${key}-01`));
+/** Date → "May 2028" */
+export const formatMonthYear = (date: Date) => monthYear.format(date);
+/** "2026-10-28" → "Oct 28" */
+export const formatDayMonth = (iso: IsoDate) => dayMonth.format(parseIso(iso));
+/** "2026-10-28" → "Oct 28, 2026" */
+export const formatDate = (d: IsoDate | Date) => full.format(typeof d === "string" ? parseIso(d) : d);

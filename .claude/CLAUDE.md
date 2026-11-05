@@ -30,21 +30,29 @@ Always run `npm run build` before declaring a change done — it type-checks the
 
 ## Layout
 
+Feature folders, kebab-case `<name>.<type>.ts(x)` file names. Full conventions: `.claude/rules/structure.md`.
+
 ```
 src/
-  main.tsx, App.tsx        entry + routes
-  index.css                Tailwind + design tokens (light/dark CSS variables)
-  types/                   domain types (Transaction, Invoice, Budget, ...)
-  data/                    mock data (static, deterministic, no Math.random)
-  services/                the ONLY way pages get data (mock today, API later)
-  lib/                     pure helpers: money formatting, finance metrics
-  components/layout/       AppShell, Sidebar, Topbar
-  components/ui/           Card, StatTile, Badge, Meter, PageHeader, Popover, Checkbox, ...
-  components/data-table/   DataTable + useDataTable (sort, facets, search, selection, CSV, pagination)
-  components/assistant/    FinanceOps AI right panel (chat UI, streaming state, safe markdown)
-  components/charts/       hand-rolled SVG charts (ColumnChart, LineChart)
-  pages/                   one file per route
+  app/                     main.tsx (entry), app.component.tsx, app.routes.tsx
+    layout/                app-shell, sidebar, topbar
+  features/                one folder per route: <feature>.page.tsx + components/ only it uses
+    overview/ transactions/ invoices/ budgets/ ai-spend/ settings/ not-found/
+    forecast/              + scenario.model.ts, scenario-library.config.ts, use-scenario-storage.hook.ts
+    assistant/             FinanceOps AI panel: assistant.provider.tsx + chat components
+  shared/
+    ui/                    card, stat-tile, badge, meter, page-header, popover, drawer, slider, ...
+    charts/                hand-rolled SVG charts (column-chart, line-chart, bullet-bar, sparkline)
+    data-table/            data-table + use-data-table hook (sort, facets, search, selection, CSV, pagination)
+    finance/               amount
+    hooks/ utils/ config/  use-theme; money/dates/metrics utils; navigation config
+  services/                *.service.ts: the ONLY way features get data (mock today, API later)
+  data/                    *.data.ts: mock data (static, deterministic, no Math.random)
+  types/                   *.types.ts: domain types (Transaction, Invoice, Budget, ...)
+  styles/index.css         Tailwind + design tokens (light/dark CSS variables)
 ```
+Imports point down: `app` → `features` → `shared` → `services` → `data`. Every file has a header comment and
+every export has a JSDoc comment.
 
 ## Rules
 
@@ -55,6 +63,7 @@ Detailed rules live in `.claude/rules/` and are loaded automatically:
 - `data-and-mocks.md` — how mock data and the service layer must be shaped.
 - `charts.md` — chart forms, palette, marks, tooltips.
 - `security-and-privacy.md` — financial data handling, even in the prototype.
+- `structure.md` — folder layers, `<name>.<type>.ts` file naming, import order, code documentation.
 
 ## Skills
 
@@ -76,14 +85,14 @@ Project skills live in `.claude/skills/` — use them instead of improvising:
 - `ui-review` — screenshot every change with `npm run snap` and critique it before calling it done.
 
 ## AI assistant (prototype)
-The right-hand "FinanceOps AI" panel (Ctrl+J) runs an **offline demo engine** (`services/assistant.ts`) that answers
+The right-hand "FinanceOps AI" panel (Ctrl+J) runs an **offline demo engine** (`services/assistant.service.ts`) that answers
 from the same mock data and metrics as the pages. It speaks a streaming event protocol identical to what the future
 backend will send, so going live means replacing one function. No LLM calls from the browser, ever.
 
 ## Non-negotiables
 
-1. Money is **integer cents** in data and logic; format only at the edge with `lib/money.ts`.
-2. Pages never import from `src/data/` directly — always through `src/services/`.
+1. Money is **integer cents** in data and logic; format only at the edge with `shared/utils/money.util.ts`.
+2. Features (pages and components) never import from `src/data/` directly — always through `src/services/`.
 3. No new dependency without a clear reason; prefer a small local component.
 4. Status (paid/overdue/etc.) is never conveyed by color alone — always icon or text too.
 5. Both light and dark themes must look right.

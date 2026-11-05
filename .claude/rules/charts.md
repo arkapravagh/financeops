@@ -1,12 +1,12 @@
 ---
 paths:
-  - "src/components/charts/**"
-  - "src/pages/**"
+  - "src/shared/charts/**"
+  - "src/features/**"
 ---
 
 # Chart rules
 
-Charts are hand-rolled SVG components in `src/components/charts/`. Don't add a chart library.
+Charts are hand-rolled SVG components in `src/shared/charts/`. Don't add a chart library.
 
 ## Pick the form first
 - One headline number → **stat tile / hero figure**, not a chart.
@@ -14,13 +14,13 @@ Charts are hand-rolled SVG components in `src/components/charts/`. Don't add a c
 - Monthly amounts compared (cash in vs out) → **columns**.
 - Actual vs. target (budgets, quotas) → **`BulletBar`** (band = target, bar = actual, tick = target line,
   overflow in critical + an "over" label). Rows share one scale; default to % of target, offer $ as a toggle.
-  For a full category breakdown use `finance/BudgetTable` (bullet + figures + 3-month trend + expandable detail).
+  For a full category breakdown use `BudgetTable` (`features/budgets/components/budget-table.component.tsx`: bullet + figures + 3-month trend + expandable detail).
 - Plan vs actual columns: plan in neutral `--muted`, actual in `--series-1` (never the pale band colour for marks).
 - Single progress value → **meter**. Part of a whole → segmented bar, never a pie.
 - **Never a dual-axis chart.** Two measures of different scale = two charts.
 
 ## Color
-- Series colors are the `--series-1..3` tokens in `src/index.css` (indigo, burnt orange, teal), assigned
+- Series colors are the `--series-1..3` tokens in `src/styles/index.css` (indigo, burnt orange, teal), assigned
   **in fixed order**, never cycled, and they follow the entity (filtering must not repaint surviving series).
   **Max 3 series per chart** — that's what the palette is validated for; fold extras into "Other" or use small multiples.
 - Changing a series color? Re-run the dataviz validator (`validate_palette.js --pairs all`) for **both** light (`#ffffff`)

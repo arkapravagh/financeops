@@ -7,14 +7,14 @@ description: Add or change a financial calculation (burn, runway, MRR/ARR, AR ag
 
 1. **Definition first.** Check `.claude/rules/finance-domain.md`. If the metric isn't defined there, add a one-line
    definition to that table *before* writing code, and tell the user the definition you chose.
-2. **Implement** in `src/lib/metrics.ts` as a pure function:
+2. **Implement** in `src/shared/utils/metrics.util.ts` as a pure function (with a JSDoc comment):
    - Inputs: typed data + `asOf: Date` (never read the clock).
    - Work in integer cents; convert floats back with `Math.round` only at the end.
    - Handle edge cases explicitly: empty data, zero/negative burn (→ "default alive", return `null` runway),
      partial current month (exclude from averages), division by zero.
 3. **Sanity-check by hand** with the mock data: compute the expected value in a comment-free scratch calculation
    and confirm the UI matches. E.g. runway = cash ÷ avg net burn of last 3 complete months.
-4. **Display** through `src/lib/money.ts` formatters. Show units in words ("14 months", "$1.2M"), and label
+4. **Display** through `src/shared/utils/money.util.ts` formatters. Show units in words ("14 months", "$1.2M"), and label
    any forward-looking number as *Projected*.
 5. **Common formulas**
    | Metric | Formula |
