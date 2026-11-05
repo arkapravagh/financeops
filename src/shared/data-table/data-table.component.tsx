@@ -89,14 +89,14 @@ function RowImpl<T>({ row, id, columns, selectable, selected, onToggle, cellPad,
       className={`group transition-colors ${selected ? "bg-accent/6" : "hover:bg-surface-2/70"} ${extraClass}`}
     >
       {selectable && (
-        <td className={`w-10 border-b border-line pr-0 pl-5 ${cellPad}`}>
+        <td className={`w-10 border-b border-line pr-0 pl-3 sm:pl-5 ${cellPad}`}>
           <Checkbox checked={selected} onChange={() => onToggle(id)} label={L.selectRow(id)} />
         </td>
       )}
       {columns.map((c) => (
         <td
           key={c.id}
-          className={`border-b border-line px-5 text-ink ${cellPad} ${alignClass[c.align ?? "left"]} ${
+          className={`border-b border-line px-3 text-ink sm:px-5 ${cellPad} ${alignClass[c.align ?? "left"]} ${
             c.align === "right" ? "tabular-nums" : ""
           } ${c.className ?? ""}`}
         >
@@ -282,7 +282,7 @@ export function DataTable<T>({
           <thead>
             <tr>
               {selectable && (
-                <th scope="col" className="sticky top-0 z-10 w-10 bg-surface py-2.5 pr-0 pl-5 text-left shadow-[inset_0_-1px_0_var(--line)]">
+                <th scope="col" className="sticky top-0 z-10 w-10 bg-surface py-2.5 pr-0 pl-3 sm:pl-5 text-left shadow-[inset_0_-1px_0_var(--line)]">
                   <Checkbox
                     checked={allPageSelected}
                     indeterminate={t.pageSelectedCount > 0}
@@ -300,7 +300,7 @@ export function DataTable<T>({
                     key={c.id}
                     scope="col"
                     aria-sort={sortable ? dir : undefined}
-                    className={`sticky top-0 z-10 bg-surface px-5 py-2.5 text-xs font-medium whitespace-nowrap text-muted shadow-[inset_0_-1px_0_var(--line)] ${
+                    className={`sticky top-0 z-10 bg-surface px-3 py-2.5 sm:px-5 text-xs font-medium whitespace-nowrap text-muted shadow-[inset_0_-1px_0_var(--line)] ${
                       alignClass[c.align ?? "left"]
                     } ${c.headerClassName ?? c.className ?? ""}`}
                   >
@@ -358,11 +358,11 @@ export function DataTable<T>({
           {hasFooter && t.total > 0 && (
             <tfoot>
               <tr className="bg-surface-2/60">
-                {selectable && <td className="sticky bottom-0 bg-surface-2 pl-5" />}
+                {selectable && <td className="sticky bottom-0 bg-surface-2 pl-3 sm:pl-5" />}
                 {t.visibleColumns.map((c) => (
                   <td
                     key={c.id}
-                    className={`sticky bottom-0 bg-surface-2 px-5 py-2.5 text-sm font-medium text-ink ${alignClass[c.align ?? "left"]} ${
+                    className={`sticky bottom-0 bg-surface-2 px-3 py-2.5 sm:px-5 text-sm font-medium text-ink ${alignClass[c.align ?? "left"]} ${
                       c.align === "right" ? "tabular-nums" : ""
                     } ${c.className ?? ""}`}
                   >

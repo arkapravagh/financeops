@@ -85,7 +85,7 @@ export const budgetTableLabels = {
   used: (share: string) => `${share} used`,
   monthsOver: "Months over budget",
   monthsOverValue: (over: number, total: number) => `${over} of ${total}`,
-  askWhy: "Ask AI why it's over",
+  askWhy: "Ask Elisa why it's over",
   /** Prompt sent to the AI panel. */
   askPrompt: (category: string) => `Why is ${category} over budget?`,
 } as const;

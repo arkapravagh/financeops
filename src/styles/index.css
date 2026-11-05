@@ -12,6 +12,8 @@
 :root {
   color-scheme: light;
   /* "Ledger" palette — see .claude/skills/design-system */
+  /* App frame behind the inset main card (desktop): one step darker than the page */
+  --frame: #e9ebf0;
   --page: #f4f5f8;
   --surface: #ffffff;
   --surface-2: #f0f1f5;
@@ -46,6 +48,7 @@
 /* ---------- Design tokens (dark) — stepped for the dark surface, not inverted ---------- */
 [data-theme="dark"] {
   color-scheme: dark;
+  --frame: #08090c;
   --page: #0d0e13;
   --surface: #15171f;
   --surface-2: #1c1f29;
@@ -71,6 +74,7 @@
 }
 
 @theme inline {
+  --color-frame: var(--frame);
   --color-page: var(--page);
   --color-surface: var(--surface);
   --color-surface-2: var(--surface-2);
@@ -141,4 +145,46 @@ h1,
 /* Range input styled with tokens */
 input[type="range"] {
   accent-color: var(--accent);
+}
+
+/* AI cursor (cursor mode): sections Elisa can point at clear the sticky top bar when scrolled to, and the one she
+   lands on gets a short accent ring that fades out on its own (data-ai-highlight is removed by AiCursor). */
+[data-ai-target] {
+  scroll-margin-top: 5rem;
+}
+[data-ai-highlight] {
+  outline: 2px solid transparent;
+  outline-offset: 4px;
+  animation: ai-highlight 2.6s ease-out forwards;
+}
+@keyframes ai-highlight {
+  0% {
+    outline-color: transparent;
+    box-shadow: 0 0 0 0 transparent;
+  }
+  12%,
+  70% {
+    outline-color: var(--accent);
+    box-shadow: 0 0 0 10px color-mix(in oklab, var(--accent) 14%, transparent);
+  }
+  100% {
+    outline-color: transparent;
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+@keyframes ai-cursor-ripple {
+  from {
+    transform: scale(0.4);
+    opacity: 0.7;
+  }
+  to {
+    transform: scale(1.8);
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-ai-highlight] {
+    animation: none;
+    outline-color: var(--accent);
+  }
 }

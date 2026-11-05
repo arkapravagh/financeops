@@ -1,6 +1,6 @@
 ---
 name: layout-patterns
-description: Page structures for FinanceOps — the app shell, Overview, list pages, and analysis pages — with ASCII wireframes and responsive rules (including room for the AI panel). Use when creating a page, rearranging a page, or fixing a layout that breaks at some width.
+description: Page structures for Finopsis — the app shell, Overview, list pages, and analysis pages — with ASCII wireframes and responsive rules (including room for the AI panel). Use when creating a page, rearranging a page, or fixing a layout that breaks at some width.
 ---
 
 # Layout patterns
@@ -8,7 +8,7 @@ description: Page structures for FinanceOps — the app shell, Overview, list pa
 ## App shell
 ```
 ┌──────────┬──────────────────────────────────────────┬─────────────┐
-│ Sidebar  │ Top bar: [menu] search…        Ask AI ☾ ◯│  AI panel   │
+│ Sidebar  │ Top bar: [menu] search…     Ask Elisa ☾ ◯│  AI panel   │
 │ 240 / 64 ├──────────────────────────────────────────┤  400 (opt.) │
 │ workspace│  Page (max 1280, centred, gutters 32)    │             │
 │ nav      │                                          │             │
@@ -16,8 +16,11 @@ description: Page structures for FinanceOps — the app shell, Overview, list pa
 │ profile  │                                          │             │
 └──────────┴──────────────────────────────────────────┴─────────────┘
 ```
-- Sidebar groups: **Money** (Overview, Transactions, Invoices) and **Plan** (Budgets, Runway & forecast); Settings at bottom.
-- AI panel docks at ≥ lg; below 1600px the sidebar auto-folds to icons while it is open.
+- **Desktop (≥ lg): inset main card.** Sidebar and AI panel sit on the app frame (`bg-frame`) and never scroll with the
+  page. Top bar + page live in one rounded card (`rounded-[14px] border bg-page`, 8px from the frame) that scrolls on its
+  own (`data-scroll-root`, thin scrollbar); the top bar is sticky inside it. Mobile: the window scrolls, no card.
+- Sidebar groups: **Money** (Overview, Transactions, Invoices, Reports) and **Plan** (Budgets, Runway & forecast, AI spend); Settings at bottom.
+- AI panel docks at ≥ lg (400px); below 1600px the sidebar auto-folds to icons while it is open.
 - The content column can be as narrow as ~900px at desktop sizes. **Design every page to work at 900px**.
 
 ## Overview (one bold element)

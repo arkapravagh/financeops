@@ -31,8 +31,8 @@ export const overviewLabels = {
   },
   attention: {
     title: "Needs your attention",
-    askAi: "Ask AI",
-    /** Prompt sent to the AI panel from the "Ask AI" link. */
+    askAi: "Ask Elisa",
+    /** Prompt sent to the AI panel from the "Ask Elisa" link. */
     askPrompt: "Summarize last month",
     overdueTitle: (count: number, total: string) => `${count} invoices overdue, ${total} in total`,
     reviewInvoices: "Review invoices",

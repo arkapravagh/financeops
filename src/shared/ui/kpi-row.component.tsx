@@ -6,6 +6,7 @@
 
 import { ArrowDownRight, ArrowUpRight, Minus } from "lucide-react";
 import type { ReactNode } from "react";
+import type { PageSection } from "../../enums/page-section.enum";
 import { commonLabels } from "../../language/en/common.lang";
 import { Sparkline } from "../charts/sparkline.component";
 import type { Delta } from "./stat-tile.component";
@@ -27,9 +28,13 @@ const arrows = { up: ArrowUpRight, down: ArrowDownRight, flat: Minus };
  * One panel, split by hairlines — not N separate cards (design-system: KPI row).
  * Uses a container query so it wraps by its own width (works beside the AI panel).
  */
-export function KpiRow({ items, className = "" }: { items: Kpi[]; className?: string }) {
+export function KpiRow({ items, className = "", aiTarget }: { items: Kpi[]; className?: string; aiTarget?: PageSection }) {
   return (
-    <section className={`@container min-w-0 overflow-hidden rounded-[14px] border border-line bg-line ${className}`} aria-label={commonLabels.keyFigures}>
+    <section
+      data-ai-target={aiTarget}
+      className={`@container min-w-0 overflow-hidden rounded-[14px] border border-line bg-line ${className}`}
+      aria-label={commonLabels.keyFigures}
+    >
       <dl className="grid grid-cols-1 gap-px @md:grid-cols-2 @4xl:grid-cols-4">
         {items.map((k) => {
           const Arrow = k.delta ? arrows[k.delta.direction] : null;

@@ -5,6 +5,7 @@ import { useAssistantControls } from "../../../hooks/use-assistant.hook";
 import { DESKTOP_QUERY, useMediaQuery } from "../../../hooks/use-media-query.hook";
 import { useModalFocus } from "../../../hooks/use-modal-focus.hook";
 import { assistantLabels } from "../../../language/en/assistant.lang";
+import { AiCursor } from "./ai-cursor.component";
 import { AssistantPanel } from "./assistant-panel.component";
 
 /**
@@ -46,6 +47,8 @@ export function AssistantDock() {
           <AssistantPanel onClose={() => setOpen(false)} />
         </div>
       </aside>
+      {/* Outside the panel so it can travel over the whole app. */}
+      <AiCursor />
     </>
   );
 }

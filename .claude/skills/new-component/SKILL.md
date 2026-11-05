@@ -1,6 +1,6 @@
 ---
 name: new-component
-description: Create a reusable UI component in src/shared/ui following FinanceOps conventions (tokens, a11y, both themes). Use when a UI pattern is needed in more than one place or the user asks for a new widget.
+description: Create a reusable UI component in src/shared/ui following Finopsis conventions (tokens, a11y, both themes). Use when a UI pattern is needed in more than one place or the user asks for a new widget.
 ---
 
 # Add a reusable component

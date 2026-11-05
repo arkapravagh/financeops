@@ -1,5 +1,5 @@
 /**
- * FinanceOps AI — DEMO ENGINE (prototype only).
+ * Elisa — DEMO ENGINE (prototype only).
  *
  * Answers are computed locally from the same services/metrics the pages use, so numbers
  * always match the screens. The public surface is `streamReply()`, which yields ReplyEvents.
@@ -12,7 +12,10 @@ import { AiFeature } from "../enums/ai-feature.enum";
 import { Category, EXPENSE_CATEGORIES, type ExpenseCategory } from "../enums/category.enum";
 import { ChatRole } from "../enums/chat-role.enum";
 import { InvoiceStatus } from "../enums/invoice-status.enum";
+import { PageSection } from "../enums/page-section.enum";
+import { assistantLabels } from "../language/en/assistant.lang";
 import { categoryLabels, aiFeatureLabels } from "../language/en/enums.lang";
+import { navigationLabels } from "../language/en/navigation.lang";
 import { addMonths, daysBetween, formatDayMonth, formatMonthLong, formatMonthYear, parseIso } from "../shared/utils/dates.util";
 import {
   aiMonthlySummary,
@@ -37,7 +40,7 @@ import {
   zeroCashDate,
 } from "../shared/utils/metrics.util";
 import { formatCompact, formatMoney, formatPercent } from "../shared/utils/money.util";
-import type { AssistantRequest, AssistantSource, ReplyEvent } from "../types/assistant.types";
+import type { AssistantNavigation, AssistantRequest, AssistantSource, ReplyEvent } from "../types/assistant.types";
 import { getAiMonths, getAiSeatCharges, getAiUsage } from "./ai-spend.service";
 import { getBudgetHistory, getBudgets } from "./budgets.service";
 import { getAccounts, getMonthlyFlows, getUpcomingBills } from "./cash.service";
@@ -47,7 +50,8 @@ import { getInvoices } from "./invoices.service";
 import { getMrrHistory } from "./revenue.service";
 import { getTransactions } from "./transactions.service";
 
-type Answer = { text: string; sources: AssistantSource[]; followUps: string[] };
+/** `goNow`: the user asked to be taken somewhere, so the UI moves even with cursor mode off. */
+type Answer = { text: string; sources: AssistantSource[]; followUps: string[]; navigation?: AssistantNavigation; goNow?: boolean };
 
 const SRC = {
   overview: { label: "Overview", to: "/" },
@@ -429,7 +433,7 @@ function investorUpdateAnswer(): Answer {
 **Asks**
 - Intros to finance leads at mid-market logistics and healthcare companies
 
-_Draft generated from your FinanceOps data — please review before sending._`,
+_Draft generated from your Finopsis data — please review before sending._`,
     sources: [SRC.overview],
     followUps: ["Summarize last month", "What's my runway?"],
   };
@@ -453,46 +457,85 @@ _You're in demo mode: answers are generated offline from sample data._`,
 
 // ---------- routing ----------
 
+/** Attach the screen an answer is about (cursor mode takes the user there). */
+const at = (answer: Answer, to: string, section?: PageSection): Answer => ({ ...answer, navigation: { to, section } });
+
+/** Pages a "take me to …" request can name; display names come from the sidebar labels so they never drift. */
+const PAGES: { to: string; label: string; names: RegExp }[] = [
+  { to: "/ai-spend", label: navigationLabels.pages.aiSpend, names: /^(ai spend|ai costs?|ai)$/ },
+  { to: "/transactions", label: navigationLabels.pages.transactions, names: /^(transactions?|bank feed|payments)$/ },
+  { to: "/invoices", label: navigationLabels.pages.invoices, names: /^(invoices?|receivables|ar)$/ },
+  { to: "/reports", label: navigationLabels.pages.reports, names: /^(reports?|monthly reports?|month.end reports?)$/ },
+  { to: "/budgets", label: navigationLabels.pages.budgets, names: /^(budgets?|spend)$/ },
+  { to: "/forecast", label: navigationLabels.pages.forecast, names: /^(forecast|runway( & forecast| and forecast)?|scenarios?)$/ },
+  { to: "/settings", label: navigationLabels.pages.settings, names: /^(settings|integrations|team)$/ },
+  { to: "/", label: navigationLabels.pages.overview, names: /^(overview|home|dashboard)$/ },
+];
+
+/**
+ * "Take me to invoices", "open the budgets page", "go to reports": only when the request is just a page name.
+ * Marked `goNow`, because the user asked to move: the UI navigates even with cursor mode off.
+ */
+function navigationRequest(s: string): Answer | null {
+  const m = s.match(
+    /^(?:please |can you |could you )?(?:take me to|go to|open|navigate to|bring me to|jump to|show me|switch to)\s+(?:the |my )?(.+?)(?:\s+(?:page|screen|tab|section))?(?:,? please)?[.!?]*$/,
+  );
+  if (!m) return null;
+  const page = PAGES.find((x) => x.names.test(m[1].trim()));
+  if (!page) return null;
+  return {
+    text: `Opening **${page.label}**.`,
+    sources: [],
+    followUps: pageSuggestions(page.to).slice(0, 3),
+    navigation: { to: page.to },
+    goNow: true,
+  };
+}
+
 function route(q: string, page: string): Answer {
-  const s = q.toLowerCase();
+  const s = q.toLowerCase().trim();
   const has = (re: RegExp) => re.test(s);
 
+  const nav = navigationRequest(s);
+  if (nav) return nav;
+
   if (has(/\b(this page|this screen|explain (this|the) (page|screen))\b/)) {
-    if (page.startsWith("/budgets")) return budgetsAnswer();
-    if (page.startsWith("/invoices")) return invoicesAnswer();
-    if (page.startsWith("/forecast")) return runwayAnswer();
-    if (page.startsWith("/transactions")) return burnAnswer();
-    if (page.startsWith("/ai-spend")) return aiSpendAnswer();
-    return summaryAnswer();
+    if (page.startsWith("/budgets")) return at(budgetsAnswer(), "/budgets", PageSection.BudgetTable);
+    if (page.startsWith("/invoices")) return at(invoicesAnswer(), "/invoices", PageSection.InvoiceList);
+    if (page.startsWith("/forecast")) return at(runwayAnswer(), "/forecast", PageSection.CashProjection);
+    if (page.startsWith("/transactions")) return at(burnAnswer(), "/transactions", PageSection.TransactionList);
+    if (page.startsWith("/ai-spend")) return at(aiSpendAnswer(), "/ai-spend", PageSection.AiSpendByMonth);
+    return at(summaryAnswer(), "/", PageSection.OverviewKeyFigures);
   }
-  if (has(/investor update|update for investors|board update/)) return investorUpdateAnswer();
-  if (has(/(tokens?|llm|gpu|ai (spend|cost|bill|budget|seats?|tools?)|model (costs?|spend|api))/) || (has(/ai/) && has(/spend|cost|bill|budget|going|cut/)))
-    return aiSpendAnswer();
-  if (has(/remind|email|draft|firmer/) && has(/remind|invoice|email|firmer|polite/)) return reminderDraftAnswer();
-  if (has(/take to pay|days to pay|time to pay|pay us|payment terms|how fast .* pay/)) return paymentTimeAnswer();
-  if (has(/hire|hiring|headcount|engineers?|recruit/)) return hiringAnswer(s);
-  if (has(/extend|longer runway|cut costs?|save money|reduce (burn|spend)|lean/)) return extendRunwayAnswer();
-  if (has(/runway|run out|zero.?cash|how long|last us|fundrais/)) return runwayAnswer();
-  if (has(/invoice|overdue|chase|owe|receivable|collect|late pay|days to pay|pay us/)) return invoicesAnswer();
+  if (has(/investor update|update for investors|board update/)) return at(investorUpdateAnswer(), "/reports", PageSection.LatestReport);
+  if (has(/(tokens?|llm|gpu|ai (spend|cost|bill|budget|seats?|tools?)|model (costs?|spend|api))/) || (has(/\bai\b/) && has(/spend|cost|bill|budget|going|cut/)))
+    return at(aiSpendAnswer(), "/ai-spend", PageSection.AiSpendByMonth);
+  // Needs an action word: "email" alone is too common ("email marketing costs").
+  if (has(/remind|draft|firmer|write/) && has(/remind|invoice|email|firmer|polite/)) return at(reminderDraftAnswer(), "/invoices", PageSection.InvoiceList);
+  if (has(/take to pay|days to pay|time to pay|pay us|payment terms|how fast .* pay/)) return at(paymentTimeAnswer(), "/invoices", PageSection.InvoiceKeyFigures);
+  if (has(/hire|hiring|headcount|engineers?|recruit/)) return at(hiringAnswer(s), "/forecast", PageSection.ScenarioBuilder);
+  if (has(/extend|longer runway|cut costs?|save money|reduce (burn|spend)|lean/)) return at(extendRunwayAnswer(), "/forecast", PageSection.ScenarioBuilder);
+  if (has(/fundrais|raise (money|a round)|start raising/)) return at(runwayAnswer(), "/forecast", PageSection.CashProjection);
+  if (has(/runway|run out|zero.?cash|how long|last us/)) return at(runwayAnswer(), "/", PageSection.Runway);
+  if (has(/invoice|overdue|chase|owe|receivable|collect|late pay|days to pay|pay us/)) return at(invoicesAnswer(), "/invoices", PageSection.InvoiceList);
   const named = EXPENSE_CATEGORIES.find((c) => s.includes(categoryLabels[c].toLowerCase()));
-  if (named && has(/budget|over|spend|why|cost/)) return categoryBudgetAnswer(named);
-  if (has(/budget|overspend|over budget|category|categories/)) return budgetsAnswer();
-  if (has(/\bburn|spending|expenses?|costs?\b|going up/)) return burnAnswer();
-  if (has(/mrr|arr|revenue|growth|customers?|sales/)) return revenueAnswer();
-  if (has(/bill|due this week|upcoming|payables?|pay (this|next)/)) return billsAnswer();
-  if (has(/cash|balance|bank|accounts?/)) return cashAnswer();
-  if (has(/summar|overview|how are we doing|recap|last month|this month/)) return summaryAnswer();
+  if (named && has(/budget|over|spend|why|cost/)) return at(categoryBudgetAnswer(named), "/budgets", PageSection.BudgetTable);
+  if (has(/budget|overspend|over budget|category|categories/)) return at(budgetsAnswer(), "/budgets", PageSection.BudgetTable);
+  if (has(/\bburn|spending|expenses?|costs?\b|going up/)) return at(burnAnswer(), "/budgets", PageSection.BudgetTable);
+  if (has(/mrr|arr|revenue|growth|customers?|sales/)) return at(revenueAnswer(), "/", PageSection.OverviewKeyFigures);
+  if (has(/bill|due this week|upcoming|payables?|pay (this|next)/)) return at(billsAnswer(), "/", PageSection.Bills);
+  if (has(/transactions?|payments? (in|out)|bank feed/)) return at(burnAnswer(), "/transactions", PageSection.TransactionList);
+  if (has(/cash|balance|bank|accounts?/)) return at(cashAnswer(), "/", PageSection.Runway);
+  if (has(/report|month.end|close the books/)) return at(summaryAnswer(), "/reports", PageSection.LatestReport);
+  if (has(/summar|overview|how are we doing|recap|last month|this month/)) return at(summaryAnswer(), "/", PageSection.OverviewKeyFigures);
   return helpAnswer(page);
 }
 
-/** Starter prompts for the AI panel, tailored to the page the user is on (falls back to general ones). */
-export function pageSuggestions(page: string): string[] {
-  if (page.startsWith("/budgets")) return ["Which categories are over budget?", "Why did burn go up?", "How can we extend runway by 6 months?", "Explain this page"];
-  if (page.startsWith("/invoices")) return ["Which invoices should I chase?", "Draft a polite reminder email", "How long do customers take to pay?", "Explain this page"];
-  if (page.startsWith("/forecast")) return ["What if we hire 3 engineers?", "How can we extend runway by 6 months?", "When should we start fundraising?", "Explain this page"];
-  if (page.startsWith("/ai-spend")) return ["Where is our AI spend going?", "How can we cut AI costs?", "Which categories are over budget?", "Explain this page"];
-  if (page.startsWith("/transactions")) return ["Why did burn go up?", "What bills are due this week?", "What's my cash balance?", "Summarize last month"];
-  return ["What's my runway?", "Summarize last month", "Which invoices should I chase?", "What if we hire 3 engineers?"];
+/** Starter prompts for the AI panel, tailored to the page the user is on (falls back to general ones). Text: `assistant.lang.ts`. */
+export function pageSuggestions(page: string): readonly string[] {
+  const byPage = assistantLabels.pageSuggestions;
+  const key = (Object.keys(byPage) as (keyof typeof byPage)[]).find((k) => k !== "/" && page.startsWith(k));
+  return byPage[key ?? "/"];
 }
 
 // ---------- streaming ----------
@@ -523,5 +566,6 @@ export async function* streamReply(req: AssistantRequest, signal?: AbortSignal):
   }
   if (answer.sources.length) yield { type: "sources", sources: answer.sources };
   if (answer.followUps.length) yield { type: "followups", items: answer.followUps };
+  if (answer.navigation) yield { type: "navigate", navigation: answer.navigation, explicit: answer.goNow === true };
   yield { type: "done" };
 }

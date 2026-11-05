@@ -16,7 +16,7 @@ Charts are hand-rolled SVG components in `src/shared/charts/`. Don't add a chart
   overflow in critical + an "over" label). Rows share one scale; default to % of target, offer $ as a toggle.
   For a full category breakdown use `BudgetTable` (`features/budgets/components/budget-table.component.tsx`: bullet + figures + 3-month trend + expandable detail).
 - Plan vs actual columns: plan in neutral `--muted`, actual in `--series-1` (never the pale band colour for marks).
-- Single progress value → **meter**. Part of a whole → segmented bar, never a pie.
+- Single progress value vs a target → **`BulletBar`** (`shared/charts`). Part of a whole → segmented bar, never a pie.
 - **Never a dual-axis chart.** Two measures of different scale = two charts.
 
 ## Color

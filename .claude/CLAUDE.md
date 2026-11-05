@@ -1,6 +1,6 @@
-# FinanceOps — project guide for Claude
+# Finopsis — project guide for Claude
 
-FinanceOps is a finance co-pilot for **small startups (seed → Series A, 2–50 people)**.
+Finopsis is a finance co-pilot for **small startups (seed → Series A, 2–50 people)**.
 It answers the questions a founder asks every week:
 
 - How much cash do we have, and how long does it last? (cash, burn, runway)
@@ -37,16 +37,16 @@ src/
   app/                     main.tsx (entry), app.component.tsx, app.routes.tsx
     layout/                app-shell, sidebar, topbar
   features/                one folder per route: <feature>.page.tsx + components/ only it uses
-    overview/ transactions/ invoices/ budgets/ ai-spend/ settings/ not-found/
+    overview/ transactions/ invoices/ reports/ budgets/ ai-spend/ settings/ not-found/
     forecast/              + scenario.model.ts, scenario-library.config.ts (ids + maths only)
-    assistant/             FinanceOps AI panel: assistant.provider.tsx + chat components
+    assistant/             Elisa panel: assistant.provider.tsx + chat components
   shared/
-    ui/                    card, stat-tile, badge, meter, page-header, popover, drawer, slider, ...
+    ui/                    card, stat-tile, badge, kpi-row, page-header, popover, drawer, slider, ...
     charts/                hand-rolled SVG charts (column-chart, line-chart, bullet-bar, sparkline)
     data-table/            data-table component (sort, facets, search, selection, CSV, pagination)
     finance/               amount
     utils/ config/         money/dates/metrics utils; navigation config
-  hooks/                   EVERY custom hook: use-theme, use-data-table, use-element-width, use-assistant, use-scenario-storage
+  hooks/                   EVERY custom hook: use-theme, use-data-table, use-element-width, use-media-query, use-modal-focus, use-assistant, use-scenario-storage
   services/                *.service.ts: the ONLY way features get data (mock today, API later)
   data/                    *.data.ts: mock data (static, deterministic, no Math.random), uses enum members
   enums/                   *.enum.ts: TypeScript enums (Category, InvoiceStatus, AiFeature, TeamRole, BudgetScale, ...)
@@ -90,9 +90,11 @@ Project skills live in `.claude/skills/` — use them instead of improvising:
 - `ui-review` — screenshot every change with `npm run snap` and critique it before calling it done.
 
 ## AI assistant (prototype)
-The right-hand "FinanceOps AI" panel (Ctrl+J) runs an **offline demo engine** (`services/assistant.service.ts`) that answers
+The right-hand "Elisa" panel (Ctrl+J) runs an **offline demo engine** (`services/assistant.service.ts`) that answers
 from the same mock data and metrics as the pages. It speaks a streaming event protocol identical to what the future
 backend will send, so going live means replacing one function. No LLM calls from the browser, ever.
+**Cursor mode** (toggle in the panel) moves a visible "Elisa" cursor to the screen and section an answer is about
+(`navigate` reply event → `AiCursor`); sections opt in with `aiTarget={PageSection.X}`. See the `ai-assistant` skill.
 
 ## Non-negotiables
 

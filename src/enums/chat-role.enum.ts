@@ -9,6 +9,6 @@
 export enum ChatRole {
   /** The person using the app. */
   User = "user",
-  /** FinanceOps AI. */
+  /** Elisa. */
   Assistant = "assistant",
 }

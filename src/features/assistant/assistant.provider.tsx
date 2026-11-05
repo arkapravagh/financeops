@@ -4,6 +4,7 @@
  * Provides the two contexts defined in `hooks/use-assistant.hook.ts` (split so streaming tokens only re-render
  * the panel). Consumers read them with `useAssistantControls()` / `useAssistant()` from that file.
  * Replies come from `services/assistant.service.ts`; no LLM calls from the browser, ever.
+ * Cursor mode: a finished reply that names a screen (`navigate` event) starts a cursor tour, run by `AiCursor`.
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
@@ -19,10 +20,11 @@ import {
 } from "../../hooks/use-assistant.hook";
 import { assistantLabels } from "../../language/en/assistant.lang";
 import { streamReply } from "../../services/assistant.service";
-import type { ChatMessage, Conversation } from "../../types/assistant.types";
+import type { AssistantNavigation, ChatMessage, Conversation, CursorTour } from "../../types/assistant.types";
 
 const OPEN_KEY = "fo-ai-open";
 const HISTORY_KEY = "fo-ai-history";
+const CURSOR_KEY = "fo-ai-cursor";
 const MAX_CONVERSATIONS = 20;
 
 const uid = () => crypto.randomUUID();
@@ -59,6 +61,31 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [isStreaming, setIsStreaming] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
+  // On by default: the point of cursor mode is that Elisa shows you, not just tells you.
+  const [cursorMode, setCursorModeState] = useState(() => {
+    try {
+      return localStorage.getItem(CURSOR_KEY) !== "0";
+    } catch {
+      return true;
+    }
+  });
+  const [tour, setTour] = useState<CursorTour | null>(null);
+  const cursorModeRef = useRef(cursorMode);
+  useEffect(() => {
+    cursorModeRef.current = cursorMode;
+  }, [cursorMode]);
+
+  const setCursorMode = useCallback((on: boolean) => {
+    setCursorModeState(on);
+    if (!on) setTour(null);
+    try {
+      localStorage.setItem(CURSOR_KEY, on ? "1" : "0");
+    } catch {
+      /* ignore */
+    }
+  }, []);
+  const showOnScreen = useCallback((navigation: AssistantNavigation) => setTour({ id: uid(), navigation, auto: false }), []);
+  const endTour = useCallback((id: string) => setTour((t) => (t?.id === id ? null : t)), []);
 
   const setOpen = useCallback((v: boolean) => {
     setOpenState(v);
@@ -117,6 +144,8 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
       // Batch token updates to one React update per animation frame.
       let buffer = "";
       let frame = 0;
+      let navigation: AssistantNavigation | undefined;
+      let explicit = false;
       const flush = () => {
         frame = 0;
         if (!buffer) return;
@@ -137,11 +166,18 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
             patchMessage(convId, assistantId, (m) => ({ ...m, sources: ev.sources }));
           } else if (ev.type === "followups") {
             patchMessage(convId, assistantId, (m) => ({ ...m, followUps: ev.items }));
+          } else if (ev.type === "navigate") {
+            navigation = ev.navigation;
+            explicit = ev.explicit;
+            patchMessage(convId, assistantId, (m) => ({ ...m, navigation: ev.navigation }));
           }
         }
         if (frame) cancelAnimationFrame(frame);
         flush();
         patchMessage(convId, assistantId, (m) => ({ ...m, status: MessageStatus.Done }));
+        // Only a reply that finished (not stopped or failed) moves the cursor, and only once the answer is readable.
+        // "Take me to …" moves even with cursor mode off: the user asked for exactly that.
+        if (navigation && (cursorModeRef.current || explicit) && !controller.signal.aborted) setTour({ id: uid(), navigation, auto: true });
       } catch (err) {
         if (frame) cancelAnimationFrame(frame);
         flush();
@@ -153,7 +189,7 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
         }));
       } finally {
         // Only the turn that still owns the controller ends streaming. A turn aborted because a newer one started
-        // (e.g. "Ask AI" pressed mid-reply) must not switch the flag off under the new reply.
+        // (e.g. "Ask Elisa" pressed mid-reply) must not switch the flag off under the new reply.
         if (abortRef.current === controller) {
           abortRef.current = null;
           setIsStreaming(false);
@@ -244,7 +280,10 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
     [activeId],
   );
 
-  const controls = useMemo<AssistantControls>(() => ({ open, setOpen, toggle, ask }), [open, setOpen, toggle, ask]);
+  const controls = useMemo<AssistantControls>(
+    () => ({ open, setOpen, toggle, ask, cursorMode, setCursorMode, tour, showOnScreen, endTour }),
+    [open, setOpen, toggle, ask, cursorMode, setCursorMode, tour, showOnScreen, endTour],
+  );
 
   const value = useMemo<AssistantContextValue>(
     () => ({

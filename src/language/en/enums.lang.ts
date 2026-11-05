@@ -14,7 +14,9 @@ import { Category } from "../../enums/category.enum";
 import { ForecastHorizon } from "../../enums/forecast-horizon.enum";
 import { IntegrationStatus } from "../../enums/integration-status.enum";
 import { InvoiceStatus } from "../../enums/invoice-status.enum";
+import { PageSection } from "../../enums/page-section.enum";
 import { ReceivablesAge } from "../../enums/receivables-age.enum";
+import { ReportStatus } from "../../enums/report-status.enum";
 import { ScenarioCategory } from "../../enums/scenario-category.enum";
 import { TeamRole } from "../../enums/team-role.enum";
 import { TransactionDirection } from "../../enums/transaction-direction.enum";
@@ -127,4 +129,26 @@ export const receivablesAgeLabels: Record<ReceivablesAge, string> = {
   [ReceivablesAge.Late1To30]: "1–30 days late",
   [ReceivablesAge.Late31To60]: "31–60 days late",
   [ReceivablesAge.Late60Plus]: "60+ days late",
+};
+
+/** Monthly report states (badge text on the Reports page). */
+export const reportStatusLabels: Record<ReportStatus, string> = {
+  [ReportStatus.Ready]: "Ready",
+  [ReportStatus.InProgress]: "In progress",
+};
+
+/** Names of the page sections Elisa can point at (cursor mode, "Go to" button). */
+export const pageSectionLabels: Record<PageSection, string> = {
+  [PageSection.Runway]: "Runway",
+  [PageSection.OverviewKeyFigures]: "Key figures",
+  [PageSection.Attention]: "Needs your attention",
+  [PageSection.Bills]: "Upcoming bills",
+  [PageSection.TransactionList]: "Transaction list",
+  [PageSection.InvoiceKeyFigures]: "Invoice totals",
+  [PageSection.InvoiceList]: "Invoice list",
+  [PageSection.LatestReport]: "Latest report",
+  [PageSection.BudgetTable]: "Budget by category",
+  [PageSection.CashProjection]: "Cash projection",
+  [PageSection.ScenarioBuilder]: "Scenario builder",
+  [PageSection.AiSpendByMonth]: "AI spend by month",
 };

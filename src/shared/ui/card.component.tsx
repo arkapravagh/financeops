@@ -5,6 +5,7 @@
  */
 
 import type { ReactNode } from "react";
+import type { PageSection } from "../../enums/page-section.enum";
 
 /** Title row content and layout options. Use `flush` for edge-to-edge tables and lists. */
 export type CardProps = {
@@ -16,12 +17,14 @@ export type CardProps = {
   className?: string;
   /** Remove body padding (for edge-to-edge tables and lists). */
   flush?: boolean;
+  /** Marks the card as a section Elisa's cursor can scroll to and highlight (cursor mode). */
+  aiTarget?: PageSection;
 };
 
 /** Panel: border only, 14px radius, no shadow (design-system). */
-export function Card({ title, subtitle, action, children, className = "", flush = false }: CardProps) {
+export function Card({ title, subtitle, action, children, className = "", flush = false, aiTarget }: CardProps) {
   return (
-    <section className={`min-w-0 rounded-[14px] border border-line bg-surface ${className}`}>
+    <section data-ai-target={aiTarget} className={`min-w-0 rounded-[14px] border border-line bg-surface ${className}`}>
       {(title || action) && (
         <header className="flex flex-wrap items-start justify-between gap-x-4 gap-y-3 px-5 pt-5">
           <div className="min-w-0 flex-1 basis-64">

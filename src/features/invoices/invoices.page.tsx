@@ -7,6 +7,7 @@
 
 import { BellRing, Plus } from "lucide-react";
 import { InvoiceStatus } from "../../enums/invoice-status.enum";
+import { PageSection } from "../../enums/page-section.enum";
 import { invoicesLabels as L } from "../../language/en/invoices.lang";
 import { AS_OF } from "../../services/company.service";
 import { getInvoices } from "../../services/invoices.service";
@@ -30,11 +31,17 @@ const columns: ColumnDef<InvoiceRow>[] = [
     id: "number",
     header: L.columns.invoice,
     accessor: (i) => i.number,
-    cell: (i) => <span className="font-medium whitespace-nowrap">{i.number}</span>,
+    // Phones fold the customer under the number (its own column is hidden there) so the amount stays on screen.
+    cell: (i) => (
+      <>
+        <span className="block font-medium whitespace-nowrap">{i.number}</span>
+        <span className="block text-xs text-muted sm:hidden">{i.customer}</span>
+      </>
+    ),
     hideable: false,
     footer: (rows) => <span className="text-ink-2">{L.rowCount(rows.length)}</span>,
   },
-  { id: "customer", header: L.columns.customer, accessor: (i) => i.customer, facet: true },
+  { id: "customer", header: L.columns.customer, accessor: (i) => i.customer, facet: true, className: "hidden sm:table-cell" },
   {
     id: "issued",
     header: L.columns.issued,
@@ -53,6 +60,8 @@ const columns: ColumnDef<InvoiceRow>[] = [
         {i.derived === InvoiceStatus.Paid && i.paidDate && <div className="text-xs text-muted">{L.paidOn(formatDate(i.paidDate))}</div>}
       </div>
     ),
+    // Phones: the status badge already says "Overdue", so the due date gives way to the amount.
+    className: "hidden sm:table-cell",
   },
   {
     id: "status",
@@ -87,6 +96,7 @@ const columns: ColumnDef<InvoiceRow>[] = [
           {L.remind}
         </Button>
       ) : null,
+    className: "hidden md:table-cell",
   },
 ];
 
@@ -123,6 +133,7 @@ export function InvoicesPage() {
       />
 
       <KpiRow
+        aiTarget={PageSection.InvoiceKeyFigures}
         items={[
           { label: L.kpi.outstanding, value: formatCompact(ar), context: L.kpi.outstandingContext(openCount) },
           {
@@ -139,7 +150,7 @@ export function InvoicesPage() {
         ]}
       />
 
-      <Card className="mt-5" flush>
+      <Card aiTarget={PageSection.InvoiceList} className="mt-5" flush>
         <DataTable
           data={rows}
           columns={columns}

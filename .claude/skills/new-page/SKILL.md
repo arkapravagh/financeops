@@ -1,6 +1,6 @@
 ---
 name: new-page
-description: Add a new page/route to the FinanceOps app and wire it into the sidebar. Use when the user asks for a new screen, tab, section or view (e.g. "add a payroll page", "create a vendors screen").
+description: Add a new page/route to the Finopsis app and wire it into the sidebar. Use when the user asks for a new screen, tab, section or view (e.g. "add a payroll page", "create a vendors screen").
 ---
 
 # Add a new page
@@ -49,11 +49,16 @@ description: Add a new page/route to the FinanceOps app and wire it into the sid
    Closed sets of values (statuses, view toggles) are enums in `src/enums/` with labels in `enums.lang.ts`.
    Any new hook goes in `src/hooks/`.
 
-4. **Route**: add `<Route path="/payroll" element={<PayrollPage />} />` in `src/app/app.routes.tsx`.
+4. **Route** (pages are lazy-loaded, one chunk each): in `src/app/lazy-pages.routes.ts` add a loader
+   (`payroll: () => import("../features/payroll/payroll.page").then((m) => ({ default: m.PayrollPage }))`), its
+   `pages.payroll = lazy(load.payroll)` entry and its path in `loaderByPath` (sidebar preloading); then add
+   `<Route path="/payroll" element={<pages.payroll />} />` in `src/app/app.routes.tsx`. Never import a page statically.
 5. **Nav**: add an entry to `src/shared/config/navigation.config.ts` with a `lucide-react` icon; its label goes in
    `language/en/navigation.lang.ts`. Keep the sidebar ≤ 8 items;
    group secondary items under "Settings" instead of growing the list.
 6. **Layout conventions**: KPI row first (one `KpiRow` panel, not separate tiles), then the main chart,
    then detail tables. Each page answers one founder question — put that question in the subtitle.
    Nav entries go into the right group in `navGroups` (Money / Plan).
+   Sections Elisa should be able to point at get `aiTarget={PageSection.X}` (add the enum member + label), and the
+   matching demo intents use `at(answer, "/payroll", PageSection.X)` (`ai-assistant` skill, cursor mode).
 7. Follow `layout-patterns` for structure, then run `verify`, `ui-review` and `react-review`.

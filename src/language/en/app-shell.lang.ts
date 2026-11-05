@@ -4,6 +4,8 @@
 
 /** Text in the sidebar, top bar and mobile drawer. */
 export const appShellLabels = {
+  /** Product wordmark at the top of the sidebar (always lowercase). */
+  productName: "finopsis",
   navigation: "Navigation",
   mainNavigation: "Main",
   openNavigation: "Open navigation",
@@ -13,11 +15,10 @@ export const appShellLabels = {
   search: "Search",
   searchPlaceholder: "Search transactions, invoices, vendors…",
   dataAsOf: (date: string) => `Data as of ${date}`,
-  askAi: "Ask AI",
-  askAiTitle: "Ask AI (Ctrl+J)",
-  askAiShortcut: "Ctrl J",
-  openAssistant: "Open AI assistant",
-  closeAssistant: "Close AI assistant",
+  askAi: "Ask Elisa",
+  askAiTitle: "Ask Elisa (Ctrl+J)",
+  openAssistant: "Open Elisa, the AI assistant",
+  closeAssistant: "Close Elisa, the AI assistant",
   notifications: "Notifications",
   switchToLight: "Switch to light theme",
   switchToDark: "Switch to dark theme",
@@ -26,4 +27,6 @@ export const appShellLabels = {
   companySummary: (stage: string, headcount: number) => `${stage}, ${headcount} people`,
   sampleDataUser: (name: string) => `${name} (sample data)`,
   sampleDataNote: "Prototype with sample data",
+  /** Screen-reader text while a page chunk downloads (first visit to a page only). */
+  loadingPage: "Loading page…",
 } as const;

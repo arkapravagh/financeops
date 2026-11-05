@@ -9,6 +9,7 @@ import { PencilLine } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { BudgetScale } from "../../enums/budget-scale.enum";
 import { type ExpenseCategory } from "../../enums/category.enum";
+import { PageSection } from "../../enums/page-section.enum";
 import { useAssistantControls } from "../../hooks/use-assistant.hook";
 import { budgetsLabels as L } from "../../language/en/budgets.lang";
 import { budgetScaleLabels, categoryLabels } from "../../language/en/enums.lang";
@@ -77,6 +78,7 @@ export function BudgetsPage() {
       <BudgetSummary month={month} budgets={budgets} previous={previous} />
 
       <Card
+        aiTarget={PageSection.BudgetTable}
         className="mt-5"
         flush
         title={L.byCategory.title}

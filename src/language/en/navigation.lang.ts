@@ -12,6 +12,7 @@ export const navigationLabels = {
     overview: "Overview",
     transactions: "Transactions",
     invoices: "Invoices",
+    reports: "Reports",
     budgets: "Budgets",
     forecast: "Runway & forecast",
     aiSpend: "AI spend",

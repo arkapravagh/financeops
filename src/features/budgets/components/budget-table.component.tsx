@@ -1,6 +1,6 @@
 /** Budget table: one row per expense category with a bullet bar, figures, 3-month trend and expandable detail. */
 
-import { AlertTriangle, ArrowRight, ChevronDown, Sparkles } from "lucide-react";
+import { AlertTriangle, ArrowRight, ChevronDown } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { BudgetScale } from "../../../enums/budget-scale.enum";
@@ -11,12 +11,13 @@ import { BulletBar } from "../../../shared/charts/bullet-bar.component";
 import { niceTicks } from "../../../shared/charts/chart.util";
 import { Amount } from "../../../shared/finance/amount.component";
 import { Badge } from "../../../shared/ui/badge.component";
+import { ElisaGlyph } from "../../../shared/ui/elisa-glyph.component";
 import { formatDayMonth, formatMonthLong, formatMonthShort } from "../../../shared/utils/dates.util";
 import { budgetUsed, budgetVarianceCents } from "../../../shared/utils/metrics.util";
 import { formatCompact, formatMoney, formatPercent } from "../../../shared/utils/money.util";
 import type { Budget, Transaction } from "../../../types/finance.types";
 
-/** Budget rows, scale, per-category history, a transaction lookup for details, and an Ask AI hook. */
+/** Budget rows, scale, per-category history, a transaction lookup for details, and an Ask Elisa hook. */
 export type BudgetTableProps = {
   budgets: Budget[];
   scale: BudgetScale;
@@ -250,7 +251,7 @@ function Details({
             onClick={() => onAsk(L.askPrompt(categoryLabels[budget.category]))}
             className="inline-flex items-center gap-1.5 self-start rounded-lg border border-line bg-surface px-2.5 py-1.5 text-[13px] font-medium text-ink outline-none transition hover:bg-surface-2 focus-visible:ring-2 focus-visible:ring-accent"
           >
-            <Sparkles size={13} className="text-accent" aria-hidden /> {L.askWhy}
+            <ElisaGlyph size={13} className="text-accent" /> {L.askWhy}
           </button>
         )}
       </div>

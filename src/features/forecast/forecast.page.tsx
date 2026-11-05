@@ -8,6 +8,7 @@
 import { Download } from "lucide-react";
 import { useMemo, useState } from "react";
 import { ForecastHorizon } from "../../enums/forecast-horizon.enum";
+import { PageSection } from "../../enums/page-section.enum";
 import { MAX_SAVED, useCustomScenarios, useSavedScenarios } from "../../hooks/use-scenario-storage.hook";
 import { commonLabels } from "../../language/en/common.lang";
 import { forecastHorizonLabels } from "../../language/en/enums.lang";
@@ -126,7 +127,7 @@ export function ForecastPage() {
       <div className="@container mt-5">
       <div className="grid grid-cols-1 gap-5 @5xl:grid-cols-[minmax(0,1fr)_25rem]">
         <div className="flex min-w-0 flex-col gap-5">
-          <Card title={L.chart.title} subtitle={L.chart.subtitle(h)}>
+          <Card aiTarget={PageSection.CashProjection} title={L.chart.title} subtitle={L.chart.subtitle(h)}>
             <LineChart
               labels={months.map(formatMonthShort)}
               tooltipLabels={months.map(formatMonthLong)}
@@ -161,6 +162,7 @@ export function ForecastPage() {
         </div>
 
         <Card
+          aiTarget={PageSection.ScenarioBuilder}
           title={L.panel.title}
           subtitle={L.panel.subtitle}
           flush

@@ -1,13 +1,14 @@
-/** Top bar: menu / collapse toggle, global search, data freshness, Ask AI, notifications and theme toggle. */
+/** Top bar: menu / collapse toggle, global search, data freshness, Ask Elisa, notifications and theme toggle. */
 
-import { Bell, Menu, Moon, PanelLeftClose, PanelLeftOpen, Search, Sparkles, Sun } from "lucide-react";
+import { Bell, Menu, Moon, PanelLeftClose, PanelLeftOpen, Search, Sun } from "lucide-react";
 import { Theme } from "../../enums/theme.enum";
 import { useAssistantControls } from "../../hooks/use-assistant.hook";
 import { useTheme } from "../../hooks/use-theme.hook";
 import { appShellLabels as L } from "../../language/en/app-shell.lang";
-import { AS_OF, getTeam } from "../../services/company.service";
-import { formatDate } from "../../shared/utils/dates.util";
 import { commonLabels } from "../../language/en/common.lang";
+import { AS_OF, getTeam } from "../../services/company.service";
+import { ElisaGlyph } from "../../shared/ui/elisa-glyph.component";
+import { formatDate } from "../../shared/utils/dates.util";
 
 /** Callbacks for the mobile menu and the desktop sidebar collapse toggle. */
 export type TopbarProps = {
@@ -26,7 +27,7 @@ export function Topbar({ onMenu, collapsed, onToggleCollapsed }: TopbarProps) {
   const iconBtn =
     "grid size-9 place-items-center rounded-lg text-ink-2 outline-none transition hover:bg-surface-2 hover:text-ink focus-visible:ring-2 focus-visible:ring-accent";
   return (
-    <header className="sticky top-0 z-20 flex h-14 items-center gap-3 border-b border-line bg-page/85 px-4 backdrop-blur lg:px-8">
+    <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center gap-3 border-b border-line bg-page/85 px-4 backdrop-blur lg:px-8">
       <button className={`${iconBtn} lg:hidden`} aria-label={L.openNavigation} onClick={onMenu}>
         <Menu size={18} />
       </button>
@@ -63,13 +64,12 @@ export function Topbar({ onMenu, collapsed, onToggleCollapsed }: TopbarProps) {
           title={L.askAiTitle}
           className={`mr-1 inline-flex h-9 items-center gap-2 rounded-lg border px-3 text-sm font-medium outline-none transition focus-visible:ring-2 focus-visible:ring-accent ${
             assistant.open
-              ? "border-accent/40 bg-accent/10 text-ink"
+              ? "border-line bg-surface-2 text-ink"
               : "border-line bg-surface text-ink hover:bg-surface-2"
           }`}
         >
-          <Sparkles size={16} className="text-accent" aria-hidden />
+          <ElisaGlyph size={16} className="text-accent" />
           <span className="hidden sm:inline">{L.askAi}</span>
-          <kbd className="hidden rounded border border-line px-1 text-[10px] font-normal text-muted md:inline">{L.askAiShortcut}</kbd>
         </button>
         <button type="button" className={`${iconBtn} aria-disabled:cursor-not-allowed`} aria-label={L.notifications + commonLabels.comingSoon} aria-disabled title={commonLabels.notAvailableTitle}>
           <Bell size={18} />

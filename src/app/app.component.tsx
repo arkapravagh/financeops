@@ -7,7 +7,7 @@
 import { AssistantProvider } from "../features/assistant/assistant.provider";
 import { AppRoutes } from "./app.routes";
 
-/** The FinanceOps app. Provides AI assistant state to every page and the shell. */
+/** The Finopsis app. Provides AI assistant state to every page and the shell. */
 export function App() {
   return (
     <AssistantProvider>

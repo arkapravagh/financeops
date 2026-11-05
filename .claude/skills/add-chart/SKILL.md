@@ -1,13 +1,13 @@
 ---
 name: add-chart
-description: Add a chart to a FinanceOps page using the in-house SVG chart components (ColumnChart, LineChart). Use for any graph, trend, plot or visualisation request.
+description: Add a chart to a Finopsis page using the in-house SVG chart components (ColumnChart, LineChart). Use for any graph, trend, plot or visualisation request.
 ---
 
 # Add a chart
 
 Read `.claude/rules/charts.md` first.
 
-1. **Is it a chart at all?** A single number → `StatTile`. Progress vs a target → `Meter`. Only change-over-time or
+1. **Is it a chart at all?** A single number → `StatTile`. Progress vs a target → `BulletBar`. Only change-over-time or
    comparisons get a chart.
 2. **Pick the component** in `src/shared/charts/`:
    - `LineChart` — series over time; supports `projectedFrom` index (dashed + "Projected" label) and area wash.

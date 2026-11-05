@@ -1,9 +1,9 @@
 ---
 name: design-system
-description: The FinanceOps visual language — tokens, type scale, radius/elevation hierarchy, component recipes and copy rules. Use before styling ANY UI (new page, component, restyle, "make it look better") so the app stays one coherent design. Pairs with frontend-design (direction) and layout-patterns (page structure).
+description: The Finopsis visual language — tokens, type scale, radius/elevation hierarchy, component recipes and copy rules. Use before styling ANY UI (new page, component, restyle, "make it look better") so the app stays one coherent design. Pairs with frontend-design (direction) and layout-patterns (page structure).
 ---
 
-# FinanceOps design system
+# Finopsis design system
 
 **Brief:** a calm, exact finance co-pilot for seed-stage founders. They open it to answer one question —
 *how long does our money last?* — so the product's signature is the **runway**, and everything else is quiet.

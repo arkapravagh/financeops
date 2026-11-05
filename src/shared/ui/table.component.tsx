@@ -27,7 +27,7 @@ export function Th({ align = "left", className = "", children, ...rest }: ThHTML
   return (
     <th
       scope="col"
-      className={`border-b border-line px-5 py-2.5 text-xs font-medium whitespace-nowrap text-muted ${alignClass[align]} ${className}`}
+      className={`border-b border-line px-3 py-2.5 sm:px-5 text-xs font-medium whitespace-nowrap text-muted ${alignClass[align]} ${className}`}
       {...rest}
     >
       {children}
@@ -39,7 +39,7 @@ export function Th({ align = "left", className = "", children, ...rest }: ThHTML
 export function Td({ align = "left", className = "", children, ...rest }: TdHTMLAttributes<HTMLTableCellElement> & Align) {
   return (
     <td
-      className={`border-b border-line px-5 py-3 text-ink ${alignClass[align]} ${align === "right" ? "tabular-nums" : ""} ${className}`}
+      className={`border-b border-line px-3 py-3 sm:px-5 text-ink ${alignClass[align]} ${align === "right" ? "tabular-nums" : ""} ${className}`}
       {...rest}
     >
       {children}

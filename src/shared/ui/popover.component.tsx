@@ -13,12 +13,14 @@ export type PopoverProps = {
   ariaLabel?: string;
   buttonClassName?: string;
   align?: "start" | "end";
+  /** Open below the trigger (default) or above it (for triggers near the bottom of the screen). */
+  side?: "bottom" | "top";
   panelClassName?: string;
   children: ReactNode | ((close: () => void) => ReactNode);
 };
 
 /** Click-to-open panel. Closes on outside click and Escape (focus returns to the trigger). */
-export function Popover({ label, ariaLabel, buttonClassName = "", align = "start", panelClassName = "", children }: PopoverProps) {
+export function Popover({ label, ariaLabel, buttonClassName = "", align = "start", side = "bottom", panelClassName = "", children }: PopoverProps) {
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
   const btnRef = useRef<HTMLButtonElement>(null);
@@ -61,7 +63,7 @@ export function Popover({ label, ariaLabel, buttonClassName = "", align = "start
       {open && (
         <div
           id={id}
-          className={`absolute top-full z-30 mt-1.5 min-w-52 rounded-xl border border-line bg-surface p-1.5 shadow-[var(--shadow-float)] ${
+          className={`absolute ${side === "top" ? "bottom-full mb-1.5" : "top-full mt-1.5"} z-30 min-w-52 rounded-xl border border-line bg-surface p-1.5 shadow-[var(--shadow-float)] ${
             align === "end" ? "right-0" : "left-0"
           } ${panelClassName}`}
         >

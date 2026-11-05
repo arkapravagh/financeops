@@ -1,9 +1,9 @@
 ---
 name: ai-assistant
-description: Work on the FinanceOps AI chat panel — add demo intents, change the panel UI, or replace the offline demo engine with real Claude via a backend. Use for anything about "AI", "assistant", "chat", "Ask AI", or connecting an LLM.
+description: Work on the Elisa chat panel — add demo intents, change the panel UI, or replace the offline demo engine with real Claude via a backend. Use for anything about "AI", "assistant", "chat", "Elisa", "Ask Elisa", or connecting an LLM.
 ---
 
-# FinanceOps AI assistant
+# Elisa, the AI assistant
 
 ## Where things live
 | Piece | File |
@@ -21,17 +21,30 @@ description: Work on the FinanceOps AI chat panel — add demo intents, change t
 - Replies render through `markdown.component.tsx` (React elements only). Never `dangerouslySetInnerHTML` model output.
 - Keep the disclaimer ("AI can make mistakes… Not financial advice") and label projections as estimates.
 
+## Cursor mode (Elisa shows you, not just tells you)
+- A reply may end with a `navigate` event: `{ to, section? }` (`AssistantNavigation`). The message keeps it and shows a
+  **Go to …** button; with **Cursor mode** on (toolbar toggle, default on, `fo-ai-cursor`) a finished reply starts a tour.
+- `components/ai-cursor.component.tsx` runs the tour (desktop): glide from the composer to the sidebar link, press it,
+  wait for the lazy page, scroll to `[data-ai-target="<section>"]`, ring it (`data-ai-highlight`, CSS in index.css), fade.
+  Mobile / reduced motion: no glide. Mobile auto tours only switch the page behind the panel; "Go to" closes the panel.
+  Any real click or key press stops the cursor. It only ever clicks a sidebar link: never buttons, forms or data.
+- Sections are the `PageSection` enum (labels in `enums.lang.ts`); mark one with `aiTarget` on `Card` / `KpiRow`.
+  Timings and the "X on Page" name live in `features/assistant/cursor.model.ts`.
+- Stopped or failed replies never move the cursor. The live backend will emit `navigate` from a read-only
+  `navigate_to(page, section)` tool; the UI still decides whether to move.
+
 ## Add a demo intent
 1. Write `fooAnswer(): Answer` in `services/assistant.service.ts` (text + `sources` + `followUps`).
 2. Add a regex line in `route()` — **order matters**; put specific phrases before generic ones
-   (e.g. "take to pay" before "how long").
+   (e.g. "take to pay" before "how long"). Wrap it in `at(answer, "/page", PageSection.X)` so cursor mode knows
+   where the answer lives. "Take me to <page>" requests are handled first by `navigationRequest()` (`PAGES` list).
 3. Optionally add it to `pageSuggestions()` for the relevant route.
 
 ## Going live with Claude (future phase — confirm with the user first)
 **Never call the Anthropic API from the browser** (it would expose the API key). Add a backend endpoint:
 
 - `POST /api/assistant` → body = `AssistantRequest` → responds `text/event-stream` emitting the same `ReplyEvent`
-  JSON objects (`text` deltas, then `sources`, `followups`, `done`).
+  JSON objects (`text` deltas, then `sources`, `followups`, optional `navigate`, `done`).
 - Server uses the official SDK `@anthropic-ai/sdk` with model **`claude-opus-5-5`**, streaming
   (`client.messages.stream(...)`), adaptive thinking is on by default for this model; set `output_config.effort`
   explicitly (`low` suits chat). Opt into refusal fallbacks (`betas: ["server-side-fallback-2026-07-01"]`, `fallbacks: "default"`)

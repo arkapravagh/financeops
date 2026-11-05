@@ -5,7 +5,7 @@
  * `app/app.routes.tsx` should have an entry here.
  */
 
-import { ArrowLeftRight, Cpu, FileText, LayoutDashboard, PiggyBank, Settings, TrendingUp, type LucideIcon } from "lucide-react";
+import { ArrowLeftRight, Cpu, FileChartColumn, FileText, LayoutDashboard, PiggyBank, Settings, TrendingUp, type LucideIcon } from "lucide-react";
 import { navigationLabels } from "../../language/en/navigation.lang";
 
 /** One navigable page: path, label and icon. */
@@ -21,6 +21,7 @@ export const navGroups: NavGroup[] = [
       { to: "/", label: navigationLabels.pages.overview, icon: LayoutDashboard },
       { to: "/transactions", label: navigationLabels.pages.transactions, icon: ArrowLeftRight },
       { to: "/invoices", label: navigationLabels.pages.invoices, icon: FileText },
+      { to: "/reports", label: navigationLabels.pages.reports, icon: FileChartColumn },
     ],
   },
   {
@@ -38,3 +39,9 @@ export const navItems: NavItem[] = navGroups.flatMap((g) => g.items);
 
 /** Pages pinned to the bottom of the sidebar (Settings). */
 export const secondaryNavItems: NavItem[] = [{ to: "/settings", label: navigationLabels.pages.settings, icon: Settings }];
+
+/** Label of the page a path belongs to ("/invoices/x" → "Invoices"), or the "unknown page" label. */
+export function navLabel(path: string): string {
+  const hit = [...navItems, ...secondaryNavItems].find((n) => (n.to === "/" ? path === "/" : path.startsWith(n.to)));
+  return hit ? hit.label : navigationLabels.unknownPage;
+}

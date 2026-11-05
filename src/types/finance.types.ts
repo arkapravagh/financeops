@@ -11,6 +11,7 @@ import type { AiUsageKind } from "../enums/ai-usage-kind.enum";
 import type { Category, ExpenseCategory } from "../enums/category.enum";
 import type { IntegrationStatus } from "../enums/integration-status.enum";
 import type { InvoiceStoredStatus } from "../enums/invoice-status.enum";
+import type { ReportStatus } from "../enums/report-status.enum";
 import type { TeamRole } from "../enums/team-role.enum";
 import type { TransactionStatus } from "../enums/transaction-status.enum";
 
@@ -150,3 +151,28 @@ export type AiFeatureInfo = {
 
 /** The monthly AI spend budget. */
 export type AiBudget = { month: MonthKey; budgetCents: number };
+
+/** A month-end financial report (management pack), downloadable as Excel and PDF once the books close. */
+export type MonthlyReport = {
+  id: string;
+  month: MonthKey;
+  status: ReportStatus;
+  /** Publish date when ready; the expected date while in progress. */
+  availableOn: IsoDate;
+  /** PDF length; `null` until the report is ready. */
+  pdfPages: number | null;
+  /** Excel workbook size in bytes; `null` until the report is ready. */
+  xlsxBytes: number | null;
+};
+
+/** The headline cash figures a monthly report summarises (all cents). */
+export type ReportFigures = {
+  inCents: number;
+  outCents: number;
+  /** Cash out − cash in. Positive = losing money. */
+  netBurnCents: number;
+  endingCashCents: number;
+};
+
+/** A monthly report joined with its headline figures; `figures` is `null` while the report is in progress. */
+export type MonthlyReportSummary = MonthlyReport & { figures: ReportFigures | null };

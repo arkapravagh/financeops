@@ -22,7 +22,7 @@ No UI kit, no chart library, no state library — keep the prototype light.
   `src/language/en/<area>.lang.ts`; enum values render through `enums.lang.ts`. All hooks live in `src/hooks/`.
 
 ## Styling
-- Tailwind utility classes only; no inline `style` except for computed geometry (chart widths, meter fill).
+- Tailwind utility classes only; no inline `style` except for computed geometry (chart widths, bar fill).
 - Colors come from the design tokens in `src/styles/index.css` (`bg-surface`, `text-ink`, `text-muted`,
   `border-line`, `bg-accent`, status tokens). **Never hard-code hex in components.**
 - Light and dark themes are driven by `data-theme` on `<html>`; every new UI must be checked in both.

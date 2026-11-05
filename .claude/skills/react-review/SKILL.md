@@ -1,6 +1,6 @@
 ---
 name: react-review
-description: Validate React + TypeScript code quality in FinanceOps using the react-quality-reviewer agent. Runs the structure checker (naming, docs, layering, enums, language files) and the type-check, then reviews hooks, effects, state, keys, memoization, accessibility, performance and project rules, and returns a prioritised report. Use after writing or refactoring components, pages or hooks, before committing or opening a PR, or when asked to "review the code", "check code quality" or "validate the React code".
+description: Validate React + TypeScript code quality in Finopsis using the react-quality-reviewer agent. Runs the structure checker (naming, docs, layering, enums, language files) and the type-check, then reviews hooks, effects, state, keys, memoization, accessibility, performance and project rules, and returns a prioritised report. Use after writing or refactoring components, pages or hooks, before committing or opening a PR, or when asked to "review the code", "check code quality" or "validate the React code".
 argument-hint: "[path ... | changed]  (default: all of src/)"
 context: fork
 agent: react-quality-reviewer

@@ -9,6 +9,7 @@ import { useMemo, useState } from "react";
 import { AiFeature } from "../../enums/ai-feature.enum";
 import { AiUsageKind } from "../../enums/ai-usage-kind.enum";
 import { AiUsageView } from "../../enums/ai-usage-view.enum";
+import { PageSection } from "../../enums/page-section.enum";
 import { useAssistantControls } from "../../hooks/use-assistant.hook";
 import { aiSpendLabels as L } from "../../language/en/ai-spend.lang";
 import { aiFeatureLabels, aiUsageViewLabels } from "../../language/en/enums.lang";
@@ -19,6 +20,7 @@ import { ColumnChart } from "../../shared/charts/column-chart.component";
 import { LineChart } from "../../shared/charts/line-chart.component";
 import { Button } from "../../shared/ui/button.component";
 import { Card } from "../../shared/ui/card.component";
+import { ElisaGlyph } from "../../shared/ui/elisa-glyph.component";
 import { Insight } from "../../shared/ui/insight.component";
 import { KpiRow, type Kpi } from "../../shared/ui/kpi-row.component";
 import { PageHeader } from "../../shared/ui/page-header.component";
@@ -148,7 +150,9 @@ export function AiSpendPage() {
               onChange={setMonth}
               options={MONTHS.map((m) => ({ value: m, label: formatMonthShort(m) }))}
             />
-            <Button onClick={() => ask(L.askPrompt)}>{L.askAi}</Button>
+            <Button icon={<ElisaGlyph size={15} className="text-accent" />} onClick={() => ask(L.askPrompt)}>
+              {L.askAi}
+            </Button>
           </>
         }
       />
@@ -157,6 +161,7 @@ export function AiSpendPage() {
 
       <div className="mt-5 grid grid-cols-1 gap-5 xl:grid-cols-3">
         <Card
+          aiTarget={PageSection.AiSpendByMonth}
           className="xl:col-span-2"
           title={L.byMonth.title}
           subtitle={

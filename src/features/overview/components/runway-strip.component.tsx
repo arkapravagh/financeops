@@ -2,6 +2,7 @@
  * Runway strip: the Overview's hero, showing cash, runway and the zero-cash and start-raising dates on one line.
  */
 
+import { PageSection } from "../../../enums/page-section.enum";
 import { runwayStripLabels as L } from "../../../language/en/overview.lang";
 import { addMonths, formatMonthYear, toMonthKey } from "../../../shared/utils/dates.util";
 import { formatCompact, formatMoney } from "../../../shared/utils/money.util";
@@ -41,7 +42,11 @@ export function RunwayStrip({ runwayMonths, cashCents, avgNetBurnCents, accounts
   };
 
   return (
-    <section className="@container min-w-0 rounded-[14px] border border-line bg-surface p-6" aria-labelledby="runway-title">
+    <section
+      data-ai-target={PageSection.Runway}
+      className="@container min-w-0 rounded-[14px] border border-line bg-surface p-6"
+      aria-labelledby="runway-title"
+    >
       <div className="flex flex-col gap-6 @3xl:flex-row @3xl:items-end @3xl:justify-between">
         <div className="min-w-0">
           <h2 id="runway-title" className="text-[13px] text-muted">

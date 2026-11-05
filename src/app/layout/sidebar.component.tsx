@@ -1,9 +1,11 @@
-/** Sidebar: company switcher, grouped navigation, Settings and the profile footer. */
+/** Sidebar: product wordmark, workspace badge, grouped navigation, Settings and the profile footer. */
 
+import type { ReactNode } from "react";
 import { NavLink } from "react-router-dom";
 import { appShellLabels as L } from "../../language/en/app-shell.lang";
 import { getCompany, getTeam } from "../../services/company.service";
 import { navGroups, secondaryNavItems, type NavItem } from "../../shared/config/navigation.config";
+import { preloadPage } from "../lazy-pages.routes";
 
 /** `collapsed` shows icons only; `onNavigate` lets the mobile drawer close after a click. */
 export type SidebarProps = {
@@ -13,7 +15,7 @@ export type SidebarProps = {
 };
 
 /** Text that fades and folds away when the sidebar collapses, so icons stay put. */
-function FadeLabel({ collapsed, children }: { collapsed: boolean; children: React.ReactNode }) {
+function FadeLabel({ collapsed, children }: { collapsed: boolean; children: ReactNode }) {
   return (
     <span
       className={`overflow-hidden whitespace-nowrap transition-[opacity,max-width] duration-300 ease-in-out motion-reduce:transition-none ${
@@ -32,6 +34,10 @@ function Item({ item, collapsed, onNavigate }: { item: NavItem; collapsed: boole
       to={item.to}
       end={item.to === "/"}
       onClick={onNavigate}
+      // Fetch the page chunk on intent (hover, keyboard focus, touch start) so the click rarely waits.
+      onPointerEnter={() => preloadPage(item.to)}
+      onPointerDown={() => preloadPage(item.to)}
+      onFocus={() => preloadPage(item.to)}
       title={collapsed ? item.label : undefined}
       aria-label={collapsed ? item.label : undefined}
       className={({ isActive }) =>
@@ -62,7 +68,22 @@ export function Sidebar({ collapsed = false, onNavigate }: SidebarProps) {
       .slice(0, 2);
 
   return (
-    <div className="flex h-full flex-col overflow-hidden border-r border-line bg-page px-3 py-4">
+    <div className="flex h-full flex-col overflow-hidden border-r border-line bg-page px-3 py-4 lg:border-r-0 lg:bg-transparent">
+      {/* Product wordmark: heavy lowercase + accent dot; left edge lines up with the workspace badge, and the collapsed
+          rail keeps "f." centred. Mobile drawer: the row matches the top bar (h-14 + border). Desktop: the top bar sits
+          inside the inset main card (8px gap + 1px border down), so the row drops its divider and shifts to share the top bar's centre line. */}
+      <div
+        className={`-mx-3 -mt-4 mb-4 flex h-14 shrink-0 items-center border-b border-line lg:mt-[-7px] lg:border-b-0 ${collapsed ? "justify-center" : "px-4"}`}
+      >
+        <p className="text-[22px] leading-none font-extrabold tracking-[-0.04em] whitespace-nowrap text-ink select-none">
+          <span className="sr-only">{L.productName}</span>
+          <span aria-hidden>
+            {collapsed ? L.productName.charAt(0) : L.productName}
+            <span className="ml-[0.06em] inline-block size-[0.2em] rounded-full bg-accent" />
+          </span>
+        </p>
+      </div>
+
       {/* Workspace */}
       <div className={`flex h-10 items-center px-1 transition-[gap] duration-300 ${collapsed ? "gap-0" : "gap-2.5"}`}>
         <div className="grid size-8 shrink-0 place-items-center rounded-lg bg-ink text-[13px] font-semibold text-page" aria-hidden>

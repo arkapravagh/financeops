@@ -1,6 +1,6 @@
 ---
 name: ui-review
-description: Screenshot-driven visual review of FinanceOps pages using headless Chrome (scripts/ui-snap.mjs) — light/dark, desktop/mobile, AI panel open/closed — then critique against the design-system skill. Use after any visual change, or when asked to "check how it looks", "review the design", or "take screenshots".
+description: Screenshot-driven visual review of Finopsis pages using headless Chrome (scripts/ui-snap.mjs) — light/dark, desktop/mobile, AI panel open/closed — then critique against the design-system skill. Use after any visual change, or when asked to "check how it looks", "review the design", or "take screenshots".
 ---
 
 # UI review

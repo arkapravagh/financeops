@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * FinanceOps structure checker: the deterministic half of the `react-review` skill.
+ * Finopsis structure checker: the deterministic half of the `react-review` skill.
  *
  * Checks every file under src/ (or only the paths given) against .claude/rules/structure.md:
  *   naming      <kebab>.<type>.ts(x) with a known type suffix, in the folder that type belongs to
@@ -174,7 +174,7 @@ for (const file of files) {
           ...[...l.matchAll(/(?:>|\})([^<>{}]*[A-Za-z]{2,}[^<>{}]*?)(?=<|\{|$)/g)].map((m) => m[1]),
           ...(l.match(/^\s+([A-Za-z][^<>{}=;:()]*?)\s+(?=\{|<)/)?.slice(1) ?? []),
         ];
-        const word = segs.map((s) => s.trim()).find((s) => /[A-Za-z]{2,}/.test(s) && !CODE_WORDS.test(s) && !/[=;()&|?:.[]$`]/.test(s));
+        const word = segs.map((s) => s.trim()).find((s) => /[A-Za-z]{2,}/.test(s) && !CODE_WORDS.test(s) && !/[=;()&|?:.[\]$`]/.test(s));
         if (word) add("warning", "language", p, i + 1, `hard-coded text "${word.slice(0, 40)}" next to markup; move it to language/en`);
       }
     });

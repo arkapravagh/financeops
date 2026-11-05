@@ -7,6 +7,7 @@
 
 import { Clock, Tags, Upload } from "lucide-react";
 import { Category } from "../../enums/category.enum";
+import { PageSection } from "../../enums/page-section.enum";
 import { TransactionStatus } from "../../enums/transaction-status.enum";
 import { categoryLabels, transactionStatusLabels } from "../../language/en/enums.lang";
 import { flowLabels, transactionsLabels as L, type TransactionFlow } from "../../language/en/transactions.lang";
@@ -66,6 +67,7 @@ const columns: ColumnDef<Transaction>[] = [
     facet: true,
     facetLabel: (v) => categoryLabels[v as Category] ?? v,
     csv: (t) => categoryLabels[t.category],
+    className: "hidden sm:table-cell",
   },
   {
     id: "flow",
@@ -141,7 +143,7 @@ export function TransactionsPage() {
         }
       />
 
-      <Card flush>
+      <Card aiTarget={PageSection.TransactionList} flush>
         <DataTable
           data={data}
           columns={columns}

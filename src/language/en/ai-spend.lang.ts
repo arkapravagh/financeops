@@ -9,7 +9,7 @@ export const aiSpendLabels = {
   title: "AI spend",
   subtitle: "What is AI costing us, and is it growing faster than revenue?",
   month: "Month",
-  askAi: "Ask AI",
+  askAi: "Ask Elisa",
   /** Prompt sent to the AI panel from the header button. */
   askPrompt: "Where is our AI spend going, and how can we cut it?",
   kpi: {

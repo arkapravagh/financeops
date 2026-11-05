@@ -5,9 +5,10 @@
  * Pages compose components and read data only through `services/`; derived numbers come from `shared/utils/metrics.util.ts`.
  */
 
-import { ArrowRight, Download, Plus, Sparkles } from "lucide-react";
+import { ArrowRight, Download, Plus } from "lucide-react";
 import { Link } from "react-router-dom";
 import { InvoiceStatus } from "../../enums/invoice-status.enum";
+import { PageSection } from "../../enums/page-section.enum";
 import { useAssistantControls } from "../../hooks/use-assistant.hook";
 import { categoryLabels, receivablesAgeLabels } from "../../language/en/enums.lang";
 import { overviewLabels as L } from "../../language/en/overview.lang";
@@ -22,6 +23,7 @@ import { LineChart } from "../../shared/charts/line-chart.component";
 import { Amount } from "../../shared/finance/amount.component";
 import { Button } from "../../shared/ui/button.component";
 import { Card } from "../../shared/ui/card.component";
+import { ElisaGlyph } from "../../shared/ui/elisa-glyph.component";
 import { Insight } from "../../shared/ui/insight.component";
 import { KpiRow } from "../../shared/ui/kpi-row.component";
 import { PageHeader } from "../../shared/ui/page-header.component";
@@ -111,6 +113,7 @@ export function OverviewPage() {
       <RunwayStrip runwayMonths={runway} cashCents={cash} avgNetBurnCents={avgBurn} accounts={accounts} asOf={AS_OF} />
 
       <KpiRow
+        aiTarget={PageSection.OverviewKeyFigures}
         className="mt-5"
         items={[
           {
@@ -158,10 +161,11 @@ export function OverviewPage() {
         </Card>
 
         <Card
+          aiTarget={PageSection.Attention}
           title={L.attention.title}
           action={
             <button type="button" onClick={() => ask(L.attention.askPrompt)} className={linkCls}>
-              <Sparkles size={13} aria-hidden /> {L.attention.askAi}
+              <ElisaGlyph size={13} /> {L.attention.askAi}
             </button>
           }
           flush
@@ -214,7 +218,7 @@ export function OverviewPage() {
           />
         </Card>
 
-        <Card title={L.bills.title} subtitle={L.bills.subtitle(formatMoney(billsTotal))} flush>
+        <Card aiTarget={PageSection.Bills} title={L.bills.title} subtitle={L.bills.subtitle(formatMoney(billsTotal))} flush>
           <ul className="divide-y divide-line px-5 pb-2">
             {billsSoon.map((b) => {
               const d = parseIso(b.dueDate);

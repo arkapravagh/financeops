@@ -47,7 +47,7 @@ src/
 | `.model.ts` | Feature domain model: pure functions + constants | `features/forecast/scenario.model.ts` |
 | `.config.ts` | Static configuration / catalogues | `shared/config/navigation.config.ts` |
 | `.util.ts` | Pure helper functions | `shared/utils/money.util.ts` |
-| `.routes.tsx` | Route table | `app/app.routes.tsx` |
+| `.routes.ts(x)` | Route table and its lazy page registry | `app/app.routes.tsx`, `app/lazy-pages.routes.ts` |
 
 Exceptions: `app/main.tsx` (Vite entry, referenced by `index.html`) and `styles/index.css`.
 Exported identifiers keep normal TS casing (`StatTile`, `useTheme`, `getForecastBase`); only file names are kebab-case.

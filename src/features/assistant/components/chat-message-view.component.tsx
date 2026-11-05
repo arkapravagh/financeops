@@ -1,13 +1,14 @@
-/** Chat message: one user or assistant message with status, sources, follow-ups, copy and feedback. */
+/** Chat message: one user or assistant message with status, sources, "Go to" (cursor mode), follow-ups, copy and feedback. */
 
-import { Check, Copy, CornerDownRight, FileText, RefreshCw, ThumbsDown, ThumbsUp } from "lucide-react";
+import { Check, Copy, CornerDownRight, FileText, MousePointer2, RefreshCw, ThumbsDown, ThumbsUp } from "lucide-react";
 import { memo, useState } from "react";
 import { Link } from "react-router-dom";
 import { ChatRole } from "../../../enums/chat-role.enum";
 import { MessageFeedback } from "../../../enums/message-feedback.enum";
 import { MessageStatus } from "../../../enums/message-status.enum";
 import { assistantLabels } from "../../../language/en/assistant.lang";
-import type { ChatMessage } from "../../../types/assistant.types";
+import type { AssistantNavigation, ChatMessage } from "../../../types/assistant.types";
+import { placeLabel } from "../cursor.model";
 import { AiMark } from "./ai-mark.component";
 import { Markdown } from "./markdown.component";
 
@@ -21,12 +22,14 @@ export type ChatMessageViewProps = {
   onRegenerate: () => void;
   onFeedback: (id: string, f: MessageFeedback | undefined) => void;
   onFollowUp: (text: string) => void;
+  /** Run the AI cursor to the screen this answer is about. Must be stable (the view is memoized). */
+  onGoTo: (navigation: AssistantNavigation) => void;
 };
 
 const actionBtn =
   "grid size-7 place-items-center rounded-md text-muted outline-none transition hover:bg-surface-2 hover:text-ink focus-visible:ring-2 focus-visible:ring-accent disabled:opacity-40";
 
-function ChatMessageViewImpl({ message, isLast, busy, onRegenerate, onFeedback, onFollowUp }: ChatMessageViewProps) {
+function ChatMessageViewImpl({ message, isLast, busy, onRegenerate, onFeedback, onFollowUp, onGoTo }: ChatMessageViewProps) {
   const [copied, setCopied] = useState(false);
 
   if (message.role === ChatRole.User) {
@@ -69,6 +72,17 @@ function ChatMessageViewImpl({ message, isLast, busy, onRegenerate, onFeedback, 
 
         {message.status === MessageStatus.Stopped && <p className="mt-2 text-xs text-muted italic">{L.stopped}</p>}
         {message.status === MessageStatus.Error && <p className="mt-2 text-xs text-critical">{L.failed}</p>}
+
+        {!live && message.navigation && (
+          <button
+            type="button"
+            onClick={() => message.navigation && onGoTo(message.navigation)}
+            className="mt-3 inline-flex max-w-full items-center gap-1.5 rounded-full bg-accent-soft px-3 py-1 text-xs font-medium text-accent outline-none transition hover:bg-accent hover:text-accent-ink focus-visible:ring-2 focus-visible:ring-accent"
+          >
+            <MousePointer2 size={12} className="shrink-0" fill="currentColor" aria-hidden />
+            <span className="truncate">{assistantLabels.cursor.goTo(placeLabel(message.navigation))}</span>
+          </button>
+        )}
 
         {!live && message.sources && message.sources.length > 0 && (
           <div className="mt-3 flex flex-wrap items-center gap-1.5">

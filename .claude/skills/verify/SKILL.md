@@ -1,6 +1,6 @@
 ---
 name: verify
-description: Done-checklist for any FinanceOps change — type-check/build, run the app, visual check in light and dark, a11y and finance-correctness checks. Use before saying a task is complete.
+description: Done-checklist for any Finopsis change — type-check/build, run the app, visual check in light and dark, a11y and finance-correctness checks. Use before saying a task is complete.
 ---
 
 # Verify a change

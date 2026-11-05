@@ -1,5 +1,5 @@
 /**
- * Hooks (and the contexts behind them) for the FinanceOps AI assistant.
+ * Hooks (and the contexts behind them) for the Elisa, the AI assistant.
  *
  * State is split into two contexts so streaming tokens only re-render the panel:
  * - `useAssistantControls()`: open/close/ask. Stable while a reply streams; use it anywhere (top bar, pages).
@@ -9,7 +9,7 @@
 
 import { createContext, useContext } from "react";
 import type { MessageFeedback } from "../enums/message-feedback.enum";
-import type { Conversation } from "../types/assistant.types";
+import type { AssistantNavigation, Conversation, CursorTour } from "../types/assistant.types";
 
 /** Stable controls: safe to consume anywhere (doesn't change while tokens stream). */
 export type AssistantControls = {
@@ -18,6 +18,15 @@ export type AssistantControls = {
   toggle: () => void;
   /** Open the panel and send a prompt in a fresh conversation. */
   ask: (prompt: string) => void;
+  /** Cursor mode: after each answer, Elisa moves a visible cursor to the screen it is about. Remembered (`fo-ai-cursor`). */
+  cursorMode: boolean;
+  setCursorMode: (on: boolean) => void;
+  /** The cursor run in progress (rendered by `AiCursor`), or null. */
+  tour: CursorTour | null;
+  /** Take the user to an answer's screen now (the "Go to" button), whatever the mode. */
+  showOnScreen: (navigation: AssistantNavigation) => void;
+  /** Called by the cursor when its run ends or the user interrupts it. */
+  endTour: (id: string) => void;
 };
 
 /** Fast-changing chat state plus the controls: consume only inside the panel. */
@@ -32,7 +41,7 @@ export type AssistantContextValue = AssistantControls & {
   newChat: () => void;
   selectChat: (id: string) => void;
   deleteChat: (id: string) => void;
-  /** Label of the page the user is on (context chip). */
+  /** Pathname of the page the user is on (the panel turns it into the context chip's label with `navLabel`). */
   page: string;
 };
 
