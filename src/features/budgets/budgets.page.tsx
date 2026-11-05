@@ -11,7 +11,6 @@ import { BudgetScale } from "../../enums/budget-scale.enum";
 import { type ExpenseCategory } from "../../enums/category.enum";
 import { useAssistantControls } from "../../hooks/use-assistant.hook";
 import { budgetsLabels as L } from "../../language/en/budgets.lang";
-import { commonLabels } from "../../language/en/common.lang";
 import { budgetScaleLabels, categoryLabels } from "../../language/en/enums.lang";
 import { getBudgetHistory, getBudgetMonths, getBudgets, getLatestBudgetMonth } from "../../services/budgets.service";
 import { getTransactions } from "../../services/transactions.service";
@@ -68,7 +67,7 @@ export function BudgetsPage() {
               onChange={setMonth}
               options={MONTHS.map((m) => ({ value: m, label: formatMonthShort(m) }))}
             />
-            <Button icon={<PencilLine size={16} />} title={commonLabels.notAvailableTitle}>
+            <Button icon={<PencilLine size={16} />} comingSoon>
               {L.editBudgets}
             </Button>
           </>

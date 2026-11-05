@@ -229,8 +229,7 @@ function Details({
             <>
               <dt className="text-muted">{L.versus(formatMonthShort(prev.month))}</dt>
               <dd className={`text-right tabular-nums ${change > 0 ? "text-ink" : "text-good-ink"}`}>
-                {change > 0 ? "+" : change < 0 ? "−" : ""}
-                {formatMoney(Math.abs(change))}
+                {formatMoney(change, { signed: true })}
               </dd>
             </>
           )}

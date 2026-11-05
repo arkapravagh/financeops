@@ -5,6 +5,7 @@
  */
 
 import type { ButtonHTMLAttributes, ReactNode } from "react";
+import { commonLabels } from "../../language/en/common.lang";
 
 /** Visual weight: primary = the one main action, secondary = bordered, ghost = text only. */
 export type ButtonVariant = "primary" | "secondary" | "ghost";
@@ -13,6 +14,11 @@ export type ButtonVariant = "primary" | "secondary" | "ghost";
 export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: ButtonVariant;
   icon?: ReactNode;
+  /**
+   * Placeholder for a feature the prototype doesn't have yet: stays focusable but is `aria-disabled`, dimmed,
+   * ignores clicks, and says "coming soon" (tooltip + screen-reader text).
+   */
+  comingSoon?: boolean;
 };
 
 const variants: Record<ButtonVariant, string> = {
@@ -22,15 +28,20 @@ const variants: Record<ButtonVariant, string> = {
 };
 
 /** Labels say exactly what happens ("Export CSV"). Disabled buttons dim and show a not-allowed cursor. */
-export function Button({ variant = "secondary", icon, children, className = "", ...rest }: ButtonProps) {
+export function Button({ variant = "secondary", icon, children, className = "", comingSoon = false, ...rest }: ButtonProps) {
+  const placeholder = comingSoon
+    ? { "aria-disabled": true, title: commonLabels.notAvailableTitle, onClick: undefined, type: "button" as const }
+    : {};
   return (
     <button
       type="button"
-      className={`inline-flex h-9 items-center gap-2 rounded-lg px-3 text-sm font-medium transition outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:cursor-not-allowed disabled:opacity-50 ${variants[variant]} ${className}`}
+      className={`inline-flex h-9 items-center gap-2 rounded-lg px-3 text-sm font-medium transition outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:cursor-not-allowed disabled:opacity-50 aria-disabled:cursor-not-allowed aria-disabled:opacity-60 ${variants[variant]} ${className}`}
       {...rest}
+      {...placeholder}
     >
       {icon}
       {children}
+      {comingSoon && <span className="sr-only">{commonLabels.comingSoon}</span>}
     </button>
   );
 }

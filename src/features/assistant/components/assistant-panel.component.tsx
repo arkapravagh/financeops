@@ -41,6 +41,7 @@ export function AssistantPanel({ onClose }: { onClose: () => void }) {
   const composerRef = useRef<ComposerHandle>(null);
   const [pinned, setPinned] = useState(true); // stick to bottom while the user hasn't scrolled up
   const messages = a.active?.messages ?? [];
+  const lastStatus = messages.at(-1)?.status;
   const lastContent = messages[messages.length - 1]?.content;
 
   // Focus the input whenever the panel opens.
@@ -129,9 +130,14 @@ export function AssistantPanel({ onClose }: { onClose: () => void }) {
         </button>
       </header>
 
+      {/* One short announcement per reply state change; the message list itself is not a live region (it updates every frame). */}
+      <p className="sr-only" role="status" aria-live="polite">
+        {lastStatus ? L.liveStatus[lastStatus] : ""}
+      </p>
+
       {/* Messages */}
       <div className="relative min-h-0 flex-1">
-        <div ref={scrollRef} onScroll={onScroll} className="h-full overflow-y-auto px-4 py-5" aria-live="polite" aria-busy={a.isStreaming}>
+        <div ref={scrollRef} onScroll={onScroll} className="h-full overflow-y-auto px-4 py-5" aria-busy={a.isStreaming}>
           {messages.length === 0 ? (
             <div className="flex min-h-full flex-col justify-center pb-6">
               <AiMark size={40} />

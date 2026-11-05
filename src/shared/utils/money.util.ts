@@ -36,6 +36,12 @@ export function formatCompact(amountCents: number): string {
   return compact.format(amountCents / 100);
 }
 
+/** Integer cents → plain decimal dollars for CSV export, e.g. -123450 → "-1234.50" (no symbol, no grouping). */
+export const centsToDecimal = (amountCents: number): string => (amountCents / 100).toFixed(2);
+
+/** Ratio difference → percentage points without the unit, e.g. 0.0123 → "1.2" (label adds "pts"). */
+export const formatPoints = (ratioDiff: number, digits = 1): string => (ratioDiff * 100).toFixed(digits);
+
 /** Ratio → percent string, e.g. 0.0673 → "6.7%". */
 export function formatPercent(ratio: number, digits = 0, signed = false): string {
   const text = `${(ratio * 100).toFixed(digits)}%`;

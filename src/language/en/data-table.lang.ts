@@ -5,6 +5,10 @@
 /** Toolbar, selection, empty state and pagination text for DataTable. */
 export const dataTableLabels = {
   searchPlaceholder: "Search…",
+  /** Accessible name of the search box, e.g. "Search Transactions". */
+  searchTable: (caption: string) => `Search ${caption}`,
+  resetFilters: "Reset",
+  selectedCount: (count: number) => `${count} selected`,
   clearSearch: "Clear search",
   views: "Views",
   noResultsMatch: "No results match your filters.",

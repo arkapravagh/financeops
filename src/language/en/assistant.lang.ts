@@ -5,6 +5,8 @@
  * real backend (Claude) will generate, so it isn't UI copy.
  */
 
+import { MessageStatus } from "../../enums/message-status.enum";
+
 /** Text in the AI panel, its messages and composer. */
 export const assistantLabels = {
   name: "FinanceOps AI",
@@ -24,6 +26,14 @@ export const assistantLabels = {
   emptyTitle: "How can I help?",
   emptyBody: (company: string) => `Ask anything about ${company}'s finances. I'll answer from your live numbers.`,
   scrollToLatest: "Scroll to latest",
+  /** Screen-reader announcements when the latest reply changes state (announced once, not per word). */
+  liveStatus: {
+    [MessageStatus.Thinking]: "FinanceOps AI is working on a reply.",
+    [MessageStatus.Streaming]: "FinanceOps AI is writing a reply.",
+    [MessageStatus.Done]: "Reply ready.",
+    [MessageStatus.Stopped]: "Reply stopped.",
+    [MessageStatus.Error]: "The reply failed.",
+  } satisfies Record<MessageStatus, string>,
   message: {
     thinking: "Assistant is thinking",
     analyzing: "Analyzing your numbers…",

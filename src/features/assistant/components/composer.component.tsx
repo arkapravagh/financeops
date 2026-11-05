@@ -55,6 +55,7 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
               e.preventDefault();
               submit();
             } else if (e.key === "Escape" && busy) {
+              e.preventDefault(); // handled: stops the reply, so an enclosing modal must not also close
               onStop();
             }
           }}

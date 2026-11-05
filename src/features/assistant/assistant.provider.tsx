@@ -152,8 +152,12 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
           content: aborted ? m.content : m.content || assistantLabels.message.failedContent,
         }));
       } finally {
-        if (abortRef.current === controller) abortRef.current = null;
-        setIsStreaming(false);
+        // Only the turn that still owns the controller ends streaming. A turn aborted because a newer one started
+        // (e.g. "Ask AI" pressed mid-reply) must not switch the flag off under the new reply.
+        if (abortRef.current === controller) {
+          abortRef.current = null;
+          setIsStreaming(false);
+        }
       }
     },
     [patchMessage, pathname],

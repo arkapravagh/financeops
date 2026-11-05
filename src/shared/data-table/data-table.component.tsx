@@ -151,14 +151,14 @@ export function DataTable<T>({
     <div className="flex flex-col">
       {/* Quick views */}
       {quickViews && (
-        <div role="tablist" aria-label={L.views} className="flex flex-wrap gap-1 px-5 pb-3">
+        <div role="group" aria-label={L.views} className="flex flex-wrap gap-1 px-5 pb-3">
           {quickViews.map((v) => {
             const active = sameFilters(t.filters, v.filters);
             return (
               <button
                 key={v.id}
-                role="tab"
-                aria-selected={active}
+                type="button"
+                aria-pressed={active}
                 onClick={() => t.setFilters(v.filters)}
                 className={`rounded-lg px-3 py-1.5 text-sm font-medium outline-none transition focus-visible:ring-2 focus-visible:ring-accent ${
                   active ? "bg-accent/12 text-ink" : "text-ink-2 hover:bg-surface-2 hover:text-ink"
@@ -174,7 +174,7 @@ export function DataTable<T>({
       {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-2 px-5 pb-4">
         <label className="relative flex items-center">
-          <span className="sr-only">Search {caption}</span>
+          <span className="sr-only">{L.searchTable(caption)}</span>
           <Search size={16} className="pointer-events-none absolute left-3 text-muted" aria-hidden />
           <input
             value={t.search}
@@ -206,7 +206,7 @@ export function DataTable<T>({
 
         {t.hasActiveFilters && (
           <button type="button" onClick={t.resetFilters} className="inline-flex h-9 items-center gap-1 rounded-lg px-2.5 text-sm font-medium text-ink-2 hover:bg-surface-2 hover:text-ink">
-            Reset <X size={14} />
+            {L.resetFilters} <X size={14} />
           </button>
         )}
 
@@ -256,7 +256,7 @@ export function DataTable<T>({
       {/* Bulk selection bar */}
       {selectable && t.selected.size > 0 && (
         <div className="mx-5 mb-3 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-lg bg-accent/10 px-4 py-2 text-sm" role="status">
-          <span className="font-medium text-ink">{t.selected.size} selected</span>
+          <span className="font-medium text-ink">{L.selectedCount(t.selected.size)}</span>
           {selectionSummary && <span className="text-ink-2">{selectionSummary(t.selectedRows)}</span>}
           {t.selected.size < t.total && (
             <button type="button" onClick={t.selectAllFiltered} className="font-medium text-accent hover:underline">

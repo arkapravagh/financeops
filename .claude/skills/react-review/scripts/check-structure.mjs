@@ -83,6 +83,11 @@ for (const f of all.filter((f) => rel(f).startsWith("enums/"))) {
  */
 const ENUM_FIELDS = /^(status|derived|category|kind|role|feature|feedback|view|scale|density|theme|horizon|age|tabledensity|budgetscale|aiusageview|forecasthorizon)$/i;
 
+/** Lines that are TypeScript, not JSX text (statements, declarations, type annotations, object members). */
+const CODE_LINE = /^\s*(import|export|const|let|var|return|if|else|for|while|switch|case|function|type|interface|async|await|throw|try|catch|finally)\b|=>|;\s*$|^\s*[\w.]+\s*[:=(]|^\s*\}?\s*\)?\s*[,;]?\s*$/;
+/** JS/TS keywords and generic type words that can appear between braces without being UI text. */
+const CODE_WORDS = /^(else|return|catch|finally|try|do|as|in|of|typeof|keyof|new|null|undefined|true|false|string|number|boolean|void|never)$/;
+
 // ---------- per-file checks ----------
 for (const file of files) {
   const p = rel(file);
@@ -163,6 +168,15 @@ for (const file of files) {
       if (jsx) add("warning", "language", p, i + 1, `hard-coded text "${jsx[1].slice(0, 40)}"; move it to language/en`);
       const own = l.match(/^\s+([A-Z][a-z]+(?: [a-z]+){1,}[.!?]?)\s*$/);
       if (own) add("warning", "language", p, i + 1, `hard-coded text "${own[1].slice(0, 40)}"; move it to language/en`);
+      // Text mixed with interpolation or tags: "Search {caption}", "{n} selected", "Reset <X />", "{x} mo".
+      if (!jsx && !own && !CODE_LINE.test(l)) {
+        const segs = [
+          ...[...l.matchAll(/(?:>|\})([^<>{}]*[A-Za-z]{2,}[^<>{}]*?)(?=<|\{|$)/g)].map((m) => m[1]),
+          ...(l.match(/^\s+([A-Za-z][^<>{}=;:()]*?)\s+(?=\{|<)/)?.slice(1) ?? []),
+        ];
+        const word = segs.map((s) => s.trim()).find((s) => /[A-Za-z]{2,}/.test(s) && !CODE_WORDS.test(s) && !/[=;()&|?:.[]$`]/.test(s));
+        if (word) add("warning", "language", p, i + 1, `hard-coded text "${word.slice(0, 40)}" next to markup; move it to language/en`);
+      }
     });
   }
 }

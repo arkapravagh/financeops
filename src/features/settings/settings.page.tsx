@@ -8,7 +8,6 @@
 import { Building2, CheckCircle2, Landmark, Plug, Users } from "lucide-react";
 import { IntegrationStatus } from "../../enums/integration-status.enum";
 import { TeamRole } from "../../enums/team-role.enum";
-import { commonLabels } from "../../language/en/common.lang";
 import { integrationStatusLabels, teamRoleLabels } from "../../language/en/enums.lang";
 import { settingsLabels as L } from "../../language/en/settings.lang";
 import { getAccounts } from "../../services/cash.service";
@@ -82,7 +81,7 @@ export function SettingsPage() {
                     {integrationStatusLabels[i.status]}
                   </Badge>
                 ) : (
-                  <Button className="h-8" title={commonLabels.notAvailableTitle}>
+                  <Button className="h-8" comingSoon>
                     {L.integrations.connect}
                   </Button>
                 )}

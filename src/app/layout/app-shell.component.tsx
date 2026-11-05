@@ -6,13 +6,14 @@
  */
 
 import { X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Outlet } from "react-router-dom";
 import { AssistantDock } from "../../features/assistant/components/assistant-dock.component";
 import { useAssistantControls } from "../../hooks/use-assistant.hook";
 import { appShellLabels as L } from "../../language/en/app-shell.lang";
 import { Sidebar } from "./sidebar.component";
 import { Topbar } from "./topbar.component";
+import { useModalFocus } from "../../hooks/use-modal-focus.hook";
 
 const STORAGE_KEY = "fo-sidebar-collapsed";
 const AUTO_COLLAPSE_BELOW = 1600;
@@ -54,13 +55,9 @@ export function AppShell() {
     });
   };
 
-  // Escape closes the drawer
-  useEffect(() => {
-    if (!drawerOpen) return;
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setDrawerOpen(false);
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [drawerOpen]);
+  // Mobile drawer is a modal: focus moves in and stays in, Escape closes, focus returns to the menu button.
+  const drawerRef = useRef<HTMLDivElement>(null);
+  useModalFocus(drawerOpen, drawerRef, () => setDrawerOpen(false));
 
   return (
     <div className="flex min-h-full">
@@ -75,6 +72,7 @@ export function AppShell() {
 
       {/* Mobile: always mounted so it can animate both in and out */}
       <div
+        ref={drawerRef}
         className={`fixed inset-0 z-40 lg:hidden ${drawerOpen ? "" : "pointer-events-none"}`}
         role="dialog"
         aria-modal="true"

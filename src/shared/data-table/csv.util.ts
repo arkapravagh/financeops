@@ -2,11 +2,14 @@
 
 import type { ColumnDef } from "../../types/data-table.types";
 
-/** Escape a CSV field. Strings starting with = + - @ are prefixed to block formula injection in Excel/Sheets. */
+/**
+ * Escape a CSV field. Strings starting with = + - @ are prefixed with `'` to block formula injection in
+ * Excel/Sheets, except plain numbers (e.g. "-1234.50"), which must stay numeric for the spreadsheet.
+ */
 function field(v: unknown): string {
   if (v === null || v === undefined) return "";
   let s = String(v);
-  if (typeof v === "string" && /^[=+\-@\t\r]/.test(s)) s = `'${s}`;
+  if (typeof v === "string" && /^[=+\-@\t\r]/.test(s) && !/^-?\d+(\.\d+)?$/.test(s)) s = `'${s}`;
   return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 }
 

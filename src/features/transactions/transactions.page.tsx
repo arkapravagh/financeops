@@ -8,7 +8,6 @@
 import { Clock, Tags, Upload } from "lucide-react";
 import { Category } from "../../enums/category.enum";
 import { TransactionStatus } from "../../enums/transaction-status.enum";
-import { commonLabels } from "../../language/en/common.lang";
 import { categoryLabels, transactionStatusLabels } from "../../language/en/enums.lang";
 import { flowLabels, transactionsLabels as L, type TransactionFlow } from "../../language/en/transactions.lang";
 import { getAccounts } from "../../services/cash.service";
@@ -21,7 +20,7 @@ import { Card } from "../../shared/ui/card.component";
 import { PageHeader } from "../../shared/ui/page-header.component";
 import { formatDate } from "../../shared/utils/dates.util";
 import { sumCents } from "../../shared/utils/metrics.util";
-import { formatMoney } from "../../shared/utils/money.util";
+import { centsToDecimal, formatMoney } from "../../shared/utils/money.util";
 import type { ColumnDef } from "../../types/data-table.types";
 import type { Transaction } from "../../types/finance.types";
 
@@ -110,7 +109,7 @@ const columns: ColumnDef<Transaction>[] = [
     align: "right",
     accessor: (t) => t.amountCents,
     cell: (t) => <Amount cents={t.amountCents} />,
-    csv: (t) => (t.amountCents / 100).toFixed(2),
+    csv: (t) => centsToDecimal(t.amountCents),
     footer: (rows) => {
       const ext = external(rows);
       const inn = sumCents(ext.filter((t) => t.amountCents > 0).map((t) => t.amountCents));
@@ -136,7 +135,7 @@ export function TransactionsPage() {
         title={L.title}
         subtitle={L.subtitle}
         actions={
-          <Button icon={<Upload size={16} />} title={commonLabels.notAvailableTitle}>
+          <Button icon={<Upload size={16} />} comingSoon>
             {L.importCsv}
           </Button>
         }
@@ -153,7 +152,7 @@ export function TransactionsPage() {
           selectable
           selectionSummary={(rows) => L.net(formatMoney(sumCents(rows.map((r) => r.amountCents)), { signed: true, cents: true }))}
           bulkActions={() => (
-            <Button className="h-8" icon={<Tags size={14} />} title={commonLabels.notAvailableTitle}>
+            <Button className="h-8" icon={<Tags size={14} />} comingSoon>
               {L.recategorize}
             </Button>
           )}

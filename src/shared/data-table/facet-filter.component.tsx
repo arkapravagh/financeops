@@ -38,7 +38,7 @@ export function FacetFilter({ title, options, selected, onChange }: FacetFilterP
             <>
               <span className="mx-0.5 h-4 w-px bg-line" aria-hidden />
               {selected.length > 2 ? (
-                <span className="rounded bg-accent/12 px-1.5 py-0.5 text-xs">{selected.length} selected</span>
+                <span className="rounded bg-accent/12 px-1.5 py-0.5 text-xs">{L.selectedCount(selected.length)}</span>
               ) : (
                 selected.map((v) => (
                   <span key={v} className="rounded bg-accent/12 px-1.5 py-0.5 text-xs">

@@ -9,7 +9,6 @@ import { ArrowRight, Download, Plus, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import { InvoiceStatus } from "../../enums/invoice-status.enum";
 import { useAssistantControls } from "../../hooks/use-assistant.hook";
-import { commonLabels } from "../../language/en/common.lang";
 import { categoryLabels, receivablesAgeLabels } from "../../language/en/enums.lang";
 import { overviewLabels as L } from "../../language/en/overview.lang";
 import { getBudgets } from "../../services/budgets.service";
@@ -98,10 +97,10 @@ export function OverviewPage() {
         subtitle={L.subtitle(company.name, formatDate(AS_OF))}
         actions={
           <>
-            <Button icon={<Download size={16} />} title={commonLabels.notAvailableTitle}>
+            <Button icon={<Download size={16} />} comingSoon>
               {L.export}
             </Button>
-            <Button variant="primary" icon={<Plus size={16} />} title={commonLabels.notAvailableTitle}>
+            <Button variant="primary" icon={<Plus size={16} />} comingSoon>
               {L.addTransaction}
             </Button>
           </>

@@ -58,8 +58,7 @@ export function RunwaySensitivity({ base, scenario }: { base: ForecastInput; sce
                 {loss && <span className="absolute inset-y-0 right-1/2 rounded-l-[3px] bg-critical/80" style={{ width: w }} />}
               </span>
               <span className={`text-right font-medium tabular-nums ${gain ? "text-good-ink" : loss ? "text-critical" : "text-muted"}`}>
-                {gain ? "+" : loss ? "−" : "±"}
-                {Math.abs(r.delta).toFixed(1)} mo
+                {L.delta(gain ? "gain" : loss ? "loss" : "none", Math.abs(r.delta).toFixed(1))}
               </span>
             </li>
           );

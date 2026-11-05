@@ -3,7 +3,7 @@
 import { projectionTableLabels as L } from "../../../language/en/forecast.lang";
 import { downloadCsv, toCsv } from "../../../shared/data-table/csv.util";
 import { addMonths, formatMonthYear } from "../../../shared/utils/dates.util";
-import { formatCompact, formatMoney } from "../../../shared/utils/money.util";
+import { centsToDecimal, formatCompact, formatMoney } from "../../../shared/utils/money.util";
 import type { ColumnDef } from "../../../types/data-table.types";
 import type { ForecastPoint } from "../../../types/forecast.types";
 
@@ -14,19 +14,18 @@ export type ProjectionTableProps = {
   scenarioName: string;
 };
 
-const dollars = (c: number) => (c / 100).toFixed(2);
 
 /** Download the projection as CSV (dollars, 2 decimals). Wire to a button in the card header. */
 export function exportProjectionCsv(points: ForecastPoint[], origin: Date, scenarioName: string) {
   const monthOf = (p: ForecastPoint) => formatMonthYear(addMonths(origin, p.index));
   const csvColumns: ColumnDef<ForecastPoint>[] = [
     { id: "month", header: L.month, accessor: monthOf },
-    { id: "in", header: L.cashIn, accessor: (p) => p.revenueCents, csv: (p) => dollars(p.revenueCents) },
-    { id: "out", header: L.cashOut, accessor: (p) => p.expenseCents, csv: (p) => dollars(p.expenseCents) },
-    { id: "hiring", header: L.newHires, accessor: (p) => p.hiringCents, csv: (p) => dollars(p.hiringCents) },
-    { id: "raise", header: L.raise, accessor: (p) => p.raiseCents, csv: (p) => dollars(p.raiseCents) },
-    { id: "net", header: L.net, accessor: (p) => p.revenueCents - p.expenseCents + p.raiseCents, csv: (p) => dollars(p.revenueCents - p.expenseCents + p.raiseCents) },
-    { id: "cash", header: L.endingCash, accessor: (p) => p.cashCents, csv: (p) => dollars(p.cashCents) },
+    { id: "in", header: L.cashIn, accessor: (p) => p.revenueCents, csv: (p) => centsToDecimal(p.revenueCents) },
+    { id: "out", header: L.cashOut, accessor: (p) => p.expenseCents, csv: (p) => centsToDecimal(p.expenseCents) },
+    { id: "hiring", header: L.newHires, accessor: (p) => p.hiringCents, csv: (p) => centsToDecimal(p.hiringCents) },
+    { id: "raise", header: L.raise, accessor: (p) => p.raiseCents, csv: (p) => centsToDecimal(p.raiseCents) },
+    { id: "net", header: L.net, accessor: (p) => p.revenueCents - p.expenseCents + p.raiseCents, csv: (p) => centsToDecimal(p.revenueCents - p.expenseCents + p.raiseCents) },
+    { id: "cash", header: L.endingCash, accessor: (p) => p.cashCents, csv: (p) => centsToDecimal(p.cashCents) },
   ];
   downloadCsv(`forecast-${scenarioName.toLowerCase().replace(/\W+/g, "-")}`, toCsv(points, csvColumns));
 }

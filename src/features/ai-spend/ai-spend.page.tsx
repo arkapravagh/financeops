@@ -34,7 +34,7 @@ import {
   idleSeatCostCents,
   sumCents,
 } from "../../shared/utils/metrics.util";
-import { formatCount, formatMoney, formatPercent } from "../../shared/utils/money.util";
+import { formatCount, formatMoney, formatPercent, formatPoints } from "../../shared/utils/money.util";
 import { AiSeatsTable } from "./components/ai-seats-table.component";
 import { AiUsageTable } from "./components/ai-usage-table.component";
 
@@ -108,7 +108,7 @@ export function AiSpendPage() {
       delta:
         shareNow !== null && sharePrev !== null
           ? {
-              text: L.kpi.sharePoints(Math.abs((shareNow - sharePrev) * 100).toFixed(1)),
+              text: L.kpi.sharePoints(formatPoints(Math.abs(shareNow - sharePrev))),
               direction: Math.abs(shareNow - sharePrev) < 0.0005 ? "flat" : shareNow > sharePrev ? "up" : "down",
               good: shareNow <= sharePrev,
             }
@@ -269,8 +269,8 @@ export function AiSpendPage() {
                 values: sharePoints.map((r) => (r === null ? null : Math.round(r * 10_000))),
               },
             ]}
-            formatTick={(v) => `${(v / 100).toFixed(v % 100 === 0 ? 0 : 1)}%`}
-            formatValue={(v) => `${(v / 100).toFixed(1)}%`}
+            formatTick={(v) => formatPercent(v / 10_000, v % 100 === 0 ? 0 : 1)}
+            formatValue={(v) => formatPercent(v / 10_000, 1)}
             ariaLabel={historyMonths
               .map((m, k) => L.share.summaryItem(formatMonthShort(m), sharePoints[k] === null ? L.share.noRevenue : formatPercent(sharePoints[k]!, 1)))
               .join("; ")}

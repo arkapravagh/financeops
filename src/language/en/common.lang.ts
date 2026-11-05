@@ -16,6 +16,8 @@ export const commonLabels = {
   /** Marks projected (not actual) values on charts and tooltips. */
   projected: "Projected",
   notAvailableTitle: "Not available in the prototype",
+  /** Screen-reader suffix on placeholder buttons, e.g. "Export (coming soon)". */
+  comingSoon: " (coming soon)",
   /** "12 months" style durations. `n` is pre-formatted (e.g. "14.2"). */
   months: (n: string) => `${n} months`,
   /** Short duration for tables, e.g. "14.2 mo". */

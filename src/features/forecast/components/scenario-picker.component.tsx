@@ -87,13 +87,19 @@ export function ScenarioPicker({ options, selectedId, onSelect, onCreate }: Scen
     else if (e.key === "PageUp") setActive((a) => Math.max(0, a - 8));
     else if (e.key === "Enter" && filtered[active]) choose(filtered[active]);
     else if (e.key === "Escape") close();
-    else if (e.key === "Tab") close(false);
     else return;
     e.preventDefault();
   };
 
   return (
-    <div ref={wrapRef} className="relative">
+    <div
+      ref={wrapRef}
+      className="relative"
+      // Close once keyboard focus leaves the picker (Tab past "Create custom scenario"), without stealing focus back.
+      onBlur={(e) => {
+        if (open && !wrapRef.current?.contains(e.relatedTarget as Node | null)) setOpen(false);
+      }}
+    >
       <button
         ref={triggerRef}
         type="button"
@@ -184,6 +190,9 @@ export function ScenarioPicker({ options, selectedId, onSelect, onCreate }: Scen
               onClick={() => {
                 close(false);
                 onCreate();
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Escape") close();
               }}
               className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-[13px] font-medium text-accent outline-none hover:bg-accent-soft focus-visible:ring-2 focus-visible:ring-accent"
             >

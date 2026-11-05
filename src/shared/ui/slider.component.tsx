@@ -32,6 +32,7 @@ export function Slider({ label, value, min, max, step, display, note, onChange }
         max={max}
         step={step}
         value={value}
+        aria-valuetext={display}
         onChange={(e) => onChange(Number(e.target.value))}
       />
       {note && <span className="block text-xs text-muted">{note}</span>}

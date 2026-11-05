@@ -178,6 +178,8 @@ export const sensitivityLabels = {
   hireOne: "Hire one more engineer next month",
   atCap: (months: number) => `This scenario already lasts beyond ${months} months, so gains can't be measured. Losses still show.`,
   listLabel: "Change in runway by lever",
+  /** Signed change in runway, e.g. "+7.1 mo" / "−2.4 mo" / "±0.0 mo". `months` is the formatted absolute value. */
+  delta: (sign: "gain" | "loss" | "none", months: string) => `${sign === "gain" ? "+" : sign === "loss" ? "−" : "±"}${months} mo`,
   footnote: "Each row changes one assumption in your scenario and keeps everything else the same.",
 } as const;
 

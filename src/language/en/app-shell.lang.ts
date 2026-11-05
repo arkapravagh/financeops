@@ -12,7 +12,6 @@ export const appShellLabels = {
   collapseSidebar: "Collapse sidebar",
   search: "Search",
   searchPlaceholder: "Search transactions, invoices, vendors…",
-  searchShortcut: "Ctrl K",
   dataAsOf: (date: string) => `Data as of ${date}`,
   askAi: "Ask AI",
   askAiTitle: "Ask AI (Ctrl+J)",

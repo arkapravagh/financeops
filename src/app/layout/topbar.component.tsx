@@ -7,6 +7,7 @@ import { useTheme } from "../../hooks/use-theme.hook";
 import { appShellLabels as L } from "../../language/en/app-shell.lang";
 import { AS_OF, getTeam } from "../../services/company.service";
 import { formatDate } from "../../shared/utils/dates.util";
+import { commonLabels } from "../../language/en/common.lang";
 
 /** Callbacks for the mobile menu and the desktop sidebar collapse toggle. */
 export type TopbarProps = {
@@ -42,11 +43,14 @@ export function Topbar({ onMenu, collapsed, onToggleCollapsed }: TopbarProps) {
       <label className="relative hidden max-w-sm flex-1 items-center sm:flex">
         <span className="sr-only">{L.search}</span>
         <Search size={16} className="pointer-events-none absolute left-3 text-muted" aria-hidden />
+        {/* Placeholder: search isn't built yet, so it says so instead of advertising a shortcut. */}
         <input
+          readOnly
+          aria-disabled
+          title={commonLabels.notAvailableTitle}
           placeholder={L.searchPlaceholder}
-          className="h-9 w-full rounded-lg border border-line bg-surface pr-14 pl-9 text-sm text-ink outline-none placeholder:text-muted focus-visible:ring-2 focus-visible:ring-accent"
+          className="h-9 w-full cursor-not-allowed rounded-lg border border-line bg-surface pr-3 pl-9 text-sm text-ink outline-none placeholder:text-muted focus-visible:ring-2 focus-visible:ring-accent"
         />
-        <kbd className="absolute right-2 rounded border border-line px-1.5 text-[10px] text-muted">{L.searchShortcut}</kbd>
       </label>
 
       <div className="ml-auto flex items-center gap-1">
@@ -67,7 +71,7 @@ export function Topbar({ onMenu, collapsed, onToggleCollapsed }: TopbarProps) {
           <span className="hidden sm:inline">{L.askAi}</span>
           <kbd className="hidden rounded border border-line px-1 text-[10px] font-normal text-muted md:inline">{L.askAiShortcut}</kbd>
         </button>
-        <button className={iconBtn} aria-label={L.notifications}>
+        <button type="button" className={`${iconBtn} aria-disabled:cursor-not-allowed`} aria-label={L.notifications + commonLabels.comingSoon} aria-disabled title={commonLabels.notAvailableTitle}>
           <Bell size={18} />
         </button>
         <button

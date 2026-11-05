@@ -7,7 +7,6 @@
 
 import { BellRing, Plus } from "lucide-react";
 import { InvoiceStatus } from "../../enums/invoice-status.enum";
-import { commonLabels } from "../../language/en/common.lang";
 import { invoicesLabels as L } from "../../language/en/invoices.lang";
 import { AS_OF } from "../../services/company.service";
 import { getInvoices } from "../../services/invoices.service";
@@ -18,7 +17,7 @@ import { KpiRow } from "../../shared/ui/kpi-row.component";
 import { PageHeader } from "../../shared/ui/page-header.component";
 import { daysBetween, formatDate, parseIso } from "../../shared/utils/dates.util";
 import { averageDaysToPay, daysOverdue, invoiceStatus, receivablesCents, sumCents } from "../../shared/utils/metrics.util";
-import { formatCompact, formatMoney } from "../../shared/utils/money.util";
+import { centsToDecimal, formatCompact, formatMoney } from "../../shared/utils/money.util";
 import type { ColumnDef, QuickView } from "../../types/data-table.types";
 import type { Invoice } from "../../types/finance.types";
 import { InvoiceStatusBadge } from "./components/invoice-status-badge.component";
@@ -71,7 +70,7 @@ const columns: ColumnDef<InvoiceRow>[] = [
     align: "right",
     accessor: (i) => i.amountCents,
     cell: (i) => <span className="font-medium">{formatMoney(i.amountCents, { cents: true })}</span>,
-    csv: (i) => (i.amountCents / 100).toFixed(2),
+    csv: (i) => centsToDecimal(i.amountCents),
     footer: (rows) => formatMoney(sumCents(rows.map((r) => r.amountCents)), { cents: true }),
   },
   {
@@ -84,7 +83,7 @@ const columns: ColumnDef<InvoiceRow>[] = [
     csv: false,
     cell: (i) =>
       i.derived === InvoiceStatus.Overdue ? (
-        <Button variant="ghost" icon={<BellRing size={14} />} className="h-8" title={commonLabels.notAvailableTitle}>
+        <Button variant="ghost" icon={<BellRing size={14} />} className="h-8" comingSoon>
           {L.remind}
         </Button>
       ) : null,
@@ -117,7 +116,7 @@ export function InvoicesPage() {
         title={L.title}
         subtitle={L.subtitle}
         actions={
-          <Button variant="primary" icon={<Plus size={16} />} title={commonLabels.notAvailableTitle}>
+          <Button variant="primary" icon={<Plus size={16} />} comingSoon>
             {L.newInvoice}
           </Button>
         }
@@ -153,7 +152,7 @@ export function InvoicesPage() {
           selectionSummary={(sel) => L.selectionTotal(formatMoney(sumCents(sel.map((r) => r.amountCents))))}
           bulkActions={(sel) =>
             sel.some((r) => r.derived === InvoiceStatus.Overdue) ? (
-              <Button className="h-8" icon={<BellRing size={14} />} title={commonLabels.notAvailableTitle}>
+              <Button className="h-8" icon={<BellRing size={14} />} comingSoon>
                 {L.sendReminders}
               </Button>
             ) : null
